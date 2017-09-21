@@ -19,6 +19,8 @@ requirements:
     run:
         - python
         - six
+        - sqlalchemy
+        - psycopg2
 
 test:
     source_files:

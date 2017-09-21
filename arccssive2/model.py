@@ -22,7 +22,8 @@ from __future__ import print_function
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
-from sqlalchemy import Text
+from sqlalchemy import Column, ForeignKey, Text, Integer
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 Base = declarative_base()
@@ -61,8 +62,8 @@ class Checksum(Metadata):
             'polymorphic_identity': 'checksum',
             }
 
-    md5 = pg_json_property('md_json', 'md5', Text)
-    sha256 = pg_json_property('md_json', 'sha256', Text)
+    md5 = pg_json_property('json', 'md5', Text)
+    sha256 = pg_json_property('json', 'sha256', Text)
 
 class Posix(Metadata):
     __mapper_args__ = {
@@ -74,12 +75,10 @@ class Netcdf(Metadata):
             'polymorphic_identity': 'netcdf',
             }
 
-    format     = pg_json_property('md_json', 'format', Text)
-    variables  = index_property('md_json', 'variables')
-    attributes = index_property('md_json', 'attributes')
-    dimensions = index_property('md_json', 'dimensions')
-
-    checksums = relationship("Checksum")
+    format     = pg_json_property('json', 'format', Text)
+    variables  = index_property('json', 'variables')
+    attributes = index_property('json', 'attributes')
+    dimensions = index_property('json', 'dimensions')
 
     frequency             = pg_json_property('attributes', 'frequency', Text)
     modeling_realm        = pg_json_property('attributes', 'modeling_realm', Text)

@@ -18,6 +18,7 @@ import requests
 from sqlalchemy.sql import column
 from sqlalchemy import String
 from .pgvalues import values
+from .model import Path, Checksum
 
 def esgf_query(query, fields, limit=100, offset=0):
     """
@@ -29,6 +30,7 @@ def esgf_query(query, fields, limit=100, offset=0):
                 'fields': fields,
                 'offset': offset,
                 'limit': limit,
+                'type': 'File',
                 'format': 'application/solr+json',
                 })
 
@@ -49,10 +51,11 @@ def id_response_to_values(response):
             for doc in response['response']['docs']],
         alias_name = 'esgf',
         )
+    return table
 
 def find_local(session, query):
     r = esgf_query(query, 'checksum,checksum_type,id')
     
     values = id_response_to_values(r)
 
-    session.query(Paths.path).join(Checksum).filter(Checksum.json[values.c.checksum_type].astext == values.c.checksum)
+    return session.query(Path.path).join(Checksum).join(values, Checksum.json[values.c.checksum_type].astext == values.c.checksum)
