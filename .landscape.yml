@@ -1,0 +1,5 @@
+python-targets:
+    - 2
+    - 3
+ignore-paths:
+    - docs/_build

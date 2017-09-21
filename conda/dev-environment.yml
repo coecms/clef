@@ -1,0 +1,9 @@
+name: arccssive2-dev
+
+channels:
+    - conda-forge
+    - defaults
+
+dependencies:
+    - python
+    - pbr
