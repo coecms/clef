@@ -22,7 +22,7 @@ from __future__ import print_function
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
-from sqlalchemy import Column, ForeignKey, Text, Integer
+from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
@@ -37,6 +37,13 @@ class pg_json_property(index_property):
     def expr(self, model):
         expr = super(pg_json_property, self).expr(model)
         return expr.astext.cast(self.cast_type)
+
+metadata_dataset_link = Table('esgf_metadata_dataset_link', Base.metadata,
+    Column('file_id', 
+        ForeignKey('paths.pa_hash'), 
+        ForeignKey('metadata.md_hash'),
+        ForeignKey('checksums.ch_hash')),
+    Column('dataset_id', ForeignKey('esgf_dataset.dataset_id')))
 
 class Path(Base):
     __tablename__ = 'paths'
@@ -57,13 +64,14 @@ class Metadata(Base):
             'polymorphic_on': type,
             }
 
-class Checksum(Metadata):
-    __mapper_args__ = {
-            'polymorphic_identity': 'checksum',
-            }
+class Checksum(Base):
+    __tablename__ = 'checksums'
 
-    md5 = pg_json_property('json', 'md5', Text)
-    sha256 = pg_json_property('json', 'sha256', Text)
+    id = Column('ch_hash', UUID, ForeignKey('paths.pa_hash'), ForeignKey('metadata.md_hash'), primary_key=True)
+    md5 = Column('ch_md5', String)
+    sha256 = Column('ch_sha256', String)
+
+    path = relationship("Path")
 
 class Posix(Metadata):
     __mapper_args__ = {
@@ -105,3 +113,16 @@ class Netcdf(Metadata):
     product               = pg_json_property('attributes', 'product', Text)
     model_id              = pg_json_property('attributes', 'model_id', Text)
 
+class Dataset(Base):
+    __tablename__ = 'esgf_dataset'
+
+    dataset_id = Column(Text, primary_key=True)
+    institute = Column(Text)
+    model = Column(Text)
+    experiment = Column(Text)
+    frequency = Column(Text)
+    realm = Column(Text)
+    r = Column(Integer)
+    i = Column(Integer)
+    p = Column(Integer)
+    ensemble = Column(Text)
