@@ -22,6 +22,14 @@ CREATE TABLE paths (
     pa_parents UUID[]
 );
 
+CREATE TABLE checksums (
+    ch_hash UUID PRIMARY KEY,
+    ch_md5 TEXT,
+    ch_sha256 TEXT,
+);
+
+/*
 -- Read sample data
 \copy metadata from 'db/metadata_sample.txt'
 \copy paths    from 'db/paths_sample.txt'
+*/
