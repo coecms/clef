@@ -25,7 +25,7 @@ CREATE TABLE paths (
 CREATE TABLE checksums (
     ch_hash UUID PRIMARY KEY,
     ch_md5 TEXT,
-    ch_sha256 TEXT,
+    ch_sha256 TEXT
 );
 
 /*
