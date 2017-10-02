@@ -17,6 +17,7 @@ jobs:
             - checkout
 
             - run: |
+                conda install postgresql
                 psql -f db/nci.sql
                 psql -f db/tables.sql
 
