@@ -11,6 +11,8 @@ source:
 
 build:
     script: python setup.py install
+    script_env:
+        - ARCCSSIVE_DB
 
 requirements:
     build:
