@@ -18,8 +18,8 @@ jobs:
 
             - run: |
                 conda install postgresql
-                psql -f db/nci.sql
-                psql -f db/tables.sql
+                psql -h localhost -f db/nci.sql
+                psql -h localhost -f db/tables.sql
 
             - run: |
                 conda build conda --python=${PYTHON_VER}
