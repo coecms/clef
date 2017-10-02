@@ -7,7 +7,7 @@ import os
 # Add test fixtures here so they are accessible from doctests
 @pytest.fixture(scope='session')
 def session():
-    arccssive2.db.connect(url = os.environ['ARCCSSIVE_URL'])
+    arccssive2.db.connect(url = os.environ['ARCCSSIVE_DB'])
     session = arccssive2.db.Session()
     yield session
     session.rollback()
