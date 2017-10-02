@@ -43,7 +43,12 @@ jobs:
             - checkout
 
             - run: |
-                # conda build conda --python=${PYTHON_VER}
+                conda install postgresql
+                psql -h localhost -U postgres -f db/nci.sql
+                psql -h localhost -U postgres -f db/tables.sql
+
+            - run: |
+                conda build conda --python=${PYTHON_VER}
 
             - run: |
                 mkdir /artefacts
