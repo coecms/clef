@@ -37,7 +37,13 @@ jobs:
         docker:
             - image: scottwales/conda-build
               environment:
-                PYTHON_VER: 3.6
+                  ARCCSSIVE_DB: postgresql://postgres:@localhost/postgres
+                  PYTHON_VER: 3.6
+            - image: circleci/postgres:9.6
+              environment:
+                  POSTGRES_USER: postgres
+                  POSTGRES_DB: postgres
+                  POSTGRES_PASSWORD: ''
 
         steps:
             - checkout
