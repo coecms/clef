@@ -21,6 +21,8 @@ requirements:
         - six
         - sqlalchemy
         - psycopg2
+        - requests
+        - click
 
 test:
     source_files:
@@ -31,6 +33,8 @@ test:
         - pytest
     commands:
         - py.test
+    imports:
+        - arccssive2
 
 about:
     home: https://github.com/coecms/arccssive2
