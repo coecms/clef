@@ -28,8 +28,9 @@ CREATE TABLE checksums (
     ch_sha256 TEXT
 );
 
-/*
+
 -- Read sample data
-\copy metadata from 'db/metadata_sample.txt'
-\copy paths    from 'db/paths_sample.txt'
-*/
+\copy metadata  from 'db/metadata_sample.txt'
+\copy paths     from 'db/paths_sample.txt'
+\copy checksums from 'db/checksums_sample.txt'
+
