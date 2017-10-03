@@ -15,9 +15,13 @@
 # limitations under the License.
 from __future__ import print_function
 from .db import connect, Session
+from .model import Path, Dataset
 from .esgf import find_local_path, find_missing_id
 import click
 import logging
+from sqlalchemy import any_
+from sqlalchemy.orm import aliased
+import sys
 
 @click.group()
 def esgf():
@@ -143,7 +147,6 @@ def missing(query, user, debug, distrib, replica, latest,
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
-    print('latest: %s'%latest)
 
     connect(user=user)
     s = Session()
@@ -171,3 +174,76 @@ def missing(query, user, debug, distrib, replica, latest,
     for result in q:
         print(result.id)
 
+
+@click.group()
+def arx():
+    """
+    Commands for searching local datasets
+    """
+    pass
+
+@arx.command()
+@click.option('--user', help='Username for database')
+@click.option('--debug/--no-debug', default=False, help='Show/hide debug log')
+@click.option('--ensemble', multiple=True, help='Add constraint')
+@click.option('--experiment', multiple=True, help='Add constraint')
+@click.option('--institute', multiple=True, help='Add constraint')
+@click.option('--model', multiple=True, help='Add constraint')
+@click.option('--project', multiple=True, help='Add constraint')
+@click.option('--realm', multiple=True, help='Add constraint')
+@click.option('--time_frequency', multiple=True, help='Add constraint')
+@click.option('--variable', multiple=True, help='Add constraint')
+def search(user, debug,
+        ensemble,
+        experiment,
+        institute,
+        model,
+        project,
+        realm,
+        time_frequency,
+        variable,
+        ):
+    """
+    Search local datasets for files matching the given constraints
+
+    Constraints can be specified multiple times, in which case they are ORed.
+    `%` can be used as a wildcard, e.g. `--model access%` will match ACCESS1-0
+    and ACCESS1-3
+    """
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
+
+    connect(user=user)
+    s = Session()
+
+    q = s.query(Path).join(Path.dataset)
+
+    if len(ensemble) > 0:
+        q = q.filter(Dataset.ensemble.ilike(any_([x for x in ensemble])))
+    if len(experiment) > 0:
+        q = q.filter(Dataset.experiment.ilike(any_([x for x in experiment])))
+    if len(institute) > 0:
+        q = q.filter(Dataset.institute.ilike(any_([x for x in institute])))
+    if len(model) > 0:
+        q = q.filter(Dataset.model.ilike(any_([x for x in model])))
+    if len(project) > 0:
+        q = q.filter(Dataset.project.ilike(any_([x for x in project])))
+    if len(realm) > 0:
+        q = q.filter(Dataset.realm.ilike(any_([x for x in realm])))
+    if len(time_frequency) > 0:
+        q = q.filter(Dataset.frequency.ilike(any_([x for x in time_frequency])))
+#    if variable is not None:
+#        q = q.filter(Dataset.variable.ilike(any_([x for x in variable])))
+
+    count = q.count()
+    if count > 1000:
+        sub = aliased(Path, q.limit(1000).subquery())
+        q = s.query(sub).order_by(sub.path)
+        print("WARNING: Limiting to 1000 results out of %d"%count, file=sys.stderr)
+    else:
+        q = q.order_by(Path.path)
+
+    for result in q:
+        print(result.path)

@@ -51,6 +51,8 @@ class Path(Base):
     id = Column('pa_hash', UUID, primary_key=True)
     path = Column('pa_path', Text)
 
+    dataset = relationship('Dataset', secondary=metadata_dataset_link)
+
 class Metadata(Base):
     __tablename__ = 'metadata'
 
@@ -117,6 +119,7 @@ class Dataset(Base):
     __tablename__ = 'esgf_dataset'
 
     dataset_id = Column(Text, primary_key=True)
+    project = Column(Text)
     institute = Column(Text)
     model = Column(Text)
     experiment = Column(Text)
