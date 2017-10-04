@@ -43,6 +43,9 @@ def esgf_query(query, fields, limit=100, offset=0, distrib=True, replica=False, 
     if latest == 'all':
         latest = None
 
+    if len(query) == 0:
+        query = None
+
     r = requests.get('https://esgf.nci.org.au/esg-search/search',
             params = {
                 'query': query,

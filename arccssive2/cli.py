@@ -15,13 +15,14 @@
 # limitations under the License.
 from __future__ import print_function
 from .db import connect, Session
-from .model import Path, Dataset
-from .esgf import find_local_path, find_missing_id
+from .model import Path, Dataset, ExtendedMetadata, Checksum
+from .esgf import find_local_path, find_missing_id, find_checksum_id
 import click
 import logging
-from sqlalchemy import any_
+from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
 import sys
+import six
 
 @click.group()
 def esgf():
@@ -174,17 +175,10 @@ def missing(query, user, debug, distrib, replica, latest,
     for result in q:
         print(result.id)
 
-
-@click.group()
-def arx():
-    """
-    Commands for searching local datasets
-    """
-    pass
-
-@arx.command()
+@esgf.command()
 @click.option('--user', help='Username for database')
 @click.option('--debug/--no-debug', default=False, help='Show/hide debug log')
+@click.option('--latest/--all-versions', default=False, help='Show only the latest version on ESGF')
 @click.option('--ensemble', multiple=True, help='Add constraint')
 @click.option('--experiment', multiple=True, help='Add constraint')
 @click.option('--institute', multiple=True, help='Add constraint')
@@ -193,7 +187,7 @@ def arx():
 @click.option('--realm', multiple=True, help='Add constraint')
 @click.option('--time_frequency', multiple=True, help='Add constraint')
 @click.option('--variable', multiple=True, help='Add constraint')
-def search(user, debug,
+def offline(user, debug, latest,
         ensemble,
         experiment,
         institute,
@@ -204,11 +198,13 @@ def search(user, debug,
         variable,
         ):
     """
-    Search local datasets for files matching the given constraints
+    Search local database for files matching the given constraints
 
     Constraints can be specified multiple times, in which case they are ORed.
     `%` can be used as a wildcard, e.g. `--model access%` will match ACCESS1-0
     and ACCESS1-3
+
+    The --latest flag will check ESGF for the latest version available
     """
 
     if debug:
@@ -218,32 +214,64 @@ def search(user, debug,
     connect(user=user)
     s = Session()
 
-    q = s.query(Path).join(Path.dataset)
+    ensemble_terms = None
+    model_terms = None
 
-    if len(ensemble) > 0:
-        q = q.filter(Dataset.ensemble.ilike(any_([x for x in ensemble])))
-    if len(experiment) > 0:
-        q = q.filter(Dataset.experiment.ilike(any_([x for x in experiment])))
-    if len(institute) > 0:
-        q = q.filter(Dataset.institute.ilike(any_([x for x in institute])))
-    if len(model) > 0:
-        q = q.filter(Dataset.model.ilike(any_([x for x in model])))
-    if len(project) > 0:
-        q = q.filter(Dataset.project.ilike(any_([x for x in project])))
-    if len(realm) > 0:
-        q = q.filter(Dataset.realm.ilike(any_([x for x in realm])))
-    if len(time_frequency) > 0:
-        q = q.filter(Dataset.frequency.ilike(any_([x for x in time_frequency])))
-#    if variable is not None:
-#        q = q.filter(Dataset.variable.ilike(any_([x for x in variable])))
+    dataset_constraints = {
+        'ensemble': ensemble,
+        'experiment': experiment,
+        'institute': institute,
+        'model': model,
+        'project': project,
+        'realm': realm,
+        'time_frequency': time_frequency,
+        }
+    terms = {}
+    filters = []
 
+    # Add filters
+    for key, value in six.iteritems(dataset_constraints):
+        if len(value) > 0:
+            filters.append(getattr(Dataset,key).ilike(any_([x for x in value])))
+
+            terms[key] = [x[0] for x in (s.query(getattr(Dataset,key))
+                .distinct()
+                .filter(getattr(Dataset,key).ilike(any_([x for x in value]))))]
+
+    if len(variable) > 0:
+        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable])))
+
+        terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
+            .distinct()
+            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
+
+    # Main query
+    q = (s.query(Path)
+            .join(Path.dataset)
+            .join(Path.extended)
+            .join(Path.checksum)
+            .distinct(Checksum.sha256)
+            .filter(*filters))
+
+    if latest:
+        # Match against the latest versions from ESGF
+        esgf_q = find_checksum_id([],
+            latest=latest,
+            **terms,
+            )
+
+        q = q.join(esgf_q, 
+            or_(Checksum.md5 == esgf_q.c.checksum, 
+                Checksum.sha256 == esgf_q.c.checksum))
+
+    # Limit the number of output lines
     count = q.count()
-    if count > 1000:
-        sub = aliased(Path, q.limit(1000).subquery())
-        q = s.query(sub).order_by(sub.path)
-        print("WARNING: Limiting to 1000 results out of %d"%count, file=sys.stderr)
+    if count > 100:
+        sub = aliased(Path, q.limit(100).subquery())
+        q = s.query(sub).order_by(Checksum.sha256, sub.path)
+        print("WARNING: Limiting to 100 results out of %d"%count, file=sys.stderr)
     else:
-        q = q.order_by(Path.path)
+        q = q.order_by(Checksum.sha256, Path.path)
 
     for result in q:
         print(result.path)

@@ -24,7 +24,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
 from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 
 Base = declarative_base()
 
@@ -51,7 +51,10 @@ class Path(Base):
     id = Column('pa_hash', UUID, primary_key=True)
     path = Column('pa_path', Text)
 
-    dataset = relationship('Dataset', secondary=metadata_dataset_link)
+    dataset = relationship('Dataset', secondary=metadata_dataset_link, viewonly=True)
+    netcdf = relationship('Netcdf', viewonly=True)
+    checksum = relationship('Checksum', viewonly=True)
+    extended = relationship('ExtendedMetadata', viewonly=True)
 
 class Metadata(Base):
     __tablename__ = 'metadata'
@@ -90,32 +93,25 @@ class Netcdf(Metadata):
     attributes = index_property('json', 'attributes')
     dimensions = index_property('json', 'dimensions')
 
-    frequency             = pg_json_property('attributes', 'frequency', Text)
-    modeling_realm        = pg_json_property('attributes', 'modeling_realm', Text)
-    parent_experiment_id  = pg_json_property('attributes', 'parent_experiment_id', Text)
-    parent_experiment_rip = pg_json_property('attributes', 'parent_experiment_rip', Text)
-    realization           = pg_json_property('attributes', 'realization', Integer)
-    experiment_id         = pg_json_property('attributes', 'experiment_id', Text)
-    experiment            = pg_json_property('attributes', 'experiment', Text)
-    creation_date         = pg_json_property('attributes', 'creation_date', Text)
-    forcing               = pg_json_property('attributes', 'forcing', Text)
-    institute_id          = pg_json_property('attributes', 'institute_id', Text)
-    source                = pg_json_property('attributes', 'source', Text)
-    title                 = pg_json_property('attributes', 'title', Text)
-    physics_version       = pg_json_property('attributes', 'physics_version', Integer)
-    project_id            = pg_json_property('attributes', 'project_id', Text)
-    institution           = pg_json_property('attributes', 'institution', Text)
-    version_number        = pg_json_property('attributes', 'version_number', Text)
-    initialization_method = pg_json_property('attributes', 'initialization_method', Integer)
-    table_id              = pg_json_property('attributes', 'table_id', Text)
-    branch_time           = pg_json_property('attributes', 'branch_time', Text)
-    Conventions           = pg_json_property('attributes', 'Conventions', Text)
-    tracking_id           = pg_json_property('attributes', 'tracking_id', Text)
-    parent_experiment     = pg_json_property('attributes', 'parent_experiment', Text)
-    product               = pg_json_property('attributes', 'product', Text)
-    model_id              = pg_json_property('attributes', 'model_id', Text)
+class ExtendedMetadata(Base):
+    """
+    Extra metadata not present in the file's attributes
+    """
+    __tablename__ = 'extended_metadata'
+
+    file_id = Column(UUID,
+            ForeignKey('metadata.md_hash'),
+            ForeignKey('checksums.ch_hash'),
+            ForeignKey('paths.pa_hash'),
+            primary_key=True)
+    version = Column(Text)
+    variable = Column(Text)
+    period = Column(INT4RANGE)
 
 class Dataset(Base):
+    """
+    An ESGF dataset
+    """
     __tablename__ = 'esgf_dataset'
 
     dataset_id = Column(Text, primary_key=True)
@@ -123,7 +119,7 @@ class Dataset(Base):
     institute = Column(Text)
     model = Column(Text)
     experiment = Column(Text)
-    frequency = Column(Text)
+    time_frequency = Column('frequency', Text)
     realm = Column(Text)
     r = Column(Integer)
     i = Column(Integer)
