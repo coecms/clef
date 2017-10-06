@@ -173,7 +173,7 @@ def missing(query, user, debug, distrib, replica, latest,
 @esgf.command()
 @click.option('--user', help='Username for database')
 @click.option('--debug/--no-debug', default=False, help='Show/hide debug log')
-@click.option('--latest/--all-versions', default=False, help='Show only the latest version on ESGF')
+@click.option('--latest/--all-versions', default=True, help='Show only the latest version on ESGF')
 @click.option('--ensemble', multiple=True, help='Add constraint')
 @click.option('--experiment', multiple=True, help='Add constraint')
 @click.option('--institute', multiple=True, help='Add constraint')

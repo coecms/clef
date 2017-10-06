@@ -84,7 +84,8 @@ def find_checksum_id(query, **kwargs):
     """
     response = esgf_query(query, 'checksum,id', **kwargs)
 
-    assert response['response']['numFound'] > 0
+    if response['response']['numFound'] == 0:
+        raise Exception('No matches found on ESGF')
 
     table = values([
             column('checksum', String),
