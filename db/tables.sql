@@ -37,8 +37,8 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
             model ||'.'||
             experiment ||'.'||
             frequency ||'.'||
-            realm ||'.'||
-            'r'||r||'i'||i||'p'||p
+            COALESCE(realm,'') ||'.'||
+            COALESCE('r'||r||'i'||i||'p'||p,'')
         )::uuid as dataset_id
     FROM dataset_metadata
     NATURAL JOIN esgf_filter;
@@ -53,7 +53,11 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_dataset AS
         project,
         product,
         institute,
-        model,
+        CASE WHEN model = 'ACCESS1-0' THEN 'ACCESS1.0'
+            WHEN model = 'ACCESS1-3' THEN 'ACCESS1.3'
+            WHEN model = 'CSIRO-Mk3-6-0' THEN 'CSIRO-Mk3.6.0'
+            ELSE model END
+            AS model,
         experiment,
         frequency,
         realm,
@@ -114,9 +118,9 @@ CREATE OR REPLACE VIEW extended_metadata_path AS
     y AS (
         SELECT pa_hash, path_parts[array_length(path_parts,1)-2] AS version
         FROM x),
-    z AS (
-        SELECT * FROM y WHERE version ~* '^v?\d+$'),
-    a AS (
+    versions AS (
+        SELECT pa_hash, SUBSTRING(version, '^v?(\d+)$') AS version  FROM y WHERE version ~* '^v?\d+$'),
+    variables AS (
         SELECT pa_hash, split_part(path_parts[array_length(path_parts,1)],'_',1) AS variable
         FROM x),
     b AS (
@@ -127,11 +131,16 @@ CREATE OR REPLACE VIEW extended_metadata_path AS
         FROM b),
     d AS (
         SELECT pa_hash, int4range(l,h,'[]') AS period
-        FROM c WHERE l <= h)
+        FROM c WHERE l <= h),
+    access_versions AS (
+        SELECT pa_hash, split_part(path_parts[array_length(path_parts,1)-1],'_',2) as access_version
+        FROM x WHERE path_parts[5] = 'authoritative'
+        )
 
-    SELECT pa_hash as file_id, version, variable, period
-    FROM a
-    NATURAL LEFT JOIN z
+    SELECT pa_hash as file_id, COALESCE(access_version, version) AS version, variable, period
+    FROM variables
+    NATURAL LEFT JOIN versions
+    NATURAL LEFT JOIN access_versions
     NATURAL LEFT JOIN d;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS extended_metadata AS

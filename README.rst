@@ -37,6 +37,38 @@ Pip install (into a virtual environment)::
 Use
 ---
 
+Find files at NCI downloaded from ESGF::
+
+    esgf local --model mpi% --variable tas --experiment historical --time_frequency=day
+
+You can filter by the following terms:
+ 
+ * ensemble
+ * experiment
+ * institute
+ * model
+ * project
+ * realm
+ * time_frequency
+ * variable
+ * version
+
+``%`` acts as a wildcard character
+
+``--latest`` will check the latest versions of the datasets on the ESGF
+website, and will only return matching files
+
+Find files on ESGF that haven't been downloaded to NCI (note wildcards don't work)::
+
+    esgf missing --model MPI-ESM-LR --variable tas --time_frequency=day
+
+Any normal arguments will be passed into the ESGF search, though this may have
+false positives::
+
+    esgf missing MPI-ESM-LR tas day
+
+See ``esgf missing --help`` for all available filters
+
 -------
 Develop
 -------

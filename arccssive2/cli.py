@@ -33,28 +33,27 @@ def esgf():
 
 @esgf.command()
 @click.argument('query', nargs=-1)
-@click.option('--user')
-@click.option('--debug/--no-debug', default=False)
-@click.option('--distrib/--no-distrib', default=True)
-@click.option('--replica/--no-replica', default=False)
-@click.option('--latest', 'latest', flag_value='true', default=True)
-@click.option('--all-versions', 'latest', flag_value='all', is_flag=True)
-@click.option('--no-latest', 'latest', flag_value='false')
-@click.option('--cf_standard_name')
-@click.option('--ensemble')
-@click.option('--experiment')
-@click.option('--experiment_family')
-@click.option('--institute')
-@click.option('--cmor_table')
-@click.option('--model')
-@click.option('--project')
-@click.option('--product')
-@click.option('--realm')
-@click.option('--time_frequency')
-@click.option('--variable')
-@click.option('--variable_long_name')
-@click.option('--source_id')
-def local(query, user, debug, distrib, replica, latest,
+@click.option('--user', help='Username for database')
+@click.option('--debug/--no-debug', default=False, help="Show/hide debug log")
+@click.option('--distrib/--no-distrib', default=True, help="Distributed search")
+@click.option('--replica/--no-replica', default=False, help="Search replicas")
+@click.option('--latest', 'latest', flag_value='true', default=True, help="Latest version only")
+@click.option('--all-versions', 'latest', flag_value='all', is_flag=True, help="All versions")
+@click.option('--cf_standard_name',multiple=True, help="Constraint")
+@click.option('--ensemble',multiple=True, help="Constraint")
+@click.option('--experiment',multiple=True, help="Constraint")
+@click.option('--experiment_family',multiple=True, help="Constraint")
+@click.option('--institute',multiple=True, help="Constraint")
+@click.option('--cmor_table',multiple=True, help="Constraint")
+@click.option('--model',multiple=True, help="Constraint")
+@click.option('--project',multiple=True, help="Constraint")
+@click.option('--product',multiple=True, help="Constraint")
+@click.option('--realm',multiple=True, help="Constraint")
+@click.option('--time_frequency',multiple=True, help="Constraint")
+@click.option('--variable',multiple=True, help="Constraint")
+@click.option('--variable_long_name',multiple=True, help="Constraint")
+@click.option('--source_id',multiple=True, help="Constraint")
+def search(query, user, debug, distrib, replica, latest,
         cf_standard_name,
         ensemble,
         experiment,
@@ -71,16 +70,13 @@ def local(query, user, debug, distrib, replica, latest,
         source_id,
         ):
     """
-    Find local files at NCI, using ESGF's search
+    Search ESGF, returning matching file ids
     """
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
-    connect(user=user)
-    s = Session()
-
-    q = find_local_path(s, ' '.join(query),
+    q = find_checksum_id(' '.join(query),
             distrib=distrib,
             replica=replica,
             latest=latest,
@@ -101,31 +97,30 @@ def local(query, user, debug, distrib, replica, latest,
             )
     
     for result in q:
-        print(result.path)
+        print(result.id)
 
 @esgf.command()
 @click.argument('query', nargs=-1)
-@click.option('--user')
-@click.option('--debug/--no-debug', default=False)
-@click.option('--distrib/--no-distrib', default=True)
-@click.option('--replica/--no-replica', default=False)
-@click.option('--latest', 'latest', flag_value='true', default=True)
-@click.option('--all-versions', 'latest', flag_value='all', is_flag=True)
-@click.option('--no-latest', 'latest', flag_value='false')
-@click.option('--cf_standard_name')
-@click.option('--ensemble')
-@click.option('--experiment')
-@click.option('--experiment_family')
-@click.option('--institute')
-@click.option('--cmor_table')
-@click.option('--model')
-@click.option('--project')
-@click.option('--product')
-@click.option('--realm')
-@click.option('--time_frequency')
-@click.option('--variable')
-@click.option('--variable_long_name')
-@click.option('--source_id')
+@click.option('--user', help='Username for database')
+@click.option('--debug/--no-debug', default=False, help="Show/hide debug log")
+@click.option('--distrib/--no-distrib', default=True, help="Distributed search")
+@click.option('--replica/--no-replica', default=False, help="Search replicas")
+@click.option('--latest', 'latest', flag_value='true', default=True, help="Latest version only")
+@click.option('--all-versions', 'latest', flag_value='all', is_flag=True, help="All versions")
+@click.option('--cf_standard_name',multiple=True, help="Constraint")
+@click.option('--ensemble',multiple=True, help="Constraint")
+@click.option('--experiment',multiple=True, help="Constraint")
+@click.option('--experiment_family',multiple=True, help="Constraint")
+@click.option('--institute',multiple=True, help="Constraint")
+@click.option('--cmor_table',multiple=True, help="Constraint")
+@click.option('--model',multiple=True, help="Constraint")
+@click.option('--project',multiple=True, help="Constraint")
+@click.option('--product',multiple=True, help="Constraint")
+@click.option('--realm',multiple=True, help="Constraint")
+@click.option('--time_frequency',multiple=True, help="Constraint")
+@click.option('--variable',multiple=True, help="Constraint")
+@click.option('--variable_long_name',multiple=True, help="Constraint")
+@click.option('--source_id',multiple=True, help="Constraint")
 def missing(query, user, debug, distrib, replica, latest,
         cf_standard_name,
         ensemble,
@@ -143,7 +138,7 @@ def missing(query, user, debug, distrib, replica, latest,
         source_id,
         ):
     """
-    Find files using ESGF's search that aren't at NCI
+    Search ESGF to find files not downloaded to NCI
     """
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -187,7 +182,8 @@ def missing(query, user, debug, distrib, replica, latest,
 @click.option('--realm', multiple=True, help='Add constraint')
 @click.option('--time_frequency', multiple=True, help='Add constraint')
 @click.option('--variable', multiple=True, help='Add constraint')
-def offline(user, debug, latest,
+@click.option('--version', multiple=True, help='Add constraint', type=int)
+def local(user, debug, latest,
         ensemble,
         experiment,
         institute,
@@ -196,6 +192,7 @@ def offline(user, debug, latest,
         realm,
         time_frequency,
         variable,
+        version,
         ):
     """
     Search local database for files matching the given constraints
@@ -234,6 +231,8 @@ def offline(user, debug, latest,
         if len(value) > 0:
             filters.append(getattr(Dataset,key).ilike(any_([x for x in value])))
 
+            # If this key was filtered get a list of the matching values, used
+            # in the ESGF query
             terms[key] = [x[0] for x in (s.query(getattr(Dataset,key))
                 .distinct()
                 .filter(getattr(Dataset,key).ilike(any_([x for x in value]))))]
@@ -245,17 +244,21 @@ def offline(user, debug, latest,
             .distinct()
             .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
 
+    if len(version) > 0:
+        filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
+
     # Main query
-    q = (s.query(Path)
+    q = (s.query(Path.path.label('path'), ExtendedMetadata.version)
             .join(Path.dataset)
             .join(Path.extended)
             .join(Path.checksum)
             .distinct(Checksum.sha256)
+            .order_by(Checksum.sha256, ExtendedMetadata.version)
             .filter(*filters))
 
     if latest:
         # Match against the latest versions from ESGF
-        esgf_q = find_checksum_id([],
+        esgf_q = find_checksum_id(query=None,
             latest=latest,
             **terms,
             )
@@ -267,11 +270,12 @@ def offline(user, debug, latest,
     # Limit the number of output lines
     count = q.count()
     if count > 100:
-        sub = aliased(Path, q.limit(100).subquery())
-        q = s.query(sub).order_by(Checksum.sha256, sub.path)
+        sub = q.limit(100).subquery()
+        q = s.query(sub).order_by(sub.c.version.desc(), sub.c.path)
         print("WARNING: Limiting to 100 results out of %d"%count, file=sys.stderr)
     else:
-        q = q.order_by(Checksum.sha256, Path.path)
+        sub = q.subquery()
+        q = s.query(sub).order_by(sub.c.version.desc().nullslast(), sub.c.path)
 
     for result in q:
         print(result.path)
