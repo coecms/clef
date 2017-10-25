@@ -31,28 +31,36 @@ def esgf():
     """
     pass
 
+def constraint_args(f):
+    constraints = [
+        click.option('--user', help='Username for database'),
+        click.option('--debug/--no-debug', default=False, help="Show/hide debug log"),
+        click.option('--distrib/--no-distrib', default=True, help="Distributed search"),
+        click.option('--replica/--no-replica', default=False, help="Search replicas"),
+        click.option('--latest', 'latest', flag_value='true', default=True, help="Latest version only"),
+        click.option('--all-versions', '-a', 'latest', flag_value='all', is_flag=True, help="All versions"),
+        click.option('--cf_standard_name',multiple=True, help="Constraint"),
+        click.option('--ensemble', '-en', multiple=True, help="Constraint"),
+        click.option('--experiment', '-e', multiple=True, help="Constraint"),
+        click.option('--experiment_family',multiple=True, help="Constraint"),
+        click.option('--institute',multiple=True, help="Constraint"),
+        click.option('--cmor_table', '--mip', '-t', 'cmor_table', multiple=True, help="Constraint"),
+        click.option('--model', '-m', multiple=True, help="Constraint"),
+        click.option('--project',multiple=True, help="Constraint"),
+        click.option('--product',multiple=True, help="Constraint"),
+        click.option('--realm',multiple=True, help="Constraint"),
+        click.option('--time_frequency',multiple=True, help="Constraint"),
+        click.option('--variable', '-v', multiple=True, help="Constraint"),
+        click.option('--variable_long_name',multiple=True, help="Constraint"),
+        click.option('--source_id', multiple=True, help="Constraint"),
+    ]
+    for c in reversed(constraints):
+        f = c(f)
+    return f
+
 @esgf.command()
 @click.argument('query', nargs=-1)
-@click.option('--user', help='Username for database')
-@click.option('--debug/--no-debug', default=False, help="Show/hide debug log")
-@click.option('--distrib/--no-distrib', default=True, help="Distributed search")
-@click.option('--replica/--no-replica', default=False, help="Search replicas")
-@click.option('--latest', 'latest', flag_value='true', default=True, help="Latest version only")
-@click.option('--all-versions', 'latest', flag_value='all', is_flag=True, help="All versions")
-@click.option('--cf_standard_name',multiple=True, help="Constraint")
-@click.option('--ensemble',multiple=True, help="Constraint")
-@click.option('--experiment',multiple=True, help="Constraint")
-@click.option('--experiment_family',multiple=True, help="Constraint")
-@click.option('--institute',multiple=True, help="Constraint")
-@click.option('--cmor_table',multiple=True, help="Constraint")
-@click.option('--model',multiple=True, help="Constraint")
-@click.option('--project',multiple=True, help="Constraint")
-@click.option('--product',multiple=True, help="Constraint")
-@click.option('--realm',multiple=True, help="Constraint")
-@click.option('--time_frequency',multiple=True, help="Constraint")
-@click.option('--variable',multiple=True, help="Constraint")
-@click.option('--variable_long_name',multiple=True, help="Constraint")
-@click.option('--source_id',multiple=True, help="Constraint")
+@constraint_args
 def search(query, user, debug, distrib, replica, latest,
         cf_standard_name,
         ensemble,
@@ -101,26 +109,7 @@ def search(query, user, debug, distrib, replica, latest,
 
 @esgf.command()
 @click.argument('query', nargs=-1)
-@click.option('--user', help='Username for database')
-@click.option('--debug/--no-debug', default=False, help="Show/hide debug log")
-@click.option('--distrib/--no-distrib', default=True, help="Distributed search")
-@click.option('--replica/--no-replica', default=False, help="Search replicas")
-@click.option('--latest', 'latest', flag_value='true', default=True, help="Latest version only")
-@click.option('--all-versions', 'latest', flag_value='all', is_flag=True, help="All versions")
-@click.option('--cf_standard_name',multiple=True, help="Constraint")
-@click.option('--ensemble',multiple=True, help="Constraint")
-@click.option('--experiment',multiple=True, help="Constraint")
-@click.option('--experiment_family',multiple=True, help="Constraint")
-@click.option('--institute',multiple=True, help="Constraint")
-@click.option('--cmor_table',multiple=True, help="Constraint")
-@click.option('--model',multiple=True, help="Constraint")
-@click.option('--project',multiple=True, help="Constraint")
-@click.option('--product',multiple=True, help="Constraint")
-@click.option('--realm',multiple=True, help="Constraint")
-@click.option('--time_frequency',multiple=True, help="Constraint")
-@click.option('--variable',multiple=True, help="Constraint")
-@click.option('--variable_long_name',multiple=True, help="Constraint")
-@click.option('--source_id',multiple=True, help="Constraint")
+@constraint_args
 def missing(query, user, debug, distrib, replica, latest,
         cf_standard_name,
         ensemble,
@@ -174,15 +163,15 @@ def missing(query, user, debug, distrib, replica, latest,
 @click.option('--user', help='Username for database')
 @click.option('--debug/--no-debug', default=False, help='Show/hide debug log')
 @click.option('--latest/--all-versions', default=True, help='Show only the latest version on ESGF')
-@click.option('--ensemble', multiple=True, help='Add constraint')
-@click.option('--experiment', multiple=True, help='Add constraint')
+@click.option('--ensemble', '-en', multiple=True, help='Add constraint')
+@click.option('--experiment', '-e', multiple=True, help='Add constraint')
 @click.option('--institute', multiple=True, help='Add constraint')
-@click.option('--model', multiple=True, help='Add constraint')
+@click.option('--model', '-m', multiple=True, help='Add constraint')
 @click.option('--project', multiple=True, help='Add constraint')
 @click.option('--realm', multiple=True, help='Add constraint')
 @click.option('--time_frequency', multiple=True, help='Add constraint')
-@click.option('--variable', multiple=True, help='Add constraint')
-@click.option('--version', multiple=True, help='Add constraint', type=int)
+@click.option('--variable', '-v', multiple=True, help='Add constraint')
+@click.option('--version', '-ve', multiple=True, help='Add constraint', type=int)
 def local(user, debug, latest,
         ensemble,
         experiment,
