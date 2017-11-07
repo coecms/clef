@@ -94,7 +94,7 @@ def find_checksum_id(query, **kwargs):
         ],
         *[(doc['checksum'][0], doc['id'], doc['score']) 
             for doc in response['response']['docs']],
-        alias_name = 'esgf',
+        alias_name = 'esgf'
         )
 
     return table
