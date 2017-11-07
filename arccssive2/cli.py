@@ -136,24 +136,42 @@ def missing(query, user, debug, distrib, replica, latest,
     connect(user=user)
     s = Session()
 
+    dataset_constraints = {
+        'ensemble': ensemble,
+        'experiment': experiment,
+        'institute': institute,
+        'model': model,
+        'project': project,
+        'realm': realm,
+        'time_frequency': time_frequency,
+        }
+    terms = {}
+
+    # Add filters
+    for key, value in six.iteritems(dataset_constraints):
+        if len(value) > 0:
+            # If this key was filtered get a list of the matching values, used
+            # in the ESGF query
+            terms[key] = [x[0] for x in (s.query(getattr(Dataset,key))
+                .distinct()
+                .filter(getattr(Dataset,key).ilike(any_([x for x in value]))))]
+
+    if len(variable) > 0:
+        terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
+            .distinct()
+            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
+
     q = find_missing_id(s, ' '.join(query),
             distrib=distrib,
             replica=replica,
             latest=latest,
             cf_standard_name=cf_standard_name,
-            ensemble=ensemble,
-            experiment=experiment,
             experiment_family=experiment_family,
-            institute=institute,
             cmor_table=cmor_table,
-            model=model,
-            project=project,
             product=product,
-            realm=realm,
-            time_frequency=time_frequency,
-            variable=variable,
             variable_long_name=variable_long_name,
             source_id=source_id,
+            **terms
             )
     
     for result in q:
