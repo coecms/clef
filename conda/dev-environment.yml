@@ -6,4 +6,12 @@ channels:
 
 dependencies:
     - python
-    - pbr
+    - six
+    - sqlalchemy
+    - psycopg2
+    - requests
+    - click
+    - pytest
+
+    - pip:
+        - docker-compose

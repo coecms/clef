@@ -47,9 +47,7 @@ CREATE TABLE ua6.paths (
 /*
 \copy (with x as (select * from esgf_filter limit 5) select y.* from metadata as y join x on md_hash = file_id) to db/metadata_sample.txt 
 \copy (with x as (select * from esgf_filter limit 5) select y.* from checksums as y join x on ch_hash = file_id) to db/checksums_sample.txt 
-\copy (with x as (select * from esgf_filter limit 5) select y.* from paths as y join x on pa_hash = file_id) to db/paths_sample.txt 
 */
 \copy ua6.metadata  from 'db/metadata_sample.txt'
 \copy ua6.paths     from 'db/paths_sample.txt'
-\copy ua6.checksums from 'db/checksums_sample.txt'
 
