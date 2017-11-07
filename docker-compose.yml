@@ -1,0 +1,13 @@
+version: '3'
+services:
+    db:
+        image: postgres:9.6
+        ports: 
+            - 127.0.0.1:5432:5432
+#    pgloader:
+#        image: dimitri/pgloader:latest
+#        links:
+#            - db
+#        volumes:
+#            - .:/work
+#        command: pgloader /work/import.pgloader

@@ -1,3 +1,42 @@
+CREATE OR REPLACE VIEW metadata AS
+    SELECT
+        md_hash,
+        md_type,
+        md_json
+    FROM rr3.metadata
+    UNION
+    SELECT
+        md_hash,
+        md_type,
+        md_json
+    FROM ua6.metadata;
+
+CREATE OR REPLACE VIEW paths AS
+    SELECT
+        pa_hash,
+        pa_type,
+        pa_path,
+        pa_parents
+    FROM rr3.paths
+    UNION
+    SELECT
+        pa_hash,
+        pa_type,
+        pa_path,
+        pa_parents
+    FROM ua6.paths;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
+    SELECT
+        md_hash as ch_hash,
+        md_json->>'md5' as ch_md5,
+        md_json->>'sha256' as ch_sha256
+    FROM metadata
+    WHERE md_type = 'checksum';
+CREATE UNIQUE INDEX IF NOT EXISTS checksums_hash_idx ON checksums(ch_hash);
+CREATE INDEX IF NOT EXISTS checksums_md5_idx ON checksums(ch_md5);
+CREATE INDEX IF NOT EXISTS checksums_sha256_idx ON checksums(ch_sha256);
+
 CREATE OR REPLACE VIEW esgf_filter AS
     SELECT
         pa_hash AS file_id
