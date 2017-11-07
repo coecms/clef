@@ -24,7 +24,7 @@ CREATE OR REPLACE VIEW paths AS
         pa_type,
         pa_path,
         pa_parents
-    FROM rr3.paths;
+    FROM ua6.paths;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
     SELECT
