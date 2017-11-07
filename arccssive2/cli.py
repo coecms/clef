@@ -249,7 +249,7 @@ def local(user, debug, latest,
         # Match against the latest versions from ESGF
         esgf_q = find_checksum_id(query=None,
             latest=latest,
-            **terms,
+            **terms
             )
 
         q = q.join(esgf_q, 
