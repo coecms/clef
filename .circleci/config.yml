@@ -7,6 +7,7 @@ jobs:
               environment:
                   ARCCSSIVE_DB: postgresql://postgres:@localhost/postgres
                   PYTHON_VER: 2.7
+                  LC_ALL: C.UTF-8
             - image: circleci/postgres:9.6
               environment:
                   POSTGRES_USER: postgres
@@ -39,6 +40,7 @@ jobs:
               environment:
                   ARCCSSIVE_DB: postgresql://postgres:@localhost/postgres
                   PYTHON_VER: 3.6
+                  LC_ALL: C.UTF-8
             - image: circleci/postgres:9.6
               environment:
                   POSTGRES_USER: postgres
