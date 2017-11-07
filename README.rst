@@ -75,8 +75,6 @@ Develop
 
 Development install::
 
-    git checkout https://github.com/coecms/arccssive2
-    cd arccssive2
     conda env create -f conda/dev-environment.yml
     source activate arccssive2-dev
     pip install -e '.[dev]'
@@ -84,6 +82,11 @@ Development install::
 The `dev-environment.yml` file is for speeding up installs and installing
 packages unavailable on pypi, `requirements.txt` is the source of truth for
 dependencies.
+
+Start test DB (optional, requires Docker)::
+    docker-compose up # (In a separate terminal)
+    psql -h localhost -U postgres -f db/nci.sql
+    psql -h localhost -U postgres -f db/tables.sql
 
 Run tests::
 
@@ -97,3 +100,6 @@ Build documentation::
 Upload documentation::
 
     git subtree push --prefix docs/_build/html/ origin gh-pages
+
+New releases are packaged and uploaded to anaconda.org by CircleCI when a new
+Github release is made
