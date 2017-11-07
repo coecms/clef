@@ -31,6 +31,9 @@ def esgf():
     """
     pass
 
+def warning(message):
+    print("WARNING: %s"%message, file=sys.stderr)
+
 def constraint_args(f):
     constraints = [
         click.option('--user', help='Username for database'),
@@ -155,11 +158,17 @@ def missing(query, user, debug, distrib, replica, latest,
             terms[key] = [x[0] for x in (s.query(getattr(Dataset,key))
                 .distinct()
                 .filter(getattr(Dataset,key).ilike(any_([x for x in value]))))]
+            if len(terms[key]) == 0:
+                warning("No matches found for %s: '%s'"%(key, value))
+                raise Exception
 
     if len(variable) > 0:
         terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
             .distinct()
             .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
+        if len(terms['variable']) == 0:
+            warning("No matches found for %s: '%s'"%('variable', value))
+            raise Exception
 
     q = find_missing_id(s, ' '.join(query),
             distrib=distrib,
