@@ -4,7 +4,7 @@ CREATE OR REPLACE VIEW metadata AS
         md_type,
         md_json
     FROM rr3.metadata
-    UNION
+    UNION ALL
     SELECT
         md_hash,
         md_type,
@@ -18,7 +18,7 @@ CREATE OR REPLACE VIEW paths AS
         pa_path,
         pa_parents
     FROM rr3.paths
-    UNION
+    UNION ALL
     SELECT
         pa_hash,
         pa_type,
@@ -26,28 +26,36 @@ CREATE OR REPLACE VIEW paths AS
         pa_parents
     FROM ua6.paths;
 
+CREATE OR REPLACE VIEW esgf_filter AS
+    SELECT
+        pa_hash AS file_id
+    FROM paths
+    WHERE
+        pa_type IN ('file', 'link')
+        AND (
+            pa_parents[6] = md5('/g/data1/ua6/unofficial-ESG-replica/tmp/tree')::uuid
+            OR pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
+         );
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_paths AS
+    SELECT
+        file_id,
+        pa_path AS path
+    FROM esgf_filter
+    JOIN paths ON file_id = pa_hash;
+CREATE UNIQUE INDEX IF NOT EXISTS esgf_path_file_id_idx ON esgf_paths(file_id);
+
 CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
     SELECT
         md_hash as ch_hash,
         md_json->>'md5' as ch_md5,
         md_json->>'sha256' as ch_sha256
     FROM metadata
+    JOIN esgf_paths ON md_hash = file_id
     WHERE md_type = 'checksum';
 CREATE UNIQUE INDEX IF NOT EXISTS checksums_hash_idx ON checksums(ch_hash);
 CREATE INDEX IF NOT EXISTS checksums_md5_idx ON checksums(ch_md5);
 CREATE INDEX IF NOT EXISTS checksums_sha256_idx ON checksums(ch_sha256);
-
-CREATE OR REPLACE VIEW esgf_filter AS
-    SELECT
-        pa_hash AS file_id
-    FROM paths
-    WHERE
-        pa_type = 'file'
-        AND (
-            pa_parents[6] = md5('/g/data1/ua6/unofficial-ESG-replica/tmp/tree')::uuid
-            OR  pa_parents[4] = md5('/g/data1/ua6/authoritative')::uuid
-         );
-
 
 CREATE OR REPLACE VIEW dataset_metadata AS
     SELECT
@@ -80,8 +88,8 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
             COALESCE('r'||r||'i'||i||'p'||p,'')
         )::uuid as dataset_id
     FROM dataset_metadata
-    NATURAL JOIN esgf_filter;
-CREATE INDEX IF NOT EXISTS esgf_metadata_dataset_link_file_id ON esgf_metadata_dataset_link(file_id);
+    NATURAL JOIN esgf_paths;
+CREATE UNIQUE INDEX IF NOT EXISTS esgf_metadata_dataset_link_file_id ON esgf_metadata_dataset_link(file_id);
 CREATE INDEX IF NOT EXISTS esgf_metadata_dataset_link_dataset_id ON esgf_metadata_dataset_link(dataset_id);
 GRANT SELECT ON esgf_metadata_dataset_link TO PUBLIC;
 
@@ -152,31 +160,31 @@ GRANT INSERT (errata_id, file_id) ON file_errata_link TO PUBLIC;
  */
 CREATE OR REPLACE VIEW extended_metadata_path AS
     WITH x AS (
-        SELECT pa_hash, string_to_array(pa_path,'/') AS path_parts
-        FROM paths JOIN esgf_filter ON pa_hash = file_id),
+        SELECT file_id, string_to_array(path,'/') AS path_parts
+        FROM esgf_paths),
     y AS (
-        SELECT pa_hash, path_parts[array_length(path_parts,1)-2] AS version
+        SELECT file_id, path_parts[array_length(path_parts,1)-2] AS version
         FROM x),
     versions AS (
-        SELECT pa_hash, SUBSTRING(version, '^v?(\d+)$') AS version  FROM y WHERE version ~* '^v?\d+$'),
+        SELECT file_id, SUBSTRING(version, '^v?(\d+)$') AS version  FROM y WHERE version ~* '^v?\d+$'),
     variables AS (
-        SELECT pa_hash, split_part(path_parts[array_length(path_parts,1)],'_',1) AS variable
+        SELECT file_id, split_part(path_parts[array_length(path_parts,1)],'_',1) AS variable
         FROM x),
     b AS (
-        SELECT pa_hash, substring(pa_path,'\d+-\d+(?=\.nc$)') AS dates
-        FROM paths JOIN esgf_filter ON pa_hash = file_id),
+        SELECT file_id, substring(path,'\d+-\d+(?=\.nc$)') AS dates
+        FROM esgf_paths),
     c AS (
-        SELECT pa_hash, substr(split_part(dates,'-',1),1,6)::int AS l, substr(split_part(dates,'-',2),1,6)::int AS h
+        SELECT file_id, substr(split_part(dates,'-',1),1,6)::int AS l, substr(split_part(dates,'-',2),1,6)::int AS h
         FROM b),
     d AS (
-        SELECT pa_hash, int4range(l,h,'[]') AS period
+        SELECT file_id, int4range(l,h,'[]') AS period
         FROM c WHERE l <= h),
     access_versions AS (
-        SELECT pa_hash, split_part(path_parts[array_length(path_parts,1)-1],'_',2) as access_version
+        SELECT file_id, split_part(path_parts[array_length(path_parts,1)-1],'_',2) as access_version
         FROM x WHERE path_parts[5] = 'authoritative'
         )
 
-    SELECT pa_hash as file_id, COALESCE(access_version, version) AS version, variable, period
+    SELECT file_id, COALESCE(access_version, version) AS version, variable, period
     FROM variables
     NATURAL LEFT JOIN versions
     NATURAL LEFT JOIN access_versions
