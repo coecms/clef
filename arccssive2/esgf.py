@@ -85,7 +85,31 @@ def find_checksum_id(query, **kwargs):
     response = esgf_query(query, 'checksum,id', **kwargs)
 
     if response['response']['numFound'] == 0:
-        raise Exception('No matches found on ESGF')
+        r = requests.Request('GET','https://esgf.nci.org.au/search/esgf_nci',
+                params = {
+                'query': query,
+                'fields': kwargs.get('fields',None),
+                'offset': kwargs.get('offset',None),
+                'limit': kwargs.get('limit',None),
+                'distrib': 'on' if kwargs.get('distrib',True) else None,
+                'replica': 'on' if kwargs.get('replica',False) else None,
+                'latest': 'on' if kwargs.get('latest',None) else None,
+                'cf_standard_name': kwargs.get('cf_standard_name',None),
+                'ensemble': kwargs.get('ensemble',None),
+                'experiment': kwargs.get('experiment',None),
+                'experiment_family': kwargs.get('experiment_family',None),
+                'institute': kwargs.get('institute',None),
+                'cmor_table': kwargs.get('cmor_table',None),
+                'model': kwargs.get('model',None),
+                'project': kwargs.get('project',None),
+                'product': kwargs.get('product',None),
+                'realm': kwargs.get('realm',None),
+                'time_frequency': kwargs.get('time_frequency',None),
+                'variable': kwargs.get('variable',None),
+                'variable_long_name': kwargs.get('variable_long_name',None),
+                'source_id': kwargs.get('source_id',None),
+                })
+        raise Exception('No matches found on ESGF, check at %s'%r.prepare().url)
 
     table = values([
             column('checksum', String),
