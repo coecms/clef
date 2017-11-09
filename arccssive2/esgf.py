@@ -21,7 +21,7 @@ from sqlalchemy import String, Float, or_
 from .pgvalues import values
 from .model import Path, Checksum, metadata_dataset_link
 
-def esgf_query(query, fields, limit=100, offset=0, distrib=True, replica=False, latest=None,
+def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False, latest=None,
         cf_standard_name=None,
         ensemble=None,
         experiment=None,
@@ -110,6 +110,9 @@ def find_checksum_id(query, **kwargs):
                 'source_id': kwargs.get('source_id',None),
                 })
         raise Exception('No matches found on ESGF, check at %s'%r.prepare().url)
+
+    if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
+        raise Exception('Too many results (%d), try limiting your search'%(response['response']['numFound']))
 
     table = values([
             column('checksum', String),

@@ -283,15 +283,8 @@ def local(user, debug, latest,
             or_(Checksum.md5 == esgf_q.c.checksum, 
                 Checksum.sha256 == esgf_q.c.checksum))
 
-    # Limit the number of output lines
-    count = q.count()
-    if count > 100:
-        sub = q.limit(100).subquery()
-        q = s.query(sub).order_by(sub.c.version.desc(), sub.c.path)
-        print("WARNING: Limiting to 100 results out of %d"%count, file=sys.stderr)
-    else:
-        sub = q.subquery()
-        q = s.query(sub).order_by(sub.c.version.desc().nullslast(), sub.c.path)
+    sub = q.subquery()
+    q = s.query(sub).order_by(sub.c.version.desc().nullslast(), sub.c.path)
 
     for result in q:
         print(result.path)
