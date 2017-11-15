@@ -6,7 +6,7 @@ loaded before use (on either VDI or Raijin)::
 
     $ module use /g/data3/hh5/public/modules
     $ module load conda
-    $ source activate arccssive2-dev
+    $ source activate arccssive2-test
 
 arccssive2 is accessed through the command-line `esgf` program. There are
 presently two main commands:
