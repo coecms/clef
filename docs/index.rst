@@ -13,6 +13,7 @@ Contents:
 
    readme.rst 
    gettingstarted.rst
+   architecture.rst
    api/autoindex.rst
    api/modules.rst
 
