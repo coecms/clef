@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to arccssive2's documentation!
+arccssive2 - NCI ESGF Dataset search
 ======================================================
 
 Contents:
@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    readme.rst 
+   gettingstarted.rst
    api/autoindex.rst
    api/modules.rst
 
