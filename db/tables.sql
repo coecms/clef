@@ -69,7 +69,8 @@ CREATE OR REPLACE VIEW dataset_metadata AS
         md_json->'attributes'->>'modeling_realm' as realm,
         md_json->'attributes'->>'realization' as r,
         md_json->'attributes'->>'initialization_method' as i,
-        md_json->'attributes'->>'physics_version' as p
+        md_json->'attributes'->>'physics_version' as p,
+        substring(md_json->'attributes'->>'table_id','Table (\S+) .*') as cmor_table
     FROM metadata
     WHERE md_type = 'netcdf';
 

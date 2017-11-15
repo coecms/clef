@@ -40,16 +40,16 @@ class pg_json_property(index_property):
 
 metadata_dataset_link = Table('esgf_metadata_dataset_link', Base.metadata,
     Column('file_id', 
-        ForeignKey('paths.pa_hash'), 
+        ForeignKey('esgf_paths.file_id'), 
         ForeignKey('metadata.md_hash'),
         ForeignKey('checksums.ch_hash')),
     Column('dataset_id', ForeignKey('esgf_dataset.dataset_id')))
 
 class Path(Base):
-    __tablename__ = 'paths'
+    __tablename__ = 'esgf_paths'
 
-    id = Column('pa_hash', UUID, primary_key=True)
-    path = Column('pa_path', Text)
+    id = Column('file_id', UUID, primary_key=True)
+    path = Column('path', Text)
 
     dataset = relationship('Dataset', secondary=metadata_dataset_link, viewonly=True)
     netcdf = relationship('Netcdf', viewonly=True)
@@ -59,7 +59,7 @@ class Path(Base):
 class Metadata(Base):
     __tablename__ = 'metadata'
 
-    id = Column('md_hash', UUID, ForeignKey('paths.pa_hash'), primary_key=True)
+    id = Column('md_hash', UUID, ForeignKey('esgf_paths.file_id'), primary_key=True)
     type = Column('md_type', Text, primary_key=True)
     json = Column('md_json', JSONB)
 
@@ -72,7 +72,7 @@ class Metadata(Base):
 class Checksum(Base):
     __tablename__ = 'checksums'
 
-    id = Column('ch_hash', UUID, ForeignKey('paths.pa_hash'), ForeignKey('metadata.md_hash'), primary_key=True)
+    id = Column('ch_hash', UUID, ForeignKey('esgf_paths.file_id'), ForeignKey('metadata.md_hash'), primary_key=True)
     md5 = Column('ch_md5', String)
     sha256 = Column('ch_sha256', String)
 
@@ -102,7 +102,7 @@ class ExtendedMetadata(Base):
     file_id = Column(UUID,
             ForeignKey('metadata.md_hash'),
             ForeignKey('checksums.ch_hash'),
-            ForeignKey('paths.pa_hash'),
+            ForeignKey('esgf_paths.file_id'),
             primary_key=True)
     version = Column(Text)
     variable = Column(Text)
