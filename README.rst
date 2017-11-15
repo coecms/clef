@@ -6,16 +6,16 @@ arccssive2
 
 .. image:: https://readthedocs.org/projects/arccssive2/badge/?version=latest
   :target: https://readthedocs.org/projects/arccssive2/?badge=latest
-.. image:: https://travis-ci.org/coecms/arccssive2.svg?branch=master
-  :target: https://travis-ci.org/coecms/arccssive2
-.. image:: https://circleci.com/gh/coecms/arccssive2.svg?style=shield
-  :target: https://circleci.com/gh/coecms/arccssive2
-.. image:: http://codecov.io/github/coecms/arccssive2/coverage.svg?branch=master
-  :target: http://codecov.io/github/coecms/arccssive2?branch=master
-.. image:: https://landscape.io/github/coecms/arccssive2/master/landscape.svg?style=flat
-  :target: https://landscape.io/github/coecms/arccssive2/master
-.. image:: https://codeclimate.com/github/coecms/arccssive2/badges/gpa.svg
-  :target: https://codeclimate.com/github/coecms/arccssive2
+.. image:: https://travis-ci.org/ScottWales/arccssive2.svg?branch=master
+  :target: https://travis-ci.org/ScottWales/arccssive2
+.. image:: https://circleci.com/gh/ScottWales/arccssive2.svg?style=shield
+  :target: https://circleci.com/gh/ScottWales/arccssive2
+.. image:: http://codecov.io/github/ScottWales/arccssive2/coverage.svg?branch=master
+  :target: http://codecov.io/github/ScottWales/arccssive2?branch=master
+.. image:: https://landscape.io/github/ScottWales/arccssive2/master/landscape.svg?style=flat
+  :target: https://landscape.io/github/ScottWales/arccssive2/master
+.. image:: https://codeclimate.com/github/ScottWales/arccssive2/badges/gpa.svg
+  :target: https://codeclimate.com/github/ScottWales/arccssive2
 .. image:: https://badge.fury.io/py/arccssive2.svg
   :target: https://pypi.python.org/pypi/arccssive2
 
