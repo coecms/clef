@@ -2,6 +2,7 @@ name: arccssive2-dev
 
 channels:
     - conda-forge
+    - ScottWales
     - defaults
 
 dependencies:
@@ -12,6 +13,8 @@ dependencies:
     - requests
     - click
     - pytest
+    - keyring
+    - secretstorage
 
     - pip:
         - docker-compose

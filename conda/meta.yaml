@@ -28,6 +28,7 @@ requirements:
         - psycopg2
         - requests
         - click
+        - keyring
 
 test:
     source_files:

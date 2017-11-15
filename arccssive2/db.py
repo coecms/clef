@@ -15,6 +15,8 @@
 # limitations under the License.
 from __future__ import print_function
 
+import keyring
+
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
@@ -31,12 +33,17 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
     """
     _url = make_url(url)
 
+    manual_password = False
+
     if user is not None:
         """
         Manually specified user
         """
         _url.username = user
-        _url.password = getpass("Password for user %s: "%user)
+        try:
+            _url.password = keyring.get_password('arccssive2', user)
+        except:
+            _url.password = getpass("Password for user %s: "%user)
 
     engine = create_engine(_url, echo=debug)
     Session.configure(bind=engine)
