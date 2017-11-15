@@ -69,15 +69,15 @@ false positives::
 
 See ``esgf missing --help`` for all available filters
 
----
+--------------------
 Saving your password
----
+--------------------
 
 To save/update your password, run::
 
     keyring set arccssive2 $USER
 
-This will save your NCI password into the system keyring
+This will save your NCI password into the system keyring (requires gnome-keyring, so only on VDI)
 
 -------
 Develop
