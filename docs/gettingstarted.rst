@@ -18,7 +18,8 @@ presently two main commands:
 The search works like the ESGF search website, e.g. https://esgf.nci.org.au/search/esgf_nci.
 Results can be filtered by using flags::
 
-    $ esgf local --project CMIP5 \
+    $ esgf local --user $USER \
+               --project CMIP5 \
                --model ACCESS1.0 \
                --experiment historical \
                --time_frequency mon \
@@ -29,18 +30,20 @@ If the same flag is used multiple times both terms will be searched for. You
 can also use :code:`%` as a wildcard, e.g. :code:`--model ACCESS%` to return
 ACCESS1.0 and ACCESS1.3 data.
 
-In order to connect to the NCI MAS database you will need to provide your NCI
+In order to authenticate to the NCI MAS database you will need to provide your NCI
 username, using the :code:`--user` flag::
 
-    $ esgf local --user saw562 \
+    $ esgf local --user $USER \
                # ...
+
+You will be prompted for your NCI password when the script runs
 
 When querying the ESGF website, the total amount of results is limited to
 1,000. If `arccssive2` finds more results it will ask you to refine your query.
 You can follow the link to see the query `arccssive2` used on the ESGF
 website::
 
-    $ esgf missing --user saw562 --project CMIP5
+    $ esgf missing --user $USER --project CMIP5
     Exception: Too many results (1030069), try limiting your search
     https://esgf.nci.org.au/search/esgf_nci?query=&distrib=on&latest=on&project=CMIP5
 
@@ -53,7 +56,7 @@ esgf missing
 :code:`esgf missing` searches ESGF for files that haven't been downloaded to
 NCI. It returns ESGF file IDs for each missing file::
 
-    $ esgf missing --user saw562 --project CMIP5 \
+    $ esgf missing --user $USER --project CMIP5 \
                    --model HadCM3 --experiment historical \
                    --time_frequency day --ensemble r1i1p1 \
                    --variable ta
@@ -72,7 +75,7 @@ esgf local
 :code:`esgf local` searches the local file system for files that have been
 downloaded to NCI. It returns the path to the file on NCI's /g/data disk::
 
-     $ esgf local --user saw562 --project CMIP5 \
+     $ esgf local --user $USER --project CMIP5 \
                   --model ACCESS1.0 --experiment historical \
                   --time_frequency day --ensemble r1i1p1 \
                   --variable ta --all-versions
