@@ -77,6 +77,34 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
 
     return r.json()
 
+def link_to_esgf(query, **kwargs):
+    r = requests.Request('GET','https://esgf.nci.org.au/search/esgf_nci',
+            params = {
+            'query': query,
+            'fields': kwargs.get('fields',None),
+            'offset': kwargs.get('offset',None),
+            'limit': kwargs.get('limit',None),
+            'distrib': 'on' if kwargs.get('distrib',True) else None,
+            'replica': 'on' if kwargs.get('replica',False) else None,
+            'latest': 'on' if kwargs.get('latest',None) else None,
+            'cf_standard_name': kwargs.get('cf_standard_name',None),
+            'ensemble': kwargs.get('ensemble',None),
+            'experiment': kwargs.get('experiment',None),
+            'experiment_family': kwargs.get('experiment_family',None),
+            'institute': kwargs.get('institute',None),
+            'cmor_table': kwargs.get('cmor_table',None),
+            'model': kwargs.get('model',None),
+            'project': kwargs.get('project',None),
+            'product': kwargs.get('product',None),
+            'realm': kwargs.get('realm',None),
+            'time_frequency': kwargs.get('time_frequency',None),
+            'variable': kwargs.get('variable',None),
+            'variable_long_name': kwargs.get('variable_long_name',None),
+            'source_id': kwargs.get('source_id',None),
+            })
+    return r.prepare().url
+
+
 def find_checksum_id(query, **kwargs):
     """
     Returns a sqlalchemy selectable containing the ESGF id and checksum for
@@ -85,34 +113,10 @@ def find_checksum_id(query, **kwargs):
     response = esgf_query(query, 'checksum,id', **kwargs)
 
     if response['response']['numFound'] == 0:
-        r = requests.Request('GET','https://esgf.nci.org.au/search/esgf_nci',
-                params = {
-                'query': query,
-                'fields': kwargs.get('fields',None),
-                'offset': kwargs.get('offset',None),
-                'limit': kwargs.get('limit',None),
-                'distrib': 'on' if kwargs.get('distrib',True) else None,
-                'replica': 'on' if kwargs.get('replica',False) else None,
-                'latest': 'on' if kwargs.get('latest',None) else None,
-                'cf_standard_name': kwargs.get('cf_standard_name',None),
-                'ensemble': kwargs.get('ensemble',None),
-                'experiment': kwargs.get('experiment',None),
-                'experiment_family': kwargs.get('experiment_family',None),
-                'institute': kwargs.get('institute',None),
-                'cmor_table': kwargs.get('cmor_table',None),
-                'model': kwargs.get('model',None),
-                'project': kwargs.get('project',None),
-                'product': kwargs.get('product',None),
-                'realm': kwargs.get('realm',None),
-                'time_frequency': kwargs.get('time_frequency',None),
-                'variable': kwargs.get('variable',None),
-                'variable_long_name': kwargs.get('variable_long_name',None),
-                'source_id': kwargs.get('source_id',None),
-                })
-        raise Exception('No matches found on ESGF, check at %s'%r.prepare().url)
+        raise Exception('No matches found on ESGF, check at %s'%link_to_esgf(query, **kwargs))
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        raise Exception('Too many results (%d), try limiting your search'%(response['response']['numFound']))
+        raise Exception('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **kwargs)))
 
     table = values([
             column('checksum', String),
