@@ -57,7 +57,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS checksums_hash_idx ON checksums(ch_hash);
 CREATE INDEX IF NOT EXISTS checksums_md5_idx ON checksums(ch_md5);
 CREATE INDEX IF NOT EXISTS checksums_sha256_idx ON checksums(ch_sha256);
 
-CREATE OR REPLACE VIEW dataset_metadata AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS dataset_metadata AS
     SELECT
         md_hash AS file_id,
         md_json->'attributes'->>'project_id' as project,
@@ -72,8 +72,9 @@ CREATE OR REPLACE VIEW dataset_metadata AS
         md_json->'attributes'->>'physics_version' as p,
         substring(md_json->'attributes'->>'table_id','Table (\S+) .*') as cmor_table
     FROM metadata
+    JOIN esgf_paths ON md_hash = file_id
     WHERE md_type = 'netcdf';
-
+CREATE UNIQUE INDEX IF NOT EXISTS dataset_metadata_file_id ON dataset_metadata(file_id);
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
     SELECT
@@ -86,6 +87,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
             experiment ||'.'||
             frequency ||'.'||
             COALESCE(realm,'') ||'.'||
+            COALESCE(cmor_table,'') ||'.'||
             COALESCE('r'||r||'i'||i||'p'||p,'')
         )::uuid as dataset_id
     FROM dataset_metadata
@@ -109,6 +111,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_dataset AS
         experiment,
         frequency,
         realm,
+        cmor_table,
         r,
         i,
         p,
