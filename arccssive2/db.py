@@ -40,6 +40,7 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
         Manually specified user
         """
         _url.username = user
+        _url.password = ''
         try:
             _url.password = keyring.get_password('arccssive2', user)
         except:
