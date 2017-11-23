@@ -147,6 +147,7 @@ def missing(query, user, debug, distrib, replica, latest,
         'project': project,
         'realm': realm,
         'time_frequency': time_frequency,
+        'cmor_table': cmor_table,
         }
     terms = {}
 
@@ -176,7 +177,6 @@ def missing(query, user, debug, distrib, replica, latest,
             latest=latest,
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
-            cmor_table=cmor_table,
             product=product,
             variable_long_name=variable_long_name,
             source_id=source_id,
@@ -196,6 +196,7 @@ def missing(query, user, debug, distrib, replica, latest,
 @click.option('--model', '-m', multiple=True, help='Add constraint')
 @click.option('--project', multiple=True, help='Add constraint')
 @click.option('--realm', multiple=True, help='Add constraint')
+@click.option('--cmor_table', '--mip', '-t', 'cmor_table', multiple=True, help="Constraint")
 @click.option('--time_frequency', multiple=True, help='Add constraint')
 @click.option('--variable', '-v', multiple=True, help='Add constraint')
 @click.option('--version', '-ve', multiple=True, help='Add constraint', type=int)
@@ -206,6 +207,7 @@ def local(user, debug, latest,
         model,
         project,
         realm,
+        cmor_table,
         time_frequency,
         variable,
         version,
@@ -238,6 +240,7 @@ def local(user, debug, latest,
         'project': project,
         'realm': realm,
         'time_frequency': time_frequency,
+        'cmor_table': cmor_table,
         }
     terms = {}
     filters = []

@@ -125,3 +125,4 @@ class Dataset(Base):
     i = Column(Integer)
     p = Column(Integer)
     ensemble = Column(Text)
+    cmor_table = Column(Text)

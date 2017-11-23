@@ -15,13 +15,18 @@
 # limitations under the License.
 from __future__ import print_function
 
-import keyring
+#try:
+#    import keyring
+#except ImportError:
+class Keyring():
+    def get_password(*args):
+        raise NotImplementedError
+keyring = Keyring()
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
 from getpass import getpass
-
 from .model import Base
 
 engine = None
