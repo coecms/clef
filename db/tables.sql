@@ -118,7 +118,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_dataset AS
         'r'||r||'i'||i||'p'||p AS ensemble
     FROM dataset_metadata
     NATURAL JOIN esgf_metadata_dataset_link;
-CREATE INDEX IF NOT EXISTS esgf_dataset_dataset_id ON esgf_dataset(dataset_id);
+CREATE UNIQUE INDEX IF NOT EXISTS esgf_dataset_dataset_id ON esgf_dataset(dataset_id);
 GRANT SELECT ON esgf_dataset TO PUBLIC;
     
 /* Extra metadata not stored in the file itself. This table stores manually
@@ -203,3 +203,4 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS extended_metadata AS
     FROM extended_metadata_path AS p
     NATURAL LEFT JOIN extended_metadata_manual AS m;
 GRANT SELECT ON extended_metadata TO PUBLIC;
+CREATE UNIQUE INDEX IF NOT EXISTS extended_metadata_file_id ON extended_metadata(file_id);
