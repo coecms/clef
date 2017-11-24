@@ -17,7 +17,11 @@ from __future__ import print_function
 
 from arccssive2.esgf import *
 
-import unittest.mock as mock
+try:
+    import unittest.mock as mock
+except ImportError:
+    import mock
+
 import pytest
 
 def empty_query(*args, **kwags):

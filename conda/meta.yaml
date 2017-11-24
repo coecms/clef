@@ -37,6 +37,7 @@ test:
         - test
     requires:
         - pytest
+        - mock # [py27]
     commands:
         - py.test
     imports:
