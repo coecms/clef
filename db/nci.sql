@@ -27,8 +27,8 @@ CREATE TABLE rr3.paths (
 CREATE VIEW rr3.checksums AS
     SELECT
         md_hash as ch_hash,
-        md_json->'attributes'->>'md5' as ch_md5,
-        md_json->'attributes'->>'sha256' as ch_sha256
+        md_json->>'md5' as ch_md5,
+        md_json->>'sha256' as ch_sha256
     FROM rr3.metadata
     WHERE md_type = 'checksum';
 
@@ -53,8 +53,8 @@ CREATE TABLE ua6.paths (
 CREATE VIEW ua6.checksums AS
     SELECT
         md_hash as ch_hash,
-        md_json->'attributes'->>'md5' as ch_md5,
-        md_json->'attributes'->>'sha256' as ch_sha256
+        md_json->>'md5' as ch_md5,
+        md_json->>'sha256' as ch_sha256
     FROM ua6.metadata
     WHERE md_type = 'checksum';
 

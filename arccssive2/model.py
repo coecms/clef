@@ -43,7 +43,8 @@ metadata_dataset_link = Table('esgf_metadata_dataset_link', Base.metadata,
         ForeignKey('esgf_paths.file_id'), 
         ForeignKey('metadata.md_hash'),
         ForeignKey('checksums.ch_hash')),
-    Column('dataset_id', ForeignKey('esgf_dataset.dataset_id')))
+    Column('dataset_id', ForeignKey('esgf_dataset.dataset_id')),
+    Column('tracking_id'))
 
 class Path(Base):
     __tablename__ = 'esgf_paths'
