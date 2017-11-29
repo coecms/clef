@@ -46,6 +46,8 @@ def missing_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['1234'],
+                    'tracking_id': ['abcd'],
+                    'version': '1',
                     'score': 1.0,
                     }],
                 }
@@ -63,6 +65,27 @@ def present_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
+                    'tracking_id': ['fd1c7ee4-e150-4270-b248-77e7a26e23bb'],
+                    'version': '1',
+                    'score': 1.0,
+                    }],
+                }
+            }
+    return response
+
+def updated_query(*args, **kwags):
+    """
+    A query returning something that is in the DB, but has a new version
+    """
+    response =  {
+            'responseHeader': {'params': {'rows': 1}},
+            'response': {
+                'numFound': 1,
+                'docs': [{
+                    'id': 'abcde',
+                    'checksum': ['1234'],
+                    'tracking_id': ['fd1c7ee4-e150-4270-b248-77e7a26e23bb'],
+                    'version': '2',
                     'score': 1.0,
                     }],
                 }
@@ -117,5 +140,21 @@ def test_find_missing_id_present(session):
     One local result found, return nothing
     """
     with mock.patch('arccssive2.esgf.esgf_query', side_effect=present_query):
+        results = find_missing_id(session, '')
+        assert results.count() == 0
+
+def test_find_local_path_updated(session):
+    """
+    One local result found, but it has been updated. return the local file
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_local_path(session, '')
+        assert results.count() == 1
+
+def test_find_missing_id_updated(session):
+    """
+    One local result found, but it has been updaded. return nothing
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
         results = find_missing_id(session, '')
         assert results.count() == 0
