@@ -26,6 +26,19 @@ CREATE OR REPLACE VIEW paths AS
         pa_parents
     FROM ua6.paths;
 
+CREATE OR REPLACE VIEW checksums AS
+    SELECT
+        ch_hash,
+        ch_md5,
+        ch_sha256
+    FROM rr3.checksums
+    UNION ALL
+    SELECT
+        ch_hash,
+        ch_md5,
+        ch_sha256
+    FROM ua6.checksums;
+
 CREATE OR REPLACE VIEW esgf_filter AS
     SELECT
         pa_hash AS file_id
@@ -45,6 +58,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_paths AS
     JOIN paths ON file_id = pa_hash;
 CREATE UNIQUE INDEX IF NOT EXISTS esgf_path_file_id_idx ON esgf_paths(file_id);
 
+/*
 CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
     SELECT
         md_hash as ch_hash,
@@ -56,6 +70,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
 CREATE UNIQUE INDEX IF NOT EXISTS checksums_hash_idx ON checksums(ch_hash);
 CREATE INDEX IF NOT EXISTS checksums_md5_idx ON checksums(ch_md5);
 CREATE INDEX IF NOT EXISTS checksums_sha256_idx ON checksums(ch_sha256);
+*/
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS dataset_metadata AS
     SELECT
