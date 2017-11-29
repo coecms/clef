@@ -17,7 +17,7 @@ from __future__ import print_function
 import requests
 from sqlalchemy.sql import column, label
 from sqlalchemy.orm import aliased
-from sqlalchemy import String, Float, or_
+from sqlalchemy import String, Float, Integer, or_
 from .pgvalues import values
 from .model import Path, Checksum, metadata_dataset_link
 
@@ -110,7 +110,7 @@ def find_checksum_id(query, **kwargs):
     Returns a sqlalchemy selectable containing the ESGF id and checksum for
     each query match
     """
-    response = esgf_query(query, 'checksum,id', **kwargs)
+    response = esgf_query(query, 'checksum,id,tracking_id,version', **kwargs)
 
     if response['response']['numFound'] == 0:
         raise Exception('No matches found on ESGF, check at %s'%link_to_esgf(query, **kwargs))
@@ -121,9 +121,16 @@ def find_checksum_id(query, **kwargs):
     table = values([
             column('checksum', String),
             column('id', String),
+            column('tracking_id', String),
+            column('version', Integer),
             column('score', Float),
         ],
-        *[(doc['checksum'][0], doc['id'], doc['score']) 
+        *[(
+            doc['checksum'][0],
+            doc['id'],
+            doc['tracking_id'][0],
+            doc['version'],
+            doc['score'])
             for doc in response['response']['docs']],
         alias_name = 'esgf'
         )
