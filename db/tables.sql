@@ -85,7 +85,8 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS dataset_metadata AS
         md_json->'attributes'->>'realization' as r,
         md_json->'attributes'->>'initialization_method' as i,
         md_json->'attributes'->>'physics_version' as p,
-        substring(md_json->'attributes'->>'table_id','Table (\S+) .*') as cmor_table
+        substring(md_json->'attributes'->>'table_id','Table (\S+) .*') as cmor_table,
+        md_json->'attributes'->>'tracking_id' as tracking_id
     FROM metadata
     JOIN esgf_paths ON md_hash = file_id
     WHERE md_type = 'netcdf';
@@ -104,7 +105,8 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
             COALESCE(realm,'') ||'.'||
             COALESCE(cmor_table,'') ||'.'||
             COALESCE('r'||r||'i'||i||'p'||p,'')
-        )::uuid as dataset_id
+        )::uuid as dataset_id,
+        tracking_id
     FROM dataset_metadata
     NATURAL JOIN esgf_paths;
 CREATE UNIQUE INDEX IF NOT EXISTS esgf_metadata_dataset_link_file_id ON esgf_metadata_dataset_link(file_id);
