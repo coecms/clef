@@ -46,6 +46,8 @@ def missing_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['1234'],
+                    'title': 'foo',
+                    'version': '1',
                     'score': 1.0,
                     }],
                 }
