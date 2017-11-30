@@ -29,6 +29,7 @@ requirements:
         - requests
         - click
         - keyring
+        - git
 
 test:
     source_files:
