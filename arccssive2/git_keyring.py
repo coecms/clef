@@ -35,8 +35,8 @@ class GitCredentialCacheKeyring(keyring.backend.KeyringBackend):
             if key == 'password':
                 return value
 
-    def delete_password(self, servicename, username, password):
-        self._call_keyring('erase', servicename, username, password)
+    def delete_password(self, servicename, username):
+        self._call_keyring('erase', servicename, username)
 
     def _call_keyring(self, action, host, username, password=None, protocol='python_keyring'):
         message = ("protocol=%s\nhost=%s\nusername=%s\npassword=%s\n"%(

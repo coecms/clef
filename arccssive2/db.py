@@ -19,6 +19,7 @@ import keyring
 from .git_keyring import GitCredentialCacheKeyring
 keyring.set_keyring(GitCredentialCacheKeyring())
 
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
@@ -45,8 +46,17 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
         _url.password = keyring.get_password('arccssive2', user)
         if _url.password is None:
             _url.password = getpass("Password for user %s: "%user)
+            keyring.set_password('arccssive2', user, _url.password)
 
     engine = create_engine(_url, echo=debug)
     Session.configure(bind=engine)
+
+    try:
+        c = engine.connect()
+        c.close()
+    except sqlalchemy.exc.OperationalError:
+        # Faled to connect, drop credentials
+        keyring.delete_password('arccssive2', user)
+        raise Exception('Failed to authenticate with NCI MAS database')
 
     return engine
