@@ -144,11 +144,8 @@ def find_local_path(session, query, **kwargs):
     values = find_checksum_id(query, **kwargs)
     
     return (session.query(Path)
-            .join(Checksum)
-            .join(metadata_dataset_link)
             .join(values, 
-                or_(Checksum.md5 == values.c.checksum, 
-                    Checksum.sha256 == values.c.checksum))
+                Path.path.like('%/'+values.c.title))
             .order_by(values.c.score))
 
 def find_missing_id(session, query, **kwargs):
@@ -158,14 +155,11 @@ def find_missing_id(session, query, **kwargs):
     """
     values = find_checksum_id(query, **kwargs)
 
-    subq = session.query(Checksum).join(metadata_dataset_link).subquery()
-    filtered_sum = aliased(Checksum, subq)
-    
     return (session.query('id')
-            .select_from(
-                values.outerjoin(filtered_sum, 
-                    or_(filtered_sum.md5 == values.c.checksum, 
-                        filtered_sum.sha256 == values.c.checksum)))
-            .filter(filtered_sum.id == None)
-            .order_by(values.c.score))
-
+            .select_from(values
+                .outerjoin(Path, 
+                    Path.path.like('%/'+values.c.title))
+                )
+            .filter(Path.id == None)
+            .order_by(values.c.score)
+            )
