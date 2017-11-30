@@ -15,13 +15,9 @@
 # limitations under the License.
 from __future__ import print_function
 
-#try:
-#    import keyring
-#except ImportError:
-class Keyring():
-    def get_password(*args):
-        raise NotImplementedError
-keyring = Keyring()
+import keyring
+from .git_keyring import GitCredentialCacheKeyring
+keyring.set_keyring(GitCredentialCacheKeyring())
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
@@ -46,9 +42,8 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
         """
         _url.username = user
         _url.password = ''
-        try:
-            _url.password = keyring.get_password('arccssive2', user)
-        except:
+        _url.password = keyring.get_password('arccssive2', user)
+        if _url.password is None:
             _url.password = getpass("Password for user %s: "%user)
 
     engine = create_engine(_url, echo=debug)
