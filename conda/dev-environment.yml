@@ -14,7 +14,7 @@ dependencies:
     - click
     - pytest
     - keyring
-    - secretstorage
+    - git
 
     - pip:
         - docker-compose
