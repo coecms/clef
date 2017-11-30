@@ -65,7 +65,7 @@ def present_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
-                    'tracking_id': ['fd1c7ee4-e150-4270-b248-77e7a26e23bb'],
+                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
                     'version': '1',
                     'score': 1.0,
                     }],
@@ -84,7 +84,7 @@ def updated_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['1234'],
-                    'tracking_id': ['fd1c7ee4-e150-4270-b248-77e7a26e23bb'],
+                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
                     'version': '2',
                     'score': 1.0,
                     }],

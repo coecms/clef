@@ -140,6 +140,13 @@ def find_checksum_id(query, **kwargs):
 def find_local_path(session, query, **kwargs):
     """
     Returns the `model.Path` for each local file found in the ESGF query
+    
+    If the file exists but at a different version return that as well
+
+    SELECT DISTINCT ON (tracking_id) path FROM paths
+    NATURAL JOIN metadata_dataset_link
+    JOIN query ON (tracking_id)
+    ORDER BY tracking_id, version DESC, path
     """
     values = find_checksum_id(query, **kwargs)
     
