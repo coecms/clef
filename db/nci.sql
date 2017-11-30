@@ -24,6 +24,14 @@ CREATE TABLE rr3.paths (
     pa_parents UUID[]
 );
 
+CREATE VIEW rr3.checksums AS
+    SELECT
+        md_hash as ch_hash,
+        md_json->>'md5' as ch_md5,
+        md_json->>'sha256' as ch_sha256
+    FROM rr3.metadata
+    WHERE md_type = 'checksum';
+
 CREATE SCHEMA ua6;
 
 CREATE TABLE ua6.metadata (
@@ -42,6 +50,13 @@ CREATE TABLE ua6.paths (
     pa_parents UUID[]
 );
 
+CREATE VIEW ua6.checksums AS
+    SELECT
+        md_hash as ch_hash,
+        md_json->>'md5' as ch_md5,
+        md_json->>'sha256' as ch_sha256
+    FROM ua6.metadata
+    WHERE md_type = 'checksum';
 
 -- Read sample data
 /*
