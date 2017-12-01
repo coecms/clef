@@ -122,7 +122,7 @@ def find_checksum_id(query, **kwargs):
             column('checksum', String),
             column('id', String),
             column('title', String),
-            column('verision', Integer),
+            column('version', Integer),
             column('score', Float),
         ],
         *[(
@@ -132,34 +132,45 @@ def find_checksum_id(query, **kwargs):
             doc['version'],
             doc['score']) 
             for doc in response['response']['docs']],
-        alias_name = 'esgf'
+        alias_name = 'esgf_query'
         )
 
     return table
 
-def find_local_path(session, query, **kwargs):
+def match_query(session, query, latest=None, **kwargs):
+    values = find_checksum_id(query, latest=latest, **kwargs)
+
+    if latest is True:
+        # Exact match on checksum
+        return (values
+                .outerjoin(Checksum,
+                    or_(Checksum.md5 == values.c.checksum,
+                        Checksum.sha256 == values.c.checksum))
+                .outerjoin(Path))
+    else:
+        # Match on file name
+        return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
+
+def find_local_path(session, query, latest=None, **kwargs):
     """
     Returns the `model.Path` for each local file found in the ESGF query
     """
-    values = find_checksum_id(query, **kwargs)
-    
-    return (session.query(Path)
-            .join(values, 
-                Path.path.like('%/'+values.c.title))
-            .order_by(values.c.score))
 
-def find_missing_id(session, query, **kwargs):
+    subq = match_query(session, query, latest, **kwargs)
+    return (session
+            .query('esgf_paths.path')
+            .select_from(subq)
+            .filter(subq.c.esgf_paths_file_id != None))
+
+def find_missing_id(session, query, latest=None, **kwargs):
     """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
     """
-    values = find_checksum_id(query, **kwargs)
 
-    return (session.query('id')
-            .select_from(values
-                .outerjoin(Path, 
-                    Path.path.like('%/'+values.c.title))
-                )
-            .filter(Path.id == None)
-            .order_by(values.c.score)
-            )
+    subq = match_query(session, query, latest, **kwargs)
+    return (session
+            .query('esgf_query.id')
+            .select_from(subq)
+            .filter(subq.c.esgf_paths_file_id == None))
+

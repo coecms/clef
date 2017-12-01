@@ -67,6 +67,7 @@ def present_query(*args, **kwags):
                     'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
                     'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
                     'version': '1',
+                    'latest': 'true',
                     'score': 1.0,
                     }],
                 }
@@ -86,6 +87,7 @@ def updated_query(*args, **kwags):
                     'checksum': ['1234'],
                     'version': '2',
                     'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'latest': 'true',
                     'score': 1.0,
                     }],
                 }
@@ -158,3 +160,21 @@ def test_find_local_path_updated(session):
     with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
         results = find_local_path(session, '')
         assert results.count() == 1
+
+def test_find_missing_id_updated_latest(session):
+    """
+    File has been updated, but is still present
+    latest=true should prefer ESGF replies when they have the latest flag
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_missing_id(session, '', latest=True)
+        assert results.count() == 1
+
+def test_find_local_path_updated_latest(session):
+    """
+    File has been updated, but is still present
+    latest=true should prefer ESGF replies when they have the latest flag
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_local_path(session, '', latest=True)
+        assert results.count() == 0
