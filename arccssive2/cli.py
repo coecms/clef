@@ -266,28 +266,17 @@ def local(user, debug, latest,
     if len(version) > 0:
         filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
 
-    # Main query
-    q = (s.query(Path.path.label('path'), ExtendedMetadata.version)
-            .join(Path.dataset)
-            .join(Path.extended)
-            .join(Path.checksum)
-            .distinct(Checksum.sha256)
-            .order_by(Checksum.sha256, ExtendedMetadata.version)
-            .filter(*filters))
-
-    if latest:
-        # Match against the latest versions from ESGF
-        esgf_q = find_checksum_id(query=None,
-            latest=latest,
+    q = find_local_path(s, query=None,
+            distrib=True,
+            #replica=replica,
+            latest=None,
+            #cf_standard_name=cf_standard_name,
+            #experiment_family=experiment_family,
+            #product=product,
+            #variable_long_name=variable_long_name,
+            #source_id=source_id,
             **terms
             )
 
-        q = q.join(esgf_q, 
-            or_(Checksum.md5 == esgf_q.c.checksum, 
-                Checksum.sha256 == esgf_q.c.checksum))
-
-    sub = q.subquery()
-    q = s.query(sub).order_by(sub.c.version.desc().nullslast(), sub.c.path)
-
     for result in q:
-        print(result.path)
+        print(result[0])
