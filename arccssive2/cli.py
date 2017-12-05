@@ -174,7 +174,7 @@ def missing(query, user, debug, distrib, replica, latest,
     q = find_missing_id(s, ' '.join(query),
             distrib=distrib,
             replica=replica,
-            latest=latest,
+            latest=None,
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
             product=product,
@@ -184,7 +184,7 @@ def missing(query, user, debug, distrib, replica, latest,
             )
     
     for result in q:
-        print(result.id)
+        print(result[0])
 
 @esgf.command()
 @click.option('--user', help='Username for database')
