@@ -38,7 +38,7 @@ def warning(message):
 def common_args(f):
     constraints = [
         click.argument('query', nargs=-1),
-        click.option('--user', default=os.environ['USER'], help='Username for database'),
+        click.option('--user', default=os.environ.get('USER',None), help='Username for database'),
         click.option('--debug/--no-debug', default=False, help="Show/hide debug log"),
         click.option('--distrib/--no-distrib', default=True, help="Distributed search"),
         click.option('--replica/--no-replica', default=False, help="Search replicas"),
