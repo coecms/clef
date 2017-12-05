@@ -46,6 +46,8 @@ def missing_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['1234'],
+                    'title': 'foo',
+                    'version': '1',
                     'score': 1.0,
                     }],
                 }
@@ -63,6 +65,29 @@ def present_query(*args, **kwags):
                 'docs': [{
                     'id': 'abcde',
                     'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
+                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'version': '1',
+                    'latest': 'true',
+                    'score': 1.0,
+                    }],
+                }
+            }
+    return response
+
+def updated_query(*args, **kwags):
+    """
+    A query returning something that is in the DB, but has been updated on ESGF
+    """
+    response =  {
+            'responseHeader': {'params': {'rows': 1}},
+            'response': {
+                'numFound': 1,
+                'docs': [{
+                    'id': 'abcde',
+                    'checksum': ['1234'],
+                    'version': '2',
+                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'latest': 'true',
                     'score': 1.0,
                     }],
                 }
@@ -118,4 +143,38 @@ def test_find_missing_id_present(session):
     """
     with mock.patch('arccssive2.esgf.esgf_query', side_effect=present_query):
         results = find_missing_id(session, '')
+        assert results.count() == 0
+
+def test_find_missing_id_updated(session):
+    """
+    File has been updated, but is still present
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_missing_id(session, '')
+        assert results.count() == 0
+
+def test_find_local_path_updated(session):
+    """
+    File has been updated, but is still present
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_local_path(session, '')
+        assert results.count() == 1
+
+def test_find_missing_id_updated_latest(session):
+    """
+    File has been updated, but is still present
+    latest=true should prefer ESGF replies when they have the latest flag
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_missing_id(session, '', latest=True)
+        assert results.count() == 1
+
+def test_find_local_path_updated_latest(session):
+    """
+    File has been updated, but is still present
+    latest=true should prefer ESGF replies when they have the latest flag
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+        results = find_local_path(session, '', latest=True)
         assert results.count() == 0

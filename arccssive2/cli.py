@@ -34,14 +34,15 @@ def esgf():
 def warning(message):
     print("WARNING: %s"%message, file=sys.stderr)
 
-def constraint_args(f):
+def common_args(f):
     constraints = [
+        click.argument('query', nargs=-1),
         click.option('--user', help='Username for database'),
         click.option('--debug/--no-debug', default=False, help="Show/hide debug log"),
         click.option('--distrib/--no-distrib', default=True, help="Distributed search"),
         click.option('--replica/--no-replica', default=False, help="Search replicas"),
-        click.option('--latest', 'latest', flag_value='true', default=True, help="Latest version only"),
-        click.option('--all-versions', '-a', 'latest', flag_value='all', is_flag=True, help="All versions"),
+        click.option('--latest', 'latest', flag_value='true',  help="Latest version only"),
+        click.option('--all-versions', '-a', 'latest', flag_value='all', default=True, help="All versions"),
         click.option('--cf_standard_name',multiple=True, help="Constraint"),
         click.option('--ensemble', '-en', multiple=True, help="Constraint"),
         click.option('--experiment', '-e', multiple=True, help="Constraint"),
@@ -62,8 +63,7 @@ def constraint_args(f):
     return f
 
 @esgf.command()
-@click.argument('query', nargs=-1)
-@constraint_args
+@common_args
 def search(query, user, debug, distrib, replica, latest,
         cf_standard_name,
         ensemble,
@@ -111,8 +111,7 @@ def search(query, user, debug, distrib, replica, latest,
         print(result.id)
 
 @esgf.command()
-@click.argument('query', nargs=-1)
-@constraint_args
+@common_args
 def missing(query, user, debug, distrib, replica, latest,
         cf_standard_name,
         ensemble,
@@ -174,7 +173,7 @@ def missing(query, user, debug, distrib, replica, latest,
     q = find_missing_id(s, ' '.join(query),
             distrib=distrib,
             replica=replica,
-            latest=latest,
+            latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
             product=product,
@@ -184,33 +183,25 @@ def missing(query, user, debug, distrib, replica, latest,
             )
     
     for result in q:
-        print(result.id)
+        print(result[0])
 
 @esgf.command()
-@click.option('--user', help='Username for database')
-@click.option('--debug/--no-debug', default=False, help='Show/hide debug log')
-@click.option('--latest/--all-versions', default=True, help='Show only the latest version on ESGF')
-@click.option('--ensemble', '-en', multiple=True, help='Add constraint')
-@click.option('--experiment', '-e', multiple=True, help='Add constraint')
-@click.option('--institute', multiple=True, help='Add constraint')
-@click.option('--model', '-m', multiple=True, help='Add constraint')
-@click.option('--project', multiple=True, help='Add constraint')
-@click.option('--realm', multiple=True, help='Add constraint')
-@click.option('--cmor_table', '--mip', '-t', 'cmor_table', multiple=True, help="Constraint")
-@click.option('--time_frequency', multiple=True, help='Add constraint')
-@click.option('--variable', '-v', multiple=True, help='Add constraint')
-@click.option('--version', '-ve', multiple=True, help='Add constraint', type=int)
-def local(user, debug, latest,
+@common_args
+def local(query, user, debug, distrib, replica, latest,
+        cf_standard_name,
         ensemble,
         experiment,
+        experiment_family,
         institute,
+        cmor_table,
         model,
         project,
+        product,
         realm,
-        cmor_table,
         time_frequency,
         variable,
-        version,
+        variable_long_name,
+        source_id,
         ):
     """
     Search local database for files matching the given constraints
@@ -263,31 +254,21 @@ def local(user, debug, latest,
             .distinct()
             .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
 
-    if len(version) > 0:
-        filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
+    #if len(version) > 0:
+    #    filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
 
-    # Main query
-    q = (s.query(Path.path.label('path'), ExtendedMetadata.version)
-            .join(Path.dataset)
-            .join(Path.extended)
-            .join(Path.checksum)
-            .distinct(Checksum.sha256)
-            .order_by(Checksum.sha256, ExtendedMetadata.version)
-            .filter(*filters))
 
-    if latest:
-        # Match against the latest versions from ESGF
-        esgf_q = find_checksum_id(query=None,
-            latest=latest,
+    q = find_local_path(s, query=None,
+            distrib=True,
+            replica=replica,
+            latest=(None if latest == 'all' else latest),
+            cf_standard_name=cf_standard_name,
+            experiment_family=experiment_family,
+            product=product,
+            variable_long_name=variable_long_name,
+            source_id=source_id,
             **terms
             )
 
-        q = q.join(esgf_q, 
-            or_(Checksum.md5 == esgf_q.c.checksum, 
-                Checksum.sha256 == esgf_q.c.checksum))
-
-    sub = q.subquery()
-    q = s.query(sub).order_by(sub.c.version.desc().nullslast(), sub.c.path)
-
     for result in q:
-        print(result.path)
+        print(result[0])
