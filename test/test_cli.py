@@ -38,27 +38,44 @@ def test_local(runner):
 def dummy_connect(*args, **kwargs):
     return None
 
-@pytest.mark.parametrize('command', [local, missing])
-def test_versions(command, runner, session):
-    """
-    Check the --latest/--all-versions flags are passed correctly to esgf_query
-    """
+@pytest.fixture()
+def mock_query(session):
     with mock.patch('arccssive2.cli.connect', side_effect=dummy_connect):
         with mock.patch('arccssive2.cli.Session', side_effect = lambda: session):
             with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query) as query:
+                yield query
 
-                # Check the query args are passed correctly
-                result = runner.invoke(command)
-                print(result.output)
-                assert query.called
-                assert query.call_args[1]['latest'] == None
+@pytest.mark.parametrize('command', [local, missing])
+def test_versions(command, runner, mock_query):
+    """
+    Check the --latest/--all-versions flags are passed correctly to esgf_query
+    """
 
-                result = runner.invoke(command, ['--all-versions'])
-                print(result.output)
-                assert query.called
-                assert query.call_args[1]['latest'] == None
+    # Check the query args are passed correctly
+    result = runner.invoke(command)
+    print(result.output)
+    assert mock_query.called
+    assert mock_query.call_args[1]['latest'] == None
 
-                result = runner.invoke(command, ['--latest'])
-                print(result.output)
-                assert query.called
-                assert query.call_args[1]['latest'] == 'true'
+    result = runner.invoke(command, ['--all-versions'])
+    print(result.output)
+    assert mock_query.called
+    assert mock_query.call_args[1]['latest'] == None
+
+    result = runner.invoke(command, ['--latest'])
+    print(result.output)
+    assert mock_query.called
+    assert mock_query.call_args[1]['latest'] == 'true'
+
+@pytest.mark.parametrize('command', [local, missing])
+def test_mip(command, runner, mock_query):
+    result = runner.invoke(command, ['--mip=Amon'])
+    print(result.output)
+    assert mock_query.called
+    assert mock_query.call_args[1]['cmor_table'] == ['Amon']
+
+    result = runner.invoke(command, ['--mip=Amon', '-t', 'day'])
+    print(result.output)
+    assert mock_query.called
+    assert mock_query.call_args[1]['cmor_table'] == ['Amon', 'day']
+
