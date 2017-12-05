@@ -49,10 +49,16 @@ def test_versions(command, runner, session):
 
                 # Check the query args are passed correctly
                 result = runner.invoke(command)
+                print(result.output)
+                assert query.called
                 assert query.call_args[1]['latest'] == None
 
                 result = runner.invoke(command, ['--all-versions'])
+                print(result.output)
+                assert query.called
                 assert query.call_args[1]['latest'] == None
 
                 result = runner.invoke(command, ['--latest'])
-                assert query.call_args[1]['latest'] == True
+                print(result.output)
+                assert query.called
+                assert query.call_args[1]['latest'] == 'true'
