@@ -57,6 +57,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_paths AS
     FROM esgf_filter
     JOIN paths ON file_id = pa_hash;
 CREATE UNIQUE INDEX IF NOT EXISTS esgf_path_file_id_idx ON esgf_paths(file_id);
+CREATE INDEX IF NOT EXISTS esgf_paths_basename_idx ON esgf_paths (regexp_replace(path, '^.*/', ''));
 
 /*
 CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
