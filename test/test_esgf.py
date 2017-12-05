@@ -49,6 +49,7 @@ def missing_query(*args, **kwags):
                     'title': 'foo',
                     'version': '1',
                     'score': 1.0,
+                    'dataset_id': 'dataset_bar|example.com',
                     }],
                 }
             }
@@ -69,6 +70,7 @@ def present_query(*args, **kwags):
                     'version': '1',
                     'latest': 'true',
                     'score': 1.0,
+                    'dataset_id': 'dataset_bar|example.com',
                     }],
                 }
             }
@@ -89,6 +91,7 @@ def updated_query(*args, **kwags):
                     'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
                     'latest': 'true',
                     'score': 1.0,
+                    'dataset_id': 'dataset_bar|example.com',
                     }],
                 }
             }
@@ -178,3 +181,15 @@ def test_find_local_path_updated_latest(session):
     with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
         results = find_local_path(session, '', latest=True)
         assert results.count() == 0
+
+def test_find_missing_id_dataset(session):
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+        results = find_missing_id(session, '', format='dataset')
+        assert results.count() == 1
+        assert results[0][0] == 'dataset_bar'
+
+def test_find_local_path_dataset(session):
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=present_query):
+        results = find_local_path(session, '', format='dataset')
+        assert results.count() == 1
+        assert results[0][0] == '/g/data1/ua6/unofficial-ESG-replica/tmp/tree/albedo2.dkrz.de/thredds/fileServer/cmip5/output1/LASG-CESS/FGOALS-g2/historical/6hr/atmos/6hrPlev/r3i1p1/v1/va/'

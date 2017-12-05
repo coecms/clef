@@ -43,6 +43,7 @@ def common_args(f):
         click.option('--replica/--no-replica', default=False, help="Search replicas"),
         click.option('--latest', 'latest', flag_value='true',  help="Latest version only"),
         click.option('--all-versions', '-a', 'latest', flag_value='all', default=True, help="All versions"),
+        click.option('--format', type=click.Choice(['file','dataset']), help="All versions"),
         click.option('--cf_standard_name',multiple=True, help="Constraint"),
         click.option('--ensemble', '-en', multiple=True, help="Constraint"),
         click.option('--experiment', '-e', multiple=True, help="Constraint"),
@@ -64,7 +65,7 @@ def common_args(f):
 
 @esgf.command()
 @common_args
-def search(query, user, debug, distrib, replica, latest,
+def search(query, user, debug, distrib, replica, latest, format,
         cf_standard_name,
         ensemble,
         experiment,
@@ -112,7 +113,7 @@ def search(query, user, debug, distrib, replica, latest,
 
 @esgf.command()
 @common_args
-def missing(query, user, debug, distrib, replica, latest,
+def missing(query, user, debug, distrib, replica, latest, format,
         cf_standard_name,
         ensemble,
         experiment,
@@ -179,6 +180,7 @@ def missing(query, user, debug, distrib, replica, latest,
             product=product,
             variable_long_name=variable_long_name,
             source_id=source_id,
+            format=format,
             **terms
             )
     
@@ -187,7 +189,7 @@ def missing(query, user, debug, distrib, replica, latest,
 
 @esgf.command()
 @common_args
-def local(query, user, debug, distrib, replica, latest,
+def local(query, user, debug, distrib, replica, latest, format,
         cf_standard_name,
         ensemble,
         experiment,
@@ -267,6 +269,7 @@ def local(query, user, debug, distrib, replica, latest,
             product=product,
             variable_long_name=variable_long_name,
             source_id=source_id,
+            format=format,
             **terms
             )
 
