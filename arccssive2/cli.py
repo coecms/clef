@@ -43,7 +43,7 @@ def common_args(f):
         click.option('--replica/--no-replica', default=False, help="Search replicas"),
         click.option('--latest', 'latest', flag_value='true',  help="Latest version only"),
         click.option('--all-versions', '-a', 'latest', flag_value='all', default=True, help="All versions"),
-        click.option('--format', type=click.Choice(['file','dataset']), help="All versions"),
+        click.option('--format', type=click.Choice(['file','dataset']), default='dataset', help="Return dataset/directory or individual files"),
         click.option('--cf_standard_name',multiple=True, help="Constraint"),
         click.option('--ensemble', '-en', multiple=True, help="Constraint"),
         click.option('--experiment', '-e', multiple=True, help="Constraint"),
