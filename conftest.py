@@ -9,7 +9,7 @@ import os
 def session():
     arccssive2.db.connect(url = 
             os.environ.get('ARCCSSIVE_DB', 
-                'postgresql://postgres:@localhost/postgres'))
+                'postgresql://postgres:@localhost/postgres'), debug=True)
     session = arccssive2.db.Session()
     yield session
     session.rollback()
