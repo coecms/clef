@@ -23,6 +23,7 @@ from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
 import sys
 import six
+import os
 
 @click.group()
 def esgf():
@@ -37,7 +38,7 @@ def warning(message):
 def common_args(f):
     constraints = [
         click.argument('query', nargs=-1),
-        click.option('--user', help='Username for database'),
+        click.option('--user', default=os.environ['USER'], help='Username for database'),
         click.option('--debug/--no-debug', default=False, help="Show/hide debug log"),
         click.option('--distrib/--no-distrib', default=True, help="Distributed search"),
         click.option('--replica/--no-replica', default=False, help="Search replicas"),
