@@ -65,7 +65,7 @@ workflows:
     version: 2
     build_and_publsh:
         jobs:
-            - py27:
+            - py2:
                 filters:
                     tags:
                         only: /.*/
