@@ -18,7 +18,10 @@ from __future__ import print_function
 try:
     import keyring
 except ImportError:
-    from unittest.mock import Mock
+    try:
+        from unittest.mock import Mock
+    except ImportError:
+        from mock import Mock
     keyring = Mock()
 
 import sqlalchemy
