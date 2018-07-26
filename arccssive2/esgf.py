@@ -46,7 +46,7 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
     if query is not None and len(query) == 0:
         query = None
 
-    r = requests.get('https://esgf.nci.org.au/esg-search/search',
+    r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
             params = {
                 'query': query,
                 'fields': fields,
@@ -78,7 +78,7 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
     return r.json()
 
 def link_to_esgf(query, **kwargs):
-    r = requests.Request('GET','https://esgf.nci.org.au/search/esgf_nci',
+    r = requests.Request('GET','https://esgf-node.llnl.gov/search/esgf-llnl',
             params = {
             'query': query,
             'fields': kwargs.get('fields',None),
