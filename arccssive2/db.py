@@ -15,9 +15,14 @@
 # limitations under the License.
 from __future__ import print_function
 
-import keyring
-from .git_keyring import GitCredentialCacheKeyring
-keyring.set_keyring(GitCredentialCacheKeyring())
+try:
+    import keyring
+except ImportError:
+    try:
+        from unittest.mock import Mock
+    except ImportError:
+        from mock import Mock
+    keyring = Mock()
 
 import sqlalchemy
 from sqlalchemy import create_engine
@@ -42,8 +47,10 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
         Manually specified user
         """
         _url.username = user
-        _url.password = ''
+        _url.password = None
+
         _url.password = keyring.get_password('arccssive2', user)
+
         if _url.password is None:
             _url.password = getpass("Password for user %s: "%user)
             keyring.set_password('arccssive2', user, _url.password)
