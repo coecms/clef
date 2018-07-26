@@ -27,6 +27,7 @@ requirements:
         - psycopg2
         - requests
         - click
+        - mock # [py27]
 
 test:
     source_files:
@@ -35,7 +36,6 @@ test:
         - test
     requires:
         - pytest
-        - mock # [py27]
     commands:
         - py.test
     imports:
