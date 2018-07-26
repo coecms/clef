@@ -30,11 +30,11 @@ run_conda: &run_conda
         - run: 
             name: archive
             command: |
-                mkdir /artefacts
-                cp $(~/miniconda/bin/conda build conda --python=${PYTHON_VER} --output) /artefacts
+                mkdir /tmp/artefacts
+                cp $(~/miniconda/bin/conda build conda --python=${PYTHON_VER} --output) /tmp/artefacts
 
         - persist_to_workspace:
-            root: /artefacts
+            root: /tmp/artefacts
             paths: '*'
 
 version: 2
@@ -54,10 +54,10 @@ jobs:
 #            - image: scottwales/conda-build
 #        steps:
 #            - attach_workspace:
-#                at: /artefacts
+#                at: /tmp/artefacts
 #
 #            - run:
-#                anaconda --token "${ANACONDA_TOKEN}" upload --user "${ANACONDA_USER}" /artefacts/*.tar.bz2
+#                anaconda --token "${ANACONDA_TOKEN}" upload --user "${ANACONDA_USER}" /tmp/artefacts/*.tar.bz2
 #
 workflows:
     version: 2
