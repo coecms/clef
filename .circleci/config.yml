@@ -3,7 +3,6 @@ run_conda: &run_conda
         - image: circleci/python
           environment:
               ARCCSSIVE_DB: postgresql://postgres:@localhost/postgres
-              PYTHON_VER: 2.7
               LC_ALL: C.UTF-8
         - image: circleci/postgres:9.6
           environment:
@@ -20,9 +19,8 @@ run_conda: &run_conda
         - run:
             name: setup
             command: |
-                ~/miniconda/bin/conda install --yes conda-build anaconda-client
+                ~/miniconda/bin/conda install --yes conda-build conda-verify anaconda-client postgresql
                 ~/miniconda/bin/conda config --system --add channels conda-forge
-                ~/miniconda/bin/conda install postgresql
                 ~/miniconda/bin/psql -h localhost -U postgres -f db/nci.sql
                 ~/miniconda/bin/psql -h localhost -U postgres -f db/tables.sql
         - run:
