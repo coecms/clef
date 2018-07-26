@@ -76,6 +76,34 @@ def present_query(*args, **kwags):
             }
     return response
 
+def partial_query(*args, **kwargs):
+    """
+    A query returning a dataset we have only some files of
+    """
+    response =  {
+            'responseHeader': {'params': {'rows': 2}},
+            'response': {
+                'numFound': 2,
+                'docs': [{
+                    'id': 'abcde',
+                    'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
+                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'version': '1',
+                    'latest': 'true',
+                    'score': 1.0,
+                    'dataset_id': 'dataset_bar|example.com',
+                    }, {
+                    'id': 'abcde',
+                    'checksum': ['1234'],
+                    'title': 'foo',
+                    'version': '1',
+                    'score': 1.0,
+                    'dataset_id': 'dataset_bar|example.com',
+                    }],
+                }
+            }
+    return response
+
 def updated_query(*args, **kwags):
     """
     A query returning something that is in the DB, but has been updated on ESGF
@@ -193,3 +221,12 @@ def test_find_local_path_dataset(session):
         results = find_local_path(session, '', format='dataset')
         assert results.count() == 1
         assert results[0][0] == '/g/data1/ua6/unofficial-ESG-replica/tmp/tree/albedo2.dkrz.de/thredds/fileServer/cmip5/output1/LASG-CESS/FGOALS-g2/historical/6hr/atmos/6hrPlev/r3i1p1/v1/va/'
+
+def test_find_partial_dataset(session):
+    """
+    Dataset is only partially available
+    Return no match by default
+    """
+    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+        results = find_local_path(session, '', format='dataset')
+        assert results.count() == 0
