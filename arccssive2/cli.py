@@ -38,7 +38,7 @@ def warning(message):
 def common_args(f):
     constraints = [
         click.argument('query', nargs=-1),
-        click.option('--user', default=os.environ.get('USER',None), help='Username for database'),
+        click.option('--user', default=None, help='Username for database'),
         click.option('--debug/--no-debug', default=False, help="Show/hide debug log"),
         click.option('--distrib/--no-distrib', default=True, help="Distributed search"),
         click.option('--replica/--no-replica', default=False, help="Search replicas"),
@@ -89,6 +89,9 @@ def search(query, user, debug, distrib, replica, latest, format,
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
+    connect(user=user)
+    s = Session()
+
     q = find_checksum_id(' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -109,7 +112,7 @@ def search(query, user, debug, distrib, replica, latest, format,
             source_id=source_id,
             )
     
-    for result in q:
+    for result in s.query(q):
         print(result.id)
 
 @esgf.command()
