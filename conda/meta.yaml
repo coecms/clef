@@ -4,7 +4,6 @@ package:
 
 build:
     number: {{ GIT_DESCRIBE_NUMBER }}
-    string: {{ GIT_BUILD_STR }}
 
 source:
     git_url: ../
@@ -28,8 +27,7 @@ requirements:
         - psycopg2
         - requests
         - click
-        - keyring
-        - git
+        - mock # [py27]
 
 test:
     source_files:
@@ -38,7 +36,6 @@ test:
         - test
     requires:
         - pytest
-        - mock # [py27]
     commands:
         - py.test
     imports:
