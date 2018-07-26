@@ -29,18 +29,18 @@ requirements:
         - requests
         - click
 
-test:
-    source_files:
-        - setup.cfg
-        - conftest.py
-        - test
-    requires:
-        - pytest
-        - mock # [py27]
-    commands:
-        - py.test
-    imports:
-        - arccssive2
+# test:
+#     source_files:
+#         - setup.cfg
+#         - conftest.py
+#         - test
+#     requires:
+#         - pytest
+#         - mock # [py27]
+#     commands:
+#         - py.test
+#     imports:
+#         - arccssive2
 
 about:
     home: https://github.com/coecms/arccssive2
