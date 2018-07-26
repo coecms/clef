@@ -35,10 +35,10 @@ test:
         - conftest.py
         - test
     requires:
-        #- pytest
-          #        - mock # [py27]
+        - pytest
+        - mock # [py27]
     commands:
-        #- py.test
+        - py.test
     imports:
         - arccssive2
 
