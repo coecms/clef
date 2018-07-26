@@ -89,6 +89,9 @@ def search(query, user, debug, distrib, replica, latest, format,
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
+    connect(user=user)
+    s = Session()
+
     q = find_checksum_id(' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -109,7 +112,7 @@ def search(query, user, debug, distrib, replica, latest, format,
             source_id=source_id,
             )
     
-    for result in q:
+    for result in s.query(q):
         print(result.id)
 
 @esgf.command()
