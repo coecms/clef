@@ -1,0 +1,266 @@
+{
+    "Conventions": {
+        "CMIP5": "Conventions",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "activity_id": {
+        "CMIP5": "project_id",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "branch_method": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "branch_time_in_child": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "branch_time_in_parent": {
+        "CMIP5": "branch_time",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "comment": {
+        "CMIP5": "comment",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "contact": {
+        "CMIP5": "contact",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "creation_date": {
+        "CMIP5": "creation_date",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "data_specs_version": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "experiment": {
+        "CMIP5": "experiment",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "experiment_id": {
+        "CMIP5": "experiment_id",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "external_variables": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "forcing_index": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "frequency": {
+        "CMIP5": "frequency",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "further_info_url": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "grid": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "grid_label": {
+        "CMIP5": "NA",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "initialization_index": {
+        "CMIP5": "initialization_method",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "institution": {
+        "CMIP5": "institution",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "institution_id": {
+        "CMIP5": "institute_id",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "license": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "mip_era": {
+        "CMIP5": "NA",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "nominal_resolution": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": true,
+        "required": true
+    },
+    "parent_activity_id": {
+        "CMIP5": "",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "parent_experiment_id": {
+        "CMIP5": "parent_experiment_id",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "parent_mip_era": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "parent_source_id": {
+        "CMIP5": "",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "parent_time_units": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "parent_variant_label": {
+        "CMIP5": "parent_experiment_rip",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "physics_index": {
+        "CMIP5": "physics_method",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "product": {
+        "CMIP5": "product",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "realization_index": {
+        "CMIP5": "realization",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "realm": {
+        "CMIP5": "modeling_realm",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "source": {
+        "CMIP5": "source",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "source_id": {
+        "CMIP5": "model_id",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "source_type": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": true,
+        "required": true
+    },
+    "sub_experiment": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "sub_experiment_id": {
+        "CMIP5": "NA",
+        "drs": false,
+        "facet": true,
+        "required": true
+    },
+    "table_id": {
+        "CMIP5": "table_id",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "title": {
+        "CMIP5": "title",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "tracking_id": {
+        "CMIP5": "tracking_id",
+        "drs": false,
+        "facet": false,
+        "required": true
+    },
+    "variable_id": {
+        "CMIP5": "NA",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "variant_info": {
+        "CMIP5": "forcing",
+        "drs": false,
+        "facet": false,
+        "required": false
+    },
+    "variant_label": {
+        "CMIP5": "NA",
+        "drs": true,
+        "facet": true,
+        "required": true
+    }
+}
