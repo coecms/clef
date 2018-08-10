@@ -79,8 +79,8 @@
     },
     "frequency": {
         "CMIP5": "frequency",
-        "drs": true,
-        "facet": true,
+        "drs": false,
+        "facet": false,
         "required": true
     },
     "further_info_url": {
