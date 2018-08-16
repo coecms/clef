@@ -6,7 +6,7 @@
         "required": true
     },
     "activity_id": {
-        "CMIP5": "project_id",
+        "CMIP5": "NA",
         "drs": true,
         "facet": true,
         "required": true
@@ -181,6 +181,12 @@
     },
     "product": {
         "CMIP5": "product",
+        "drs": true,
+        "facet": true,
+        "required": true
+    },
+    "project_id": {
+        "CMIP5": "project_id",
         "drs": true,
         "facet": true,
         "required": true

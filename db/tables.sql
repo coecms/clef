@@ -9,7 +9,14 @@ CREATE OR REPLACE VIEW metadata AS
         md_hash,
         md_type,
         md_json
-    FROM ua6.metadata;
+    FROM ua6.metadata
+    UNION ALL
+    SELECT
+        md_hash,
+        md_type,
+        md_json
+    FROM oi10.metadata;
+
 
 CREATE OR REPLACE VIEW paths AS
     SELECT
@@ -24,7 +31,14 @@ CREATE OR REPLACE VIEW paths AS
         pa_type,
         pa_path,
         pa_parents
-    FROM ua6.paths;
+    FROM ua6.paths
+    UNION ALL
+    SELECT
+        pa_hash,
+        pa_type,
+        pa_path,
+        pa_parents
+    FROM oi10.paths;
 
 CREATE OR REPLACE VIEW checksums AS
     SELECT
@@ -37,7 +51,13 @@ CREATE OR REPLACE VIEW checksums AS
         ch_hash,
         ch_md5,
         ch_sha256
-    FROM ua6.checksums;
+    FROM ua6.checksums
+    UNION ALL
+    SELECT
+        ch_hash,
+        ch_md5,
+        ch_sha256
+    FROM oi10.checksums;
 
 CREATE OR REPLACE VIEW esgf_filter AS
     SELECT
@@ -48,6 +68,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
         AND (
             pa_parents[6] = md5('/g/data1/ua6/unofficial-ESG-replica/tmp/tree')::uuid
             OR pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
+            OR pa_parents[8] = md5('/g/data/oi10/replicas')::uuid
          );
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_paths AS
@@ -73,7 +94,8 @@ CREATE INDEX IF NOT EXISTS checksums_md5_idx ON checksums(ch_md5);
 CREATE INDEX IF NOT EXISTS checksums_sha256_idx ON checksums(ch_sha256);
 */
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS dataset_metadata AS
+/* modified this so it works with both cmip5 and cmip6 using attributes_map.json */
+CREATE MATERIALIZED VIEW IF NOT EXISTS c5_dataset_metadata AS
     SELECT
         md_hash AS file_id,
         md_json->'attributes'->>'project_id' as project,
@@ -90,9 +112,32 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS dataset_metadata AS
     FROM metadata
     JOIN esgf_paths ON md_hash = file_id
     WHERE md_type = 'netcdf';
-CREATE UNIQUE INDEX IF NOT EXISTS dataset_metadata_file_id ON dataset_metadata(file_id);
+CREATE UNIQUE INDEX IF NOT EXISTS c5_dataset_metadata_file_id ON c5_dataset_metadata(file_id);
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
+/* modified this so it works with both cmip5 and cmip6 using attributes_map.json */
+CREATE MATERIALIZED VIEW IF NOT EXISTS c6_dataset_metadata AS
+    SELECT
+        md_hash AS file_id,
+        md_json->'attributes'->>'activity_id' as activity_id,
+        md_json->'attributes'->>'project_id' as project,
+        md_json->'attributes'->>'institution_id' as institution_id,
+        md_json->'attributes'->>'source_id' as source_id,
+        md_json->'attributes'->>'source_type' as source_type,
+        md_json->'attributes'->>'experiment_id' as experiment_id,
+        md_json->'attributes'->>'sub_experiment_id' as sub_experiment_id,
+        md_json->'attributes'->>'frequency' as frequency,
+        md_json->'attributes'->>'realm' as realm,
+        md_json->'attributes'->>'realization_index' as r,
+        md_json->'attributes'->>'initialization_index' as i,
+        md_json->'attributes'->>'physics_index' as p,
+        md_json->'attributes'->>'forcing_index' as f,
+        md_json->'attributes'->>'table_id' as table_id,
+    FROM metadata
+    JOIN esgf_paths ON md_hash = file_id
+    WHERE md_type = 'netcdf';
+CREATE UNIQUE INDEX IF NOT EXISTS c6_dataset_metadata_file_id ON c6_dataset_metadata(file_id);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS c5_metadata_dataset_link AS
     SELECT
         file_id,
         md5(
@@ -106,14 +151,36 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_metadata_dataset_link AS
             COALESCE(cmor_table,'') ||'.'||
             COALESCE('r'||r||'i'||i||'p'||p,'')
         )::uuid as dataset_id
-    FROM dataset_metadata
+    FROM c5_dataset_metadata
     NATURAL JOIN esgf_paths;
-CREATE UNIQUE INDEX IF NOT EXISTS esgf_metadata_dataset_link_file_id ON esgf_metadata_dataset_link(file_id);
-CREATE INDEX IF NOT EXISTS esgf_metadata_dataset_link_dataset_id ON esgf_metadata_dataset_link(dataset_id);
-GRANT SELECT ON esgf_metadata_dataset_link TO PUBLIC;
+CREATE UNIQUE INDEX IF NOT EXISTS c5_metadata_dataset_link_file_id ON c5_metadata_dataset_link(file_id);
+CREATE INDEX IF NOT EXISTS c5_metadata_dataset_link_dataset_id ON c5_metadata_dataset_link(dataset_id);
+GRANT SELECT ON c5_metadata_dataset_link TO PUBLIC;
+
+/* we probably can eliminate coalesce for institution-id , activity and variant_label since they should always be there */
+CREATE MATERIALIZED VIEW IF NOT EXISTS c6_metadata_dataset_link AS
+    SELECT
+        file_id,
+        md5(
+            COALESCE(mip_era,'') ||'.'||
+            COALESCE(activity_id,'') ||'.'||
+            COALESCE(institution_id,'') ||'.'||
+            source_id ||'.'||
+            experiment_id ||'.'||
+            COALESCE(sub_experiment_id,'') ||'-'||
+            COALESCE('r'||r||'i'||i||'p'||p||'f'||f,'')
+            COALESCE(table_id,'') ||'.'||
+            variable_id ||'.'||
+            COALESCE(grib_label,'') ||'.'||
+        )::uuid as dataset_id
+    FROM c6_dataset_metadata
+    NATURAL JOIN esgf_paths;
+CREATE UNIQUE INDEX IF NOT EXISTS c6_metadata_dataset_link_file_id ON c6_metadata_dataset_link(file_id);
+CREATE INDEX IF NOT EXISTS c6_metadata_dataset_link_dataset_id ON c6_metadata_dataset_link(dataset_id);
+GRANT SELECT ON c6_metadata_dataset_link TO PUBLIC;
 
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_dataset AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS cmip5_dataset AS
     SELECT DISTINCT
         dataset_id,
         project,
@@ -122,6 +189,13 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_dataset AS
         CASE WHEN model = 'ACCESS1-0' THEN 'ACCESS1.0'
             WHEN model = 'ACCESS1-3' THEN 'ACCESS1.3'
             WHEN model = 'CSIRO-Mk3-6-0' THEN 'CSIRO-Mk3.6.0'
+            WHEN model = 'CESM1-WACCM' THEN 'CESM1(WACCM)'
+            WHEN model = 'MRI-AGCM3-2H' THEN 'MRI-AGCM3.2H'
+            WHEN model = 'MRI-AGCM3-2S' THEN 'MRI-AGCM3.2S'
+            WHEN model = 'bcc-csm1-1-m' THEN 'BCC-CSM1.1(m)'
+            WHEN model = 'bcc-csm1-1' THEN 'BCC-CSM1.1'
+            WHEN model = 'CESM1-CAM5' THEN 'CESM1(CAM5)'
+            WHEN model = 'CESM1-BGC' THEN 'CESM1(BGC)'
             ELSE model END
             AS model,
         experiment,
@@ -132,11 +206,33 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_dataset AS
         i,
         p,
         'r'||r||'i'||i||'p'||p AS ensemble
-    FROM dataset_metadata
-    NATURAL JOIN esgf_metadata_dataset_link;
-CREATE UNIQUE INDEX IF NOT EXISTS esgf_dataset_dataset_id ON esgf_dataset(dataset_id);
-GRANT SELECT ON esgf_dataset TO PUBLIC;
+    FROM c5_dataset_metadata
+    NATURAL JOIN c5_metadata_dataset_link;
+CREATE UNIQUE INDEX IF NOT EXISTS cmip5_dataset_dataset_id ON cmip5_dataset(dataset_id);
+GRANT SELECT ON cmip5_dataset TO PUBLIC;
     
+CREATE MATERIALIZED VIEW IF NOT EXISTS cmip6_dataset AS
+    SELECT DISTINCT
+        dataset_id,
+        activity_id,  /** this should always be CMIP6 so might be skipped as well? **/
+        institution_id,
+        experiment_id,
+        sub_experiment_id,
+        realm,
+        frequency,
+        source_id,  /** instead of model **/
+        mip_era, /** .e.CMIP for DECK etc **/
+        table_id, /**  **/
+        r,
+        i,
+        p,
+        f,
+        'r'||r||'i'||i||'p'||p||'f'||f AS variant_label,
+        sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f AS member_id
+    FROM c6_dataset_metadata
+    NATURAL JOIN c6_metadata_dataset_link;
+CREATE UNIQUE INDEX IF NOT EXISTS cmip6_dataset_dataset_id ON cmip6_dataset(dataset_id);
+GRANT SELECT ON cmip6_dataset TO PUBLIC;
 /* Extra metadata not stored in the file itself. This table stores manually
  * entered data, automatic data is in the view `extended_metadata_path` and
  * both are combined in the materialized view `extended_metadata`.
