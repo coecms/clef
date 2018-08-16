@@ -121,6 +121,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS c6_dataset_metadata AS
         md_json->'attributes'->>'activity_id' as activity_id,
         md_json->'attributes'->>'project_id' as project,
         md_json->'attributes'->>'institution_id' as institution_id,
+        md_json->'attributes'->>'mip_era' as mip_era,
         md_json->'attributes'->>'source_id' as source_id,
         md_json->'attributes'->>'source_type' as source_type,
         md_json->'attributes'->>'experiment_id' as experiment_id,
@@ -131,7 +132,10 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS c6_dataset_metadata AS
         md_json->'attributes'->>'initialization_index' as i,
         md_json->'attributes'->>'physics_index' as p,
         md_json->'attributes'->>'forcing_index' as f,
-        md_json->'attributes'->>'table_id' as table_id,
+        md_json->'attributes'->>'variable_id' as variable_id,
+        md_json->'attributes'->>'grid_label' as grid_label,
+        md_json->'attributes'->>'nominal_resolution' as nominal_resolution,
+        md_json->'attributes'->>'table_id' as table_id
     FROM metadata
     JOIN esgf_paths ON md_hash = file_id
     WHERE md_type = 'netcdf';
@@ -214,21 +218,26 @@ GRANT SELECT ON cmip5_dataset TO PUBLIC;
 CREATE MATERIALIZED VIEW IF NOT EXISTS cmip6_dataset AS
     SELECT DISTINCT
         dataset_id,
-        activity_id,  /** this should always be CMIP6 so might be skipped as well? **/
+        project,
+        activity_id,  /** .e.CMIP for DECK etc **/ 
         institution_id,
+        source_id,  /** instead of model **/
+        source_type,  /** AOGM, BGC **/
         experiment_id,
         sub_experiment_id,
-        realm,
         frequency,
-        source_id,  /** instead of model **/
-        mip_era, /** .e.CMIP for DECK etc **/
-        table_id, /**  **/
+        realm,
+        mip_era, /** this should always be CMIP6 so might be skipped as well? **/
         r,
         i,
         p,
         f,
         'r'||r||'i'||i||'p'||p||'f'||f AS variant_label,
-        sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f AS member_id
+        sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f AS member_id,
+        variable_id,
+        grid_label,
+        nominal_resolution,
+        table_id     /** instead of cmor_table **/
     FROM c6_dataset_metadata
     NATURAL JOIN c6_metadata_dataset_link;
 CREATE UNIQUE INDEX IF NOT EXISTS cmip6_dataset_dataset_id ON cmip6_dataset(dataset_id);
