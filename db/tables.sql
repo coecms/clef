@@ -68,7 +68,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
         AND (
             pa_parents[6] = md5('/g/data1/ua6/unofficial-ESG-replica/tmp/tree')::uuid
             OR pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
-            OR pa_parents[8] = md5('/g/data/oi10/replicas')::uuid
+            OR pa_parents[4] = md5('/g/data/oi10/replicas')::uuid
          );
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_paths AS
