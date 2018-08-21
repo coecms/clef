@@ -69,8 +69,7 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
 def link_to_esgf(query, **kwargs):
     
     constraints = {k: v for k,v in kwargs.items() if v != ()}
-    r = requests.Request('GET','https://esgf-node.llnl.gov/search/esgf-llnl',
-            params = {
+    params = {
             'query': query,
             'fields': kwargs.get('fields',None),
             'offset': kwargs.get('offset',None),
@@ -78,8 +77,17 @@ def link_to_esgf(query, **kwargs):
             'distrib': 'on' if kwargs.get('distrib',True) else None,
             'replica': 'on' if kwargs.get('replica',False) else None,
             'latest': 'on' if kwargs.get('latest',None) else None
-              }.update(constraints)
+            }
+    params.update(constraints)
+
+    endpoint = 'cmip5'
+    if params['project'].lower() == 'cmip6':
+        endpoint = 'cmip6'
+
+    r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
+            params=params,
             )
+    p = r.prepare()
     return r.prepare().url
 
 

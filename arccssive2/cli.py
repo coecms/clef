@@ -163,8 +163,6 @@ def cmip6(query, user, debug, distrib, replica, latest, format,
     connect(user=user)
     s = Session()
 
-    project='CMIP6'
-
     q = find_checksum_id(' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -372,8 +370,6 @@ def c6_missing(query, user, debug, distrib, replica, latest, format,
     connect(user=user)
     s = Session()
 
-    project=('CMIP6',)
-
     dataset_constraints = {
         'member_id': member_id,
         'activity_id': activity_id,
@@ -382,7 +378,6 @@ def c6_missing(query, user, debug, distrib, replica, latest, format,
         'institution_id': institution_id,
         'source_id': source_id,
         'source_type': source_type,
-        'project': project,
         'realm': realm,
         'frequency': frequency,
         'table_id': table_id,
@@ -401,12 +396,12 @@ def c6_missing(query, user, debug, distrib, replica, latest, format,
                 warning("No matches found for %s: '%s'"%(key, value))
                 raise Exception
 
-    if len(variable) > 0:
-        terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
+    if len(variable_id) > 0:
+        terms['variable_id'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
             .distinct()
-            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
-        if len(terms['variable']) == 0:
-            warning("No matches found for %s: '%s'"%('variable', value))
+            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable_id]))))]
+        if len(terms['variable_id']) == 0:
+            warning("No matches found for %s: '%s'"%('variable_id', value))
             raise Exception
 
     q = find_missing_id(s, ' '.join(query),
@@ -415,6 +410,7 @@ def c6_missing(query, user, debug, distrib, replica, latest, format,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             format=format,
+            project='CMIP6',
             **terms
             )
     
@@ -457,8 +453,6 @@ def c6_local(query, user, debug, distrib, replica, latest, format,
     connect(user=user)
     s = Session()
 
-    project='CMIP6'
-
     ensemble_terms = None
     model_terms = None
 
@@ -470,7 +464,6 @@ def c6_local(query, user, debug, distrib, replica, latest, format,
         'institution_id': institution_id,
         'source_id': source_id,
         'source_type': source_type,
-        'project': project,
         'realm': realm,
         'frequency': frequency,
         'table_id': table_id,
@@ -489,12 +482,12 @@ def c6_local(query, user, debug, distrib, replica, latest, format,
                 .distinct()
                 .filter(getattr(C6Dataset,key).ilike(any_([x for x in value]))))]
 
-    if len(variable) > 0:
-        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable])))
+    if len(variable_id) > 0:
+        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable_id])))
 
-        terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
+        terms['variable_id'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
             .distinct()
-            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
+            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable_id]))))]
 
     #if len(version) > 0:
     #    filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
@@ -506,6 +499,7 @@ def c6_local(query, user, debug, distrib, replica, latest, format,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             format=format,
+            project='CMIP6',
             **terms
             )
 

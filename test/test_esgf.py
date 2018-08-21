@@ -230,3 +230,12 @@ def test_find_partial_dataset(session):
     with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
         results = find_local_path(session, '', format='dataset')
         assert results.count() == 0
+
+
+def test_find_cmip6():
+    r = esgf_query(query='', fields='id', project='CMIP6', limit=0)
+    assert r['response']['numFound'] > 0
+
+def test_find_cmip5():
+    r = esgf_query(query='', fields='id', project='CMIP5', limit=0)
+    assert r['response']['numFound'] > 0

@@ -115,7 +115,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS c5_dataset_metadata AS
 CREATE UNIQUE INDEX IF NOT EXISTS c5_dataset_metadata_file_id ON c5_dataset_metadata(file_id);
 
 /* modified this so it works with both cmip5 and cmip6 using attributes_map.json */
-CREATE MATERIALIZED VIEW IF NOT EXISTS c6_dataset_metadata AS
+CREATE OR REPLACE VIEW c6_dataset_metadata AS
     SELECT
         md_hash AS file_id,
         md_json->'attributes'->>'activity_id' as activity_id,
@@ -136,10 +136,9 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS c6_dataset_metadata AS
         md_json->'attributes'->>'grid_label' as grid_label,
         md_json->'attributes'->>'nominal_resolution' as nominal_resolution,
         md_json->'attributes'->>'table_id' as table_id
-    FROM metadata
-    JOIN esgf_paths ON md_hash = file_id
+    FROM oi10.metadata
     WHERE md_type = 'netcdf';
-CREATE UNIQUE INDEX IF NOT EXISTS c6_dataset_metadata_file_id ON c6_dataset_metadata(file_id);
+/* CREATE UNIQUE INDEX IF NOT EXISTS c6_dataset_metadata_file_id ON c6_dataset_metadata(file_id); */
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS c5_metadata_dataset_link AS
     SELECT
@@ -172,13 +171,12 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS c6_metadata_dataset_link AS
             source_id ||'.'||
             experiment_id ||'.'||
             COALESCE(sub_experiment_id,'') ||'-'||
-            COALESCE('r'||r||'i'||i||'p'||p||'f'||f,'')
+            COALESCE('r'||r||'i'||i||'p'||p||'f'||f,'') ||
             COALESCE(table_id,'') ||'.'||
             variable_id ||'.'||
-            COALESCE(grib_label,'') ||'.'||
+            COALESCE(grid_label,'') ||'.'
         )::uuid as dataset_id
-    FROM c6_dataset_metadata
-    NATURAL JOIN esgf_paths;
+    FROM c6_dataset_metadata;
 CREATE UNIQUE INDEX IF NOT EXISTS c6_metadata_dataset_link_file_id ON c6_metadata_dataset_link(file_id);
 CREATE INDEX IF NOT EXISTS c6_metadata_dataset_link_dataset_id ON c6_metadata_dataset_link(dataset_id);
 GRANT SELECT ON c6_metadata_dataset_link TO PUBLIC;
