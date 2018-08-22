@@ -122,7 +122,7 @@ CREATE OR REPLACE VIEW c6_dataset_metadata AS
     SELECT
         md_hash AS file_id,
         md_json->'attributes'->>'activity_id' as activity_id,
-        md_json->'attributes'->>'project_id' as project,
+        md_json->'attributes'->>'mip_era' as project,
         md_json->'attributes'->>'institution_id' as institution_id,
         md_json->'attributes'->>'mip_era' as mip_era,
         md_json->'attributes'->>'source_id' as source_id,
