@@ -63,6 +63,32 @@ CREATE VIEW ua6.checksums AS
 \copy (with x as (select * from esgf_filter limit 5) select y.* from metadata as y join x on md_hash = file_id) to db/metadata_sample.txt 
 \copy (with x as (select * from esgf_filter limit 5) select y.* from checksums as y join x on ch_hash = file_id) to db/checksums_sample.txt 
 */
-\copy ua6.metadata  from 'db/metadata_sample.txt'
-\copy ua6.paths     from 'db/paths_sample.txt'
+\copy ua6.metadata  from 'db/metadata_ua6_sample.txt'
+\copy ua6.paths     from 'db/paths_ua6_sample.txt'
+
+CREATE SCHEMA oi10;
+
+CREATE TABLE oi10.metadata (
+    md_hash UUID,
+    md_ingested TIMESTAMP WITH TIME ZONE,
+    md_type TEXT,
+    md_json JSONB,
+    PRIMARY KEY (md_hash, md_type)
+);
+
+CREATE TABLE oi10.paths (
+    pa_hash UUID PRIMARY KEY,
+    pa_ingested TIMESTAMP WITH TIME ZONE,
+    pa_type PATH_TYPE,
+    pa_path TEXT,
+    pa_parents UUID[]
+);
+
+CREATE VIEW oi10.checksums AS
+    SELECT
+        md_hash as ch_hash,
+        md_json->>'md5' as ch_md5,
+        md_json->>'sha256' as ch_sha256
+    FROM oi10.metadata
+    WHERE md_type = 'checksum';
 

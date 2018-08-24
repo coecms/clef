@@ -1,0 +1,19 @@
+{
+    "activity_id": "CMIP6_activity_id.json",
+    "experiment_id": "CMIP6_experiment_id.json",
+    "frequency": "CMIP6_frequency.json",
+    "grid_label ": "CMIP6_grid_label.json",
+    "institution_id": "CMIP6_institution_id.json",
+    "member_id": "sub_experiment_id+variant_label",
+    "mip_era ": "constant=CMIP6",
+    "nominal_resolution": "CMIP6_nominal_resolution.json",
+    "product ": "constant=model-output",
+    "realm": "CMIP6_realm.json",
+    "source_id": "CMIP6_source_id.json",
+    "source_type": "CMIP6_source_type.json",
+    "sub_experiment_id ": "CMIP6_sub_experiment_id.json",
+    "table_id": "CMIP6_table_id.json",
+    "variable_id": "data request",
+    "variant_label": "indices",
+    "version": "something"
+}

@@ -38,12 +38,19 @@ class pg_json_property(index_property):
         expr = super(pg_json_property, self).expr(model)
         return expr.astext.cast(self.cast_type)
 
-metadata_dataset_link = Table('esgf_metadata_dataset_link', Base.metadata,
+c5_metadata_dataset_link = Table('c5_metadata_dataset_link', Base.metadata,
     Column('file_id', 
         ForeignKey('esgf_paths.file_id'), 
         ForeignKey('metadata.md_hash'),
         ForeignKey('checksums.ch_hash')),
-    Column('dataset_id', ForeignKey('esgf_dataset.dataset_id')))
+    Column('dataset_id', ForeignKey('cmip5_dataset.dataset_id')))
+
+c6_metadata_dataset_link = Table('c6_metadata_dataset_link', Base.metadata,
+    Column('file_id', 
+        ForeignKey('esgf_paths.file_id'), 
+        ForeignKey('metadata.md_hash'),
+        ForeignKey('checksums.ch_hash')),
+    Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
 
 class Path(Base):
     __tablename__ = 'esgf_paths'
@@ -51,7 +58,8 @@ class Path(Base):
     id = Column('file_id', UUID, primary_key=True)
     path = Column('path', Text)
 
-    dataset = relationship('Dataset', secondary=metadata_dataset_link, viewonly=True)
+    c5dataset = relationship('C5Dataset', secondary=c5_metadata_dataset_link, viewonly=True)
+    c6dataset = relationship('C6Dataset', secondary=c6_metadata_dataset_link, viewonly=True)
     netcdf = relationship('Netcdf', viewonly=True)
     checksum = relationship('Checksum', viewonly=True)
     extended = relationship('ExtendedMetadata', viewonly=True)
@@ -108,11 +116,11 @@ class ExtendedMetadata(Base):
     variable = Column(Text)
     period = Column(INT4RANGE)
 
-class Dataset(Base):
+class C5Dataset(Base):
     """
-    An ESGF dataset
+    A CMIP5 dataset
     """
-    __tablename__ = 'esgf_dataset'
+    __tablename__ = 'cmip5_dataset'
 
     dataset_id = Column(Text, primary_key=True)
     project = Column(Text)
@@ -126,3 +134,31 @@ class Dataset(Base):
     p = Column(Integer)
     ensemble = Column(Text)
     cmor_table = Column(Text)
+
+class C6Dataset(Base):
+    """
+    A CMIP6 ESGF dataset
+    """
+    __tablename__ = 'cmip6_dataset'
+
+    dataset_id = Column(Text, primary_key=True)
+    project = Column(Text)
+    activity_id = Column('activity_id', Text)
+    institution_id = Column('institution_id', Text)
+    source_id = Column('source_id', Text)
+    source_type = Column('source_type', Text)
+    experiment_id = Column('experiment_id', Text)
+    sub_experiment_id = Column('sub_experiment_id', Text)
+    frequency = Column('frequency', Text)
+    realm = Column(Text)
+    r = Column(Integer)
+    i = Column(Integer)
+    p = Column(Integer)
+    f = Column(Integer)
+    variant_label = Column('variant_label', Text)
+    member_id = Column('member_id', Text)
+    variable_id = Column( Text)
+    grid_label = Column('grid_label', Text)
+    nominal_resolution = Column('nominal_resolution', Text)
+    table_id = Column('table_id', Text)
+

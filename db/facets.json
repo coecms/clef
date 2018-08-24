@@ -1,0 +1,21 @@
+{
+    "activity_id":  "None",
+    "project":  "project",
+    "experiment_id": "experiment",
+    "frequency": "time_frequency",
+    "grid_label": "None",
+    "institution_id": "institute",
+    "mip_era":  "None",
+    "nominal_resolution": "None", 
+    "product": "product",
+    "realm":  "realm",
+    "source_id": "model",
+    "source_type": "None", 
+    "sub_experiment_id": "None", 
+    "table_id": "cmor_table",
+    "variable_id": "variable", 
+    "variant_label": "None", 
+    "member_id": "ensemble", 
+    "experiment_family": "experiment_family", 
+    "cf_standard_name": "cf_standard_name" 
+}
