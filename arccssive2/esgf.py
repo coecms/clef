@@ -91,7 +91,7 @@ def link_to_esgf(query, **kwargs):
     return r.prepare().url
 
 
-def find_checksum_id(query, project, **kwargs):
+def find_checksum_id(query, project='CMIP6', **kwargs):
     """
     Returns a sqlalchemy selectable containing the ESGF id and checksum for
     each query match

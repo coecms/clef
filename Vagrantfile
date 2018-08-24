@@ -72,6 +72,8 @@ Vagrant.configure("2") do |config|
     sudo systemctl start postgresql-9.6
 
     cd /vagrant
+    sudo -u postgres dropdb postgres
+    sudo -u postgres createdb postgres
     sudo -u postgres psql -f db/nci.sql
     sudo -u postgres psql -f db/tables.sql
   SHELL

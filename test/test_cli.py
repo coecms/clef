@@ -31,8 +31,9 @@ except ImportError:
 def runner():
     return CliRunner()
 
-def test_local(runner):
-    result = runner.invoke(local, ['--help'])
+@pytest.mark.parametrize('command', [cmip5, cmip6])
+def test_cmip(command, runner):
+    result = runner.invoke(command, ['--help'])
     assert result.exit_code == 0
 
 def dummy_connect(*args, **kwargs):
@@ -45,7 +46,7 @@ def mock_query(session):
             with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query) as query:
                 yield query
 
-@pytest.mark.parametrize('command', [local, missing])
+@pytest.mark.parametrize('command', [cmip5, cmip6])
 def test_versions(command, runner, mock_query):
     """
     Check the --latest/--all-versions flags are passed correctly to esgf_query
@@ -67,7 +68,7 @@ def test_versions(command, runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['latest'] == 'true'
 
-@pytest.mark.parametrize('command', [local, missing])
+@pytest.mark.parametrize('command', [cmip5])
 def test_mip(command, runner, mock_query):
     result = runner.invoke(command, ['--mip=Amon'])
     print(result.output)
