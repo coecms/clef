@@ -81,7 +81,7 @@ def link_to_esgf(query, **kwargs):
     params.update(constraints)
 
     endpoint = 'cmip5'
-    if params['project'].lower() == 'cmip6':
+    if params.get('project','').lower() == 'cmip6':
         endpoint = 'cmip6'
 
     r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,

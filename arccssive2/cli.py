@@ -149,7 +149,6 @@ def cmip5(ctx, query, user, debug, distrib, replica, latest, format,
         'experiment': experiment,
         'institute': institute,
         'model': model,
-        'project': project,
         'realm': realm,
         'time_frequency': time_frequency,
         'cmor_table': cmor_table,
@@ -211,6 +210,7 @@ def cmip5(ctx, query, user, debug, distrib, replica, latest, format,
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
             format=format,
+            project=project,
             **terms
             )
     if not ctx.obj['missing']:
@@ -226,6 +226,7 @@ def cmip5(ctx, query, user, debug, distrib, replica, latest, format,
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
             format=format,
+            project=project,
             **terms
             )
     if qm.count() > 0:
