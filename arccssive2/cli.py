@@ -234,6 +234,7 @@ def cmip5(ctx, query, user, debug, distrib, replica, latest, format,
         for result in qm:
             print(result[0])
 
+
 @esgf.command()
 @common_args
 @cmip6_args

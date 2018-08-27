@@ -17,7 +17,6 @@ from __future__ import print_function
 
 from arccssive2.cli import *
 import pytest
-from arccssive2.db import connect
 
 from click.testing import CliRunner
 from test_esgf import updated_query
@@ -46,6 +45,12 @@ def mock_query(session):
             with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query) as query:
                 yield query
 
+def cli_run(runner, cmd, args=[]):
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False}
+    result = runner.invoke(cmd, args, obj=ctx, catch_exceptions=False)
+    assert result.exit_code == 0
+    return result
+
 @pytest.mark.parametrize('command', [cmip5, cmip6])
 def test_versions(command, runner, mock_query):
     """
@@ -53,30 +58,25 @@ def test_versions(command, runner, mock_query):
     """
 
     # Check the query args are passed correctly
-    result = runner.invoke(command)
-    print(result.output)
+    cli_run(runner, command)
     assert mock_query.called
     assert mock_query.call_args[1]['latest'] == None
 
-    result = runner.invoke(command, ['--all-versions'])
-    print(result.output)
+    cli_run(runner, command, ['--all-versions'])
     assert mock_query.called
     assert mock_query.call_args[1]['latest'] == None
 
-    result = runner.invoke(command, ['--latest'])
-    print(result.output)
+    cli_run(runner, command, ['--latest'])
     assert mock_query.called
     assert mock_query.call_args[1]['latest'] == 'true'
 
 @pytest.mark.parametrize('command', [cmip5])
 def test_mip(command, runner, mock_query):
-    result = runner.invoke(command, ['--mip=Amon'])
-    print(result.output)
+    cli_run(runner, command, ['--mip=Amon'])
     assert mock_query.called
     assert mock_query.call_args[1]['cmor_table'] == ['Amon']
 
-    result = runner.invoke(command, ['--mip=Amon', '-t', 'day'])
-    print(result.output)
+    cli_run(runner, command, ['--mip=Amon', '-t', 'day'])
     assert mock_query.called
     assert mock_query.call_args[1]['cmor_table'] == ['Amon', 'day']
 
