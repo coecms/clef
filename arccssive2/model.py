@@ -40,6 +40,8 @@ class pg_json_property(index_property):
         return expr.astext.cast(self.cast_type)
 
 
+# These tables group the individual files into datasets. `dataset_id` is essentially a md5 checksum of the ESGF
+# dataset id, generated from the netcdf attributes
 c5_metadata_dataset_link = Table('c5_metadata_dataset_link', Base.metadata,
                                  Column('file_id',
                                         ForeignKey('esgf_paths.file_id'),
@@ -56,6 +58,8 @@ c6_metadata_dataset_link = Table('c6_metadata_dataset_link', Base.metadata,
 
 
 class Path(Base):
+    """Path of a file on Raijin, with links to metadata
+    """
     __tablename__ = 'esgf_paths'
 
     id = Column('file_id', UUID, primary_key=True)
@@ -69,6 +73,10 @@ class Path(Base):
 
 
 class Metadata(Base):
+    """Generic base class for Metadata of a file on Raijin
+
+    See :class:`Posix` and :class:`Netcdf` for specific metadata information
+    """
     __tablename__ = 'metadata'
 
     id = Column('md_hash', UUID, ForeignKey('esgf_paths.file_id'), primary_key=True)
@@ -83,6 +91,8 @@ class Metadata(Base):
 
 
 class Checksum(Base):
+    """Checksum of a file on Raijin
+    """
     __tablename__ = 'checksums'
 
     id = Column('ch_hash', UUID, ForeignKey('esgf_paths.file_id'), ForeignKey('metadata.md_hash'), primary_key=True)
@@ -93,12 +103,20 @@ class Checksum(Base):
 
 
 class Posix(Metadata):
+    """Posix metadata of a file on Raijin
+
+    As would be found by ``ls``
+    """
     __mapper_args__ = {
         'polymorphic_identity': 'posix',
     }
 
 
 class Netcdf(Metadata):
+    """NetCDF metadata of a file on Raijin
+
+    As would be found by ``ncdump -h``
+    """
     __mapper_args__ = {
         'polymorphic_identity': 'netcdf',
     }
@@ -110,8 +128,7 @@ class Netcdf(Metadata):
 
 
 class ExtendedMetadata(Base):
-    """
-    Extra metadata not present in the file's attributes
+    """Extra metadata not present in the file's attributes
     """
     __tablename__ = 'extended_metadata'
 
@@ -126,8 +143,7 @@ class ExtendedMetadata(Base):
 
 
 class C5Dataset(Base):
-    """
-    A CMIP5 dataset
+    """A CMIP5 ESGF dataset
     """
     __tablename__ = 'cmip5_dataset'
 
@@ -146,8 +162,7 @@ class C5Dataset(Base):
 
 
 class C6Dataset(Base):
-    """
-    A CMIP6 ESGF dataset
+    """A CMIP6 ESGF dataset
     """
     __tablename__ = 'cmip6_dataset'
 

@@ -35,6 +35,11 @@ from .model import C5Dataset, C6Dataset, ExtendedMetadata
               help="send NCI request to download missing files matching ESGF search")
 @click.pass_context
 def esgf(ctx, search, local, missing, request):
+    """Common CLI options
+
+    Args:
+        ctx: Click context
+    """
     ctx.obj = {
         'search': search,
         'local': local,
@@ -47,23 +52,8 @@ def warning(message):
     print("WARNING: %s" % message, file=sys.stderr)
 
 
-def cmip5_args(f):
-    constraints = [
-        click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="Constraint"),
-        click.option('--experiment', '-e', multiple=True, help="Constraint"),
-        click.option('--experiment_family', multiple=True, help="Constraint"),
-        click.option('--institution', 'institute', multiple=True, help="Constraint"),
-        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, help="Constraint"),
-        click.option('--model', '-m', multiple=True, help="Constraint"),
-        click.option('--frequency', 'time_frequency', multiple=True, help="Constraint"),
-        click.option('--variable', '-v', multiple=True, help="Constraint")
-    ]
-    for c in reversed(constraints):
-        f = c(f)
-    return f
-
-
 def common_args(f):
+    """Add general common arguments"""
     constraints = [
         click.argument('query', nargs=-1),
         click.option('--user', default=None, help='Username for database'),
@@ -82,8 +72,25 @@ def common_args(f):
     return f
 
 
+def cmip5_args(f):
+    """Add CMIP5 specific arguments"""
+    constraints = [
+        click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="Constraint"),
+        click.option('--experiment', '-e', multiple=True, help="Constraint"),
+        click.option('--experiment_family', multiple=True, help="Constraint"),
+        click.option('--institution', 'institute', multiple=True, help="Constraint"),
+        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, help="Constraint"),
+        click.option('--model', '-m', multiple=True, help="Constraint"),
+        click.option('--frequency', 'time_frequency', multiple=True, help="Constraint"),
+        click.option('--variable', '-v', multiple=True, help="Constraint")
+    ]
+    for c in reversed(constraints):
+        f = c(f)
+    return f
+
+
 def cmip6_args(f):
-    #
+    """Add CMIP6 specific arguments"""
     constraints = [
         click.option('--variant_label', '-vl', multiple=True, help="Constraint"),
         click.option('--member', '-mi', 'member_id', multiple=True, help="Constraint"),
@@ -121,8 +128,7 @@ def cmip5(ctx, query, user, debug, distrib, replica, latest, format,
           time_frequency,
           variable,
           ):
-    """
-    Search local database for files matching the given constraints
+    """Search local database for files matching the given constraints
 
     Constraints can be specified multiple times, in which case they are ORed.
     `%` can be used as a wildcard, e.g. `--model access%` will match ACCESS1-0
@@ -252,8 +258,7 @@ def cmip6(ctx, query, user, debug, distrib, replica, latest, format,
           grid_label,
           nominal_resolution
           ):
-    """
-    Search local database for files matching the given constraints
+    """Search local database for files matching the given constraints
 
     Constraints can be specified multiple times, in which case they are ORed.
     `%` can be used as a wildcard, e.g. `--model access%` will match ACCESS1-0

@@ -13,6 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""
+Database connection functions
+
+.. class:: arccssive2.db.Session
+
+    :class:`sqlalchemy.orm.session.Session` connected to the MAS database
+
+    :func:`connect()` must be called before creating any new sessions
+"""
+
 from __future__ import print_function
 
 from getpass import getpass
@@ -27,8 +38,15 @@ Session = sessionmaker()
 
 
 def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=False):
-    """
-    Connect to a database
+    """Connect to the MAS database and sets up the session
+
+    Args:
+        url: Database URL
+        user: Username (password will be prompted via ``getpass``)
+        debug: Print debugging information
+
+    Returns:
+        :class:`sqlalchemy.engine.Engine`
     """
     _url = make_url(url)
 

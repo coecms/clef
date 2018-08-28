@@ -13,6 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Functions joining the ESGF web API to the MAS database
+
+ * :func:`esgf_query` handles accessing the web API, and returns its JSON response as a Python dict
+ * :func:`find_local_path` and :func:`find_missing_id` match the ESGF results against the MAS database
+
+"""
+
 from __future__ import print_function
 
 import json
@@ -42,10 +50,21 @@ def define_facets(project):
 
 
 def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False, latest=None, **kwargs):
+    """Search the ESGF catalogue
+
+    Args:
+        query: Free text query
+        fields: Fields to return
+        limit: Maximum number of items to return
+        offset: Starting offset of the returned items (used for paging)
+        distrib: Search all nodes (True), or just this one
+        replica: Return all replica files (True) or just the master copy
+        latest: Return all versions ('all' or None), only the latest (True), or only older copies (False)
+        **kwargs: Passed to the ESGF web API as search terms
+
+    Returns:
+        dict of ESGF search result (see ESGF web API documentation)
     """
-    Search the ESGF
-    """
-    # facets = define_facets(project)
     if latest == 'all':
         latest = None
 
@@ -73,6 +92,19 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
 
 
 def link_to_esgf(query, **kwargs):
+    """Convert search terms to a ESGF search URL
+
+    Returns a link to the user-facing ESGF web search matching a particular query
+
+    This is helpful for error messages, users can follow the URL to find the matches as ESGF sees them
+
+    Args:
+        query: Free text query
+        **kwargs: As :func:`esgf_query`
+
+    Returns:
+        str URL to the ESGF search website
+    """
     constraints = {k: v for k, v in kwargs.items() if v != ()}
     params = {
         'query': query,
@@ -96,9 +128,16 @@ def link_to_esgf(query, **kwargs):
 
 
 def find_checksum_id(query, project='CMIP6', **kwargs):
-    """
-    Returns a sqlalchemy selectable containing the ESGF id and checksum for
-    each query match
+    """Sqlalchemy selectable containing the ESGF id and checksum for each query match
+
+    Args:
+        query: Free text query
+        project ('CMIP5' or 'CMIP6'): ESGF project to search
+        **kwargs: Passed to :func:`esgf_query()`
+
+    Returns:
+        :class:`sqlalchemy.sql.expression.Selectable` with the checksum, id, dataset_id, title and version of
+             items found on ESGF
     """
     constraints = {k: v for k, v in kwargs.items() if v != ()}
     constraints['project'] = project
@@ -134,7 +173,18 @@ def find_checksum_id(query, project='CMIP6', **kwargs):
     return table
 
 
-def match_query(session, query, latest=None, **kwargs):
+def match_query(query, latest=None, **kwargs):
+    """Match checksums found on ESGF against the MAS database
+
+    Args:
+        query: Free text query
+        latest: Return all values ('all' or None), or only the latest (True)
+        **kwargs: Passed to :func:`esgf_query`
+
+    Returns:
+        :class:`sqlalchemy.sql.expression.Selectable` with the checksum, id, dataset_id, title and version of
+             items found on ESGF joined to the matching :class:`arccssive2.model.Path` on the MAS database
+    """
     values = find_checksum_id(query, latest=latest, **kwargs)
 
     if latest is True:
@@ -151,11 +201,20 @@ def match_query(session, query, latest=None, **kwargs):
 
 
 def find_local_path(session, query, latest=None, format='file', **kwargs):
-    """
-    Returns the `model.Path` for each local file found in the ESGF query
+    """Returns the filesystem path for each local file found in the ESGF query
+
+    Args:
+        session (:class:`arccssive2.db.Session`): Database session
+        query: Free text query
+        latest: Return all values ('all' or None), or only the latest (True)
+        format: Return individual files ('file') or whole datasets ('dataset')
+        **kwargs: Passed to :func:`esgf_query`
+
+    Returns:
+        :class:`sqlalchemy.orm.query.Query` with the list of matching paths of either files or datasets
     """
 
-    subq = match_query(session, query, latest, **kwargs)
+    subq = match_query(query, latest, **kwargs)
     if format == 'file':
         return (session
                 .query('esgf_paths.path')
@@ -172,12 +231,20 @@ def find_local_path(session, query, latest=None, format='file', **kwargs):
 
 
 def find_missing_id(session, query, latest=None, format='file', **kwargs):
-    """
-    Returns the ESGF id for each file in the ESGF query that doesn't have a
-    local match
+    """Returns the ESGF id for each file in the ESGF query that doesn't have a local match
+
+    Args:
+        session (:class:`arccssive2.db.Session`): Database session
+        query: Free text query
+        latest: Return all values ('all' or None), or only the latest (True)
+        format: Return individual files ('file') or whole datasets ('dataset')
+        **kwargs: Passed to :func:`esgf_query`
+
+    Returns:
+        :class:`sqlalchemy.orm.query.Query` with the list of matching file or dataset ids
     """
 
-    subq = match_query(session, query, latest, **kwargs)
+    subq = match_query(query, latest, **kwargs)
     if format == 'file':
         return (session
                 .query('esgf_query.id')
