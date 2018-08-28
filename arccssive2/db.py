@@ -15,24 +15,16 @@
 # limitations under the License.
 from __future__ import print_function
 
-try:
-    import keyring
-except ImportError:
-    try:
-        from unittest.mock import Mock
-    except ImportError:
-        from mock import Mock
-    keyring = Mock()
+from getpass import getpass
 
 import sqlalchemy
+import sqlalchemy.exc
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
-from getpass import getpass
-from .model import Base
 
-engine = None
-Session = sessionmaker(bind=engine)
+Session = sessionmaker()
+
 
 def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=False):
     """
@@ -40,20 +32,12 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
     """
     _url = make_url(url)
 
-    manual_password = False
-
     if user is not None:
         """
         Manually specified user
         """
         _url.username = user
-        _url.password = None
-
-        _url.password = keyring.get_password('arccssive2', user)
-
-        if _url.password is None:
-            _url.password = getpass("Password for user %s: "%user)
-            keyring.set_password('arccssive2', user, _url.password)
+        _url.password = getpass("Password for user %s: " % user)
 
     engine = create_engine(_url, echo=debug)
     Session.configure(bind=engine)
@@ -62,8 +46,6 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
         c = engine.connect()
         c.close()
     except sqlalchemy.exc.OperationalError:
-        # Faled to connect, drop credentials
-        keyring.delete_password('arccssive2', user)
         raise Exception('Failed to authenticate with NCI MAS database')
 
     return engine
