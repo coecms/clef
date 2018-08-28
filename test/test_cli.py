@@ -80,3 +80,10 @@ def test_mip(command, runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['cmor_table'] == ['Amon', 'day']
 
+def test_bad_facet(runner, mock_query):
+    with pytest.raises(AttributeError):
+        cli_run(runner, cmip5, ['--mip=BAD'])
+
+    with pytest.raises(AttributeError):
+        cli_run(runner, cmip6, ['--institution=BAD'])
+

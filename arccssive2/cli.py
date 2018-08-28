@@ -180,28 +180,25 @@ def cmip5(ctx, query, user, debug, distrib, replica, latest, format,
         return
 
     terms = {}
-    filters = []
 
     # Add filters
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
-            filters.append(getattr(C5Dataset,key).ilike(any_([x for x in value])))
-
             # If this key was filtered get a list of the matching values, used
             # in the ESGF query
             terms[key] = [x[0] for x in (s.query(getattr(C5Dataset,key))
                 .distinct()
                 .filter(getattr(C5Dataset,key).ilike(any_([x for x in value]))))]
 
-    if len(variable) > 0:
-        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable])))
+            if len(terms[key]) == 0:
+                raise AttributeError("No matching values found for %s in %s\n"%(value, key))
 
+    if len(variable) > 0:
         terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
             .distinct()
             .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
-
-    #if len(version) > 0:
-    #    filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
+        if len(terms['variable']) == 0:
+            raise AttributeError("No matching values found for %s in %s\n"%(variable, 'variable'))
 
     ql = find_local_path(s, query=None,
             distrib=True,
@@ -326,20 +323,22 @@ def cmip6(ctx,query, user, debug, distrib, replica, latest, format,
     # Add filters
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
-            filters.append(getattr(C6Dataset,key).ilike(any_([x for x in value])))
-
             # If this key was filtered get a list of the matching values, used
             # in the ESGF query
             terms[key] = [x[0] for x in (s.query(getattr(C6Dataset,key))
                 .distinct()
                 .filter(getattr(C6Dataset,key).ilike(any_([x for x in value]))))]
 
-    if len(variable_id) > 0:
-        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable_id])))
+            if len(terms[key]) == 0:
+                raise AttributeError("No matching values found for %s in %s\n"%(value, key))
 
+    if len(variable_id) > 0:
         terms['variable_id'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
             .distinct()
             .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable_id]))))]
+
+        if len(terms['variable']) == 0:
+            raise AttributeError("No matching values found for %s in %s\n"%(variable, 'variable'))
 
     ql = find_local_path(s, query=None,
             distrib=True,
