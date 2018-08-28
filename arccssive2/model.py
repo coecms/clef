@@ -20,13 +20,14 @@ Model of NCI's MAS database
 
 from __future__ import print_function
 
+from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
+from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
-from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 
 Base = declarative_base()
+
 
 class pg_json_property(index_property):
     # http://docs.sqlalchemy.org/en/latest/orm/extensions/indexable.html
@@ -38,19 +39,21 @@ class pg_json_property(index_property):
         expr = super(pg_json_property, self).expr(model)
         return expr.astext.cast(self.cast_type)
 
+
 c5_metadata_dataset_link = Table('c5_metadata_dataset_link', Base.metadata,
-    Column('file_id', 
-        ForeignKey('esgf_paths.file_id'), 
-        ForeignKey('metadata.md_hash'),
-        ForeignKey('checksums.ch_hash')),
-    Column('dataset_id', ForeignKey('cmip5_dataset.dataset_id')))
+                                 Column('file_id',
+                                        ForeignKey('esgf_paths.file_id'),
+                                        ForeignKey('metadata.md_hash'),
+                                        ForeignKey('checksums.ch_hash')),
+                                 Column('dataset_id', ForeignKey('cmip5_dataset.dataset_id')))
 
 c6_metadata_dataset_link = Table('c6_metadata_dataset_link', Base.metadata,
-    Column('file_id', 
-        ForeignKey('esgf_paths.file_id'), 
-        ForeignKey('metadata.md_hash'),
-        ForeignKey('checksums.ch_hash')),
-    Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
+                                 Column('file_id',
+                                        ForeignKey('esgf_paths.file_id'),
+                                        ForeignKey('metadata.md_hash'),
+                                        ForeignKey('checksums.ch_hash')),
+                                 Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
+
 
 class Path(Base):
     __tablename__ = 'esgf_paths'
@@ -64,6 +67,7 @@ class Path(Base):
     checksum = relationship('Checksum', viewonly=True)
     extended = relationship('ExtendedMetadata', viewonly=True)
 
+
 class Metadata(Base):
     __tablename__ = 'metadata'
 
@@ -74,8 +78,9 @@ class Metadata(Base):
     path = relationship("Path")
 
     __mapper_args__ = {
-            'polymorphic_on': type,
-            }
+        'polymorphic_on': type,
+    }
+
 
 class Checksum(Base):
     __tablename__ = 'checksums'
@@ -86,20 +91,23 @@ class Checksum(Base):
 
     path = relationship("Path")
 
+
 class Posix(Metadata):
     __mapper_args__ = {
-            'polymorphic_identity': 'posix',
-            }
+        'polymorphic_identity': 'posix',
+    }
+
 
 class Netcdf(Metadata):
     __mapper_args__ = {
-            'polymorphic_identity': 'netcdf',
-            }
+        'polymorphic_identity': 'netcdf',
+    }
 
-    format     = pg_json_property('json', 'format', Text)
-    variables  = index_property('json', 'variables')
+    format = pg_json_property('json', 'format', Text)
+    variables = index_property('json', 'variables')
     attributes = index_property('json', 'attributes')
     dimensions = index_property('json', 'dimensions')
+
 
 class ExtendedMetadata(Base):
     """
@@ -108,13 +116,14 @@ class ExtendedMetadata(Base):
     __tablename__ = 'extended_metadata'
 
     file_id = Column(UUID,
-            ForeignKey('metadata.md_hash'),
-            ForeignKey('checksums.ch_hash'),
-            ForeignKey('esgf_paths.file_id'),
-            primary_key=True)
+                     ForeignKey('metadata.md_hash'),
+                     ForeignKey('checksums.ch_hash'),
+                     ForeignKey('esgf_paths.file_id'),
+                     primary_key=True)
     version = Column(Text)
     variable = Column(Text)
     period = Column(INT4RANGE)
+
 
 class C5Dataset(Base):
     """
@@ -134,6 +143,7 @@ class C5Dataset(Base):
     p = Column(Integer)
     ensemble = Column(Text)
     cmor_table = Column(Text)
+
 
 class C6Dataset(Base):
     """
@@ -157,8 +167,7 @@ class C6Dataset(Base):
     f = Column(Integer)
     variant_label = Column('variant_label', Text)
     member_id = Column('member_id', Text)
-    variable_id = Column( Text)
+    variable_id = Column(Text)
     grid_label = Column('grid_label', Text)
     nominal_resolution = Column('nominal_resolution', Text)
     table_id = Column('table_id', Text)
-
