@@ -20,13 +20,14 @@ Model of NCI's MAS database
 
 from __future__ import print_function
 
+from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
+from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
-from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 
 Base = declarative_base()
+
 
 class pg_json_property(index_property):
     # http://docs.sqlalchemy.org/en/latest/orm/extensions/indexable.html
@@ -38,21 +39,27 @@ class pg_json_property(index_property):
         expr = super(pg_json_property, self).expr(model)
         return expr.astext.cast(self.cast_type)
 
+
+# These tables group the individual files into datasets. `dataset_id` is essentially a md5 checksum of the ESGF
+# dataset id, generated from the netcdf attributes
 c5_metadata_dataset_link = Table('c5_metadata_dataset_link', Base.metadata,
-    Column('file_id', 
-        ForeignKey('esgf_paths.file_id'), 
-        ForeignKey('metadata.md_hash'),
-        ForeignKey('checksums.ch_hash')),
-    Column('dataset_id', ForeignKey('cmip5_dataset.dataset_id')))
+                                 Column('file_id',
+                                        ForeignKey('esgf_paths.file_id'),
+                                        ForeignKey('metadata.md_hash'),
+                                        ForeignKey('checksums.ch_hash')),
+                                 Column('dataset_id', ForeignKey('cmip5_dataset.dataset_id')))
 
 c6_metadata_dataset_link = Table('c6_metadata_dataset_link', Base.metadata,
-    Column('file_id', 
-        ForeignKey('esgf_paths.file_id'), 
-        ForeignKey('metadata.md_hash'),
-        ForeignKey('checksums.ch_hash')),
-    Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
+                                 Column('file_id',
+                                        ForeignKey('esgf_paths.file_id'),
+                                        ForeignKey('metadata.md_hash'),
+                                        ForeignKey('checksums.ch_hash')),
+                                 Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
+
 
 class Path(Base):
+    """Path of a file on Raijin, with links to metadata
+    """
     __tablename__ = 'esgf_paths'
 
     id = Column('file_id', UUID, primary_key=True)
@@ -64,7 +71,12 @@ class Path(Base):
     checksum = relationship('Checksum', viewonly=True)
     extended = relationship('ExtendedMetadata', viewonly=True)
 
+
 class Metadata(Base):
+    """Generic base class for Metadata of a file on Raijin
+
+    See :class:`Posix` and :class:`Netcdf` for specific metadata information
+    """
     __tablename__ = 'metadata'
 
     id = Column('md_hash', UUID, ForeignKey('esgf_paths.file_id'), primary_key=True)
@@ -74,10 +86,13 @@ class Metadata(Base):
     path = relationship("Path")
 
     __mapper_args__ = {
-            'polymorphic_on': type,
-            }
+        'polymorphic_on': type,
+    }
+
 
 class Checksum(Base):
+    """Checksum of a file on Raijin
+    """
     __tablename__ = 'checksums'
 
     id = Column('ch_hash', UUID, ForeignKey('esgf_paths.file_id'), ForeignKey('metadata.md_hash'), primary_key=True)
@@ -86,39 +101,49 @@ class Checksum(Base):
 
     path = relationship("Path")
 
+
 class Posix(Metadata):
+    """Posix metadata of a file on Raijin
+
+    As would be found by ``ls``
+    """
     __mapper_args__ = {
-            'polymorphic_identity': 'posix',
-            }
+        'polymorphic_identity': 'posix',
+    }
+
 
 class Netcdf(Metadata):
-    __mapper_args__ = {
-            'polymorphic_identity': 'netcdf',
-            }
+    """NetCDF metadata of a file on Raijin
 
-    format     = pg_json_property('json', 'format', Text)
-    variables  = index_property('json', 'variables')
+    As would be found by ``ncdump -h``
+    """
+    __mapper_args__ = {
+        'polymorphic_identity': 'netcdf',
+    }
+
+    format = pg_json_property('json', 'format', Text)
+    variables = index_property('json', 'variables')
     attributes = index_property('json', 'attributes')
     dimensions = index_property('json', 'dimensions')
 
+
 class ExtendedMetadata(Base):
-    """
-    Extra metadata not present in the file's attributes
+    """Extra metadata not present in the file's attributes
     """
     __tablename__ = 'extended_metadata'
 
     file_id = Column(UUID,
-            ForeignKey('metadata.md_hash'),
-            ForeignKey('checksums.ch_hash'),
-            ForeignKey('esgf_paths.file_id'),
-            primary_key=True)
+                     ForeignKey('metadata.md_hash'),
+                     ForeignKey('checksums.ch_hash'),
+                     ForeignKey('esgf_paths.file_id'),
+                     primary_key=True)
     version = Column(Text)
     variable = Column(Text)
     period = Column(INT4RANGE)
 
+
 class C5Dataset(Base):
-    """
-    A CMIP5 dataset
+    """A CMIP5 ESGF dataset
     """
     __tablename__ = 'cmip5_dataset'
 
@@ -135,9 +160,9 @@ class C5Dataset(Base):
     ensemble = Column(Text)
     cmor_table = Column(Text)
 
+
 class C6Dataset(Base):
-    """
-    A CMIP6 ESGF dataset
+    """A CMIP6 ESGF dataset
     """
     __tablename__ = 'cmip6_dataset'
 
@@ -157,8 +182,7 @@ class C6Dataset(Base):
     f = Column(Integer)
     variant_label = Column('variant_label', Text)
     member_id = Column('member_id', Text)
-    variable_id = Column( Text)
+    variable_id = Column(Text)
     grid_label = Column('grid_label', Text)
     nominal_resolution = Column('nominal_resolution', Text)
     table_id = Column('table_id', Text)
-

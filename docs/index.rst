@@ -14,8 +14,8 @@ Contents:
    readme.rst 
    gettingstarted.rst
    architecture.rst
-   api/autoindex.rst
-   api/modules.rst
+   api/api.rst
+   autoapi/modules.rst
 
 Indices and tables
 ==================
