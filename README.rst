@@ -1,23 +1,23 @@
 =============================
-arccssive2
+clef
 =============================
 
-arccssive2
+clef
 
-.. image:: https://readthedocs.org/projects/arccssive2/badge/?version=latest
-  :target: https://readthedocs.org/projects/arccssive2/?badge=latest
-.. image:: https://travis-ci.org/ScottWales/arccssive2.svg?branch=master
-  :target: https://travis-ci.org/ScottWales/arccssive2
-.. image:: https://circleci.com/gh/ScottWales/arccssive2.svg?style=shield
-  :target: https://circleci.com/gh/ScottWales/arccssive2
-.. image:: http://codecov.io/github/ScottWales/arccssive2/coverage.svg?branch=master
-  :target: http://codecov.io/github/ScottWales/arccssive2?branch=master
-.. image:: https://landscape.io/github/ScottWales/arccssive2/master/landscape.svg?style=flat
-  :target: https://landscape.io/github/ScottWales/arccssive2/master
-.. image:: https://codeclimate.com/github/ScottWales/arccssive2/badges/gpa.svg
-  :target: https://codeclimate.com/github/ScottWales/arccssive2
-.. image:: https://badge.fury.io/py/arccssive2.svg
-  :target: https://pypi.python.org/pypi/arccssive2
+.. image:: https://readthedocs.org/projects/clef/badge/?version=latest
+  :target: https://readthedocs.org/projects/clef/?badge=latest
+.. image:: https://travis-ci.org/coecms/clef.svg?branch=master
+  :target: https://travis-ci.org/coecms/clef
+.. image:: https://circleci.com/gh/coecms/clef.svg?style=shield
+  :target: https://circleci.com/gh/coecms/clef
+.. image:: http://codecov.io/github/coecms/clef/coverage.svg?branch=master
+  :target: http://codecov.io/github/coecms/clef?branch=master
+.. image:: https://landscape.io/github/coecms/clef/master/landscape.svg?style=flat
+  :target: https://landscape.io/github/coecms/clef/master
+.. image:: https://codeclimate.com/github/coecms/clef/badges/gpa.svg
+  :target: https://codeclimate.com/github/coecms/clef
+.. image:: https://badge.fury.io/py/clef.svg
+  :target: https://pypi.python.org/pypi/clef
 
 .. content-marker-for-sphinx
 
@@ -27,47 +27,66 @@ Install
 
 Conda install::
 
-    conda install -c coecms arccssive2
+    conda install -c coecms clef
 
 Pip install (into a virtual environment)::
 
-    pip install arccssive2
+    pip install clef
 
 ---
 Use
 ---
 
-Find files at NCI downloaded from ESGF::
+Find CMIP5 files matching the constraints::
 
-    esgf local --model mpi% --variable tas --experiment historical --time_frequency=day
+    clef cmip5 --model mpi% --variable tas --experiment historical --table day
 
-You can filter by the following terms:
+You can filter CMIP5 by the following terms:
  
- * ensemble
+ * ensemble/member
  * experiment
- * institute
+ * experiment-family
+ * institution
  * model
- * project
+ * table/cmor_table
  * realm
- * time_frequency
+ * frequency
  * variable
- * version
+ * cf-standard-name
+
+See ``clef cmip5 --help`` for all available filters and their aliases
 
 ``%`` acts as a wildcard character
 
 ``--latest`` will check the latest versions of the datasets on the ESGF
 website, and will only return matching files
 
-Find files on ESGF that haven't been downloaded to NCI (note wildcards don't work)::
+It will return a path for all the files available locally at NCI and a dataset-id for the ones that haven't been downloaded yet
 
-    esgf missing --model MPI-ESM-LR --variable tas --time_frequency=day
+You can use the flags ``--local`` and ``--missing`` to return respectively only the local paths or the missing dataset-id::
 
-Any normal arguments will be passed into the ESGF search, though this may have
-false positives::
+    clef --local cmip5 --model MPI-ESM-LR --variable tas --table day
+    clef --missing cmip5 --model MPI-ESM-LR --variable tas --table day
 
-    esgf missing MPI-ESM-LR tas day
+You can repeat arguments more than once 
 
-See ``esgf missing --help`` for all available filters
+    clef --missing cmip5 --model MPI-ESM-LR -v tas -v tasmax -t day -t Amon
+
+You can filter CMIP6 by the following terms:
+ 
+ * activity
+ * experiment
+ * institution
+ * source_type 
+ * model
+ * member
+ * table
+ * realm
+ * frequency
+ * variable
+ * version
+
+See ``clef cmip6 --help`` for all available filters
 
 -------
 Develop
@@ -76,7 +95,7 @@ Develop
 Development install::
 
     conda env create -f conda/dev-environment.yml
-    source activate arccssive2-dev
+    source activate clef-dev
     pip install -e '.[dev]'
 
 The `dev-environment.yml` file is for speeding up installs and installing

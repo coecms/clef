@@ -1,6 +1,6 @@
-arccssive2.db
+clef.db
 =============
 
-.. automodule:: arccssive2.db
+.. automodule:: clef.db
     :members:
 

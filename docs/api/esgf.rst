@@ -1,5 +1,5 @@
-arccssive2.esgf
+clef.esgf
 ===============
 
-.. automodule:: arccssive2.esgf
+.. automodule:: clef.esgf
     :members:

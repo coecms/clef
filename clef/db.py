@@ -17,7 +17,7 @@
 """
 Database connection functions
 
-.. class:: arccssive2.db.Session
+.. class:: clef.db.Session
 
     :class:`sqlalchemy.orm.session.Session` connected to the MAS database
 

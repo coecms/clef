@@ -1,8 +1,8 @@
-name: arccssive2-dev
+name: clef-dev
 
 channels:
     - conda-forge
-    - ScottWales
+    - coecms
     - defaults
 
 dependencies:

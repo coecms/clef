@@ -1,5 +1,5 @@
-arccssive2.model
+clef.model
 ================
 
-.. automodule:: arccssive2.model
+.. automodule:: clef.model
     :members:

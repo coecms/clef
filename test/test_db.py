@@ -15,4 +15,4 @@
 # limitations under the License.
 from __future__ import print_function
 
-from arccssive2.db import *
+from clef.db import *

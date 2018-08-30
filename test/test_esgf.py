@@ -15,7 +15,7 @@
 # limitations under the License.
 from __future__ import print_function
 
-from arccssive2.esgf import *
+from clef.esgf import *
 
 try:
     import unittest.mock as mock
@@ -129,7 +129,7 @@ def test_checksum_id_empty(session):
     """
     Raise an exception if not matches found on ESGF
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=empty_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=empty_query):
         with pytest.raises(Exception):
             table = find_checksum_id('')
 
@@ -137,7 +137,7 @@ def test_checksum_id_missing(session):
     """
     Create a values table with the returned result
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         table = find_checksum_id('')
         match = session.query(table).one()
         assert match.id == 'abcde'
@@ -148,7 +148,7 @@ def test_find_local_path_missing(session):
     """
     No local results found, return nothing
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         results = find_local_path(session, '')
         assert results.count() == 0
 
@@ -156,7 +156,7 @@ def test_find_local_path_present(session):
     """
     One local result found, return its path
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=present_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         results = find_local_path(session, '')
         assert results.count() == 1
 
@@ -164,7 +164,7 @@ def test_find_missing_id_missing(session):
     """
     No local results found, return the missing match
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         results = find_missing_id(session, '')
         assert results.count() == 1
 
@@ -172,7 +172,7 @@ def test_find_missing_id_present(session):
     """
     One local result found, return nothing
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=present_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         results = find_missing_id(session, '')
         assert results.count() == 0
 
@@ -180,7 +180,7 @@ def test_find_missing_id_updated(session):
     """
     File has been updated, but is still present
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
         results = find_missing_id(session, '')
         assert results.count() == 0
 
@@ -188,7 +188,7 @@ def test_find_local_path_updated(session):
     """
     File has been updated, but is still present
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
         results = find_local_path(session, '')
         assert results.count() == 1
 
@@ -197,7 +197,7 @@ def test_find_missing_id_updated_latest(session):
     File has been updated, but is still present
     latest=true should prefer ESGF replies when they have the latest flag
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
         results = find_missing_id(session, '', latest=True)
         assert results.count() == 1
 
@@ -206,18 +206,18 @@ def test_find_local_path_updated_latest(session):
     File has been updated, but is still present
     latest=true should prefer ESGF replies when they have the latest flag
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
         results = find_local_path(session, '', latest=True)
         assert results.count() == 0
 
 def test_find_missing_id_dataset(session):
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         results = find_missing_id(session, '', format='dataset')
         assert results.count() == 1
         assert results[0][0] == 'dataset_bar'
 
 def test_find_local_path_dataset(session):
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=present_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         results = find_local_path(session, '', format='dataset')
         assert results.count() == 1
         assert results[0][0] == '/g/data1/ua6/unofficial-ESG-replica/tmp/tree/albedo2.dkrz.de/thredds/fileServer/cmip5/output1/LASG-CESS/FGOALS-g2/historical/6hr/atmos/6hrPlev/r3i1p1/v1/va/'
@@ -227,7 +227,7 @@ def test_find_partial_dataset(session):
     Dataset is only partially available
     Return no match by default
     """
-    with mock.patch('arccssive2.esgf.esgf_query', side_effect=missing_query):
+    with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         results = find_local_path(session, '', format='dataset')
         assert results.count() == 0
 

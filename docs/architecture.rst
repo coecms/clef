@@ -3,7 +3,7 @@ Architecture
 
 .. image:: architecture.png
 
-esgf missing
+clef --missing
 ------------
 
   1. Resolve any constraint wildcards by looking for matches in the local database, e.g.::
@@ -21,7 +21,7 @@ esgf missing
 
     c. Return the ESGF id for any files whose checksums cannot be found in the local database
 
-esgf local
+esgf --local
 ----------
 
   1. Query the local database for files::
@@ -36,4 +36,4 @@ esgf local
 
   2. If using the :code:`--latest` flag, query ESGF using the constraints to
        retrieve checksums, match these checksums against the local results and
-       return only those found
+       return only those found. This is the default behaviour

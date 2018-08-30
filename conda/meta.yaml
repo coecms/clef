@@ -1,5 +1,5 @@
 package:
-    name: arccssive2
+    name: clef
     version: {{ GIT_DESCRIBE_TAG }}
 
 build:
@@ -12,9 +12,9 @@ build:
     script: python setup.py install
     script_env:
         - LC_ALL # For click tests
-        - ARCCSSIVE_DB
+        - CLEF_DB
     entry_points:
-        - esgf = arccssive2.cli:esgf
+        - clef = clef.cli:clef
 
 requirements:
     build:
@@ -39,10 +39,10 @@ test:
     commands:
         - py.test
     imports:
-        - arccssive2
+        - clef
 
 about:
-    home: https://github.com/coecms/arccssive2
+    home: https://github.com/coecms/clef
     license: Apache 2.0
     license_file: LICENSE-2.0.txt
-    summary: arccssive2
+    summary: clef

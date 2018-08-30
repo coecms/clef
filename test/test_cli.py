@@ -15,7 +15,7 @@
 # limitations under the License.
 from __future__ import print_function
 
-from arccssive2.cli import *
+from clef.cli import *
 import pytest
 
 from click.testing import CliRunner
@@ -40,9 +40,9 @@ def dummy_connect(*args, **kwargs):
 
 @pytest.fixture()
 def mock_query(session):
-    with mock.patch('arccssive2.cli.connect', side_effect=dummy_connect):
-        with mock.patch('arccssive2.cli.Session', side_effect = lambda: session):
-            with mock.patch('arccssive2.esgf.esgf_query', side_effect=updated_query) as query:
+    with mock.patch('clef.cli.connect', side_effect=dummy_connect):
+        with mock.patch('clef.cli.Session', side_effect = lambda: session):
+            with mock.patch('clef.esgf.esgf_query', side_effect=updated_query) as query:
                 yield query
 
 def cli_run(runner, cmd, args=[]):
