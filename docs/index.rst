@@ -1,9 +1,9 @@
-.. arccssive2 documentation master file, created by
+.. clef documentation master file, created by
    sphinx-quickstart on Fri May 13 10:16:43 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-arccssive2 - NCI ESGF Dataset search
+clef - NCI ESGF Dataset search
 ======================================================
 
 Contents:
