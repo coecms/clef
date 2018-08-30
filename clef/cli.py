@@ -25,6 +25,8 @@ import sys
 import six
 import os
 import json
+import pkg_resources
+
 
 @click.group()
 @click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote', 
@@ -46,7 +48,8 @@ def warning(message):
     print("WARNING: %s"%message, file=sys.stderr)
 
 def load_vocabularies(project):
-    with open('db/'+project+'_validation.json', 'r') as f:
+    vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
+    with open(vfile, 'r') as f:
          data = f.read()
          models = json.loads(data)['models'] 
          realms = json.loads(data)['realms'] 
