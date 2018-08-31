@@ -17,6 +17,18 @@ NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and th
 
 .. content-marker-for-sphinx
 
+Clef searches the ESGF datasets stored at NCI, both data published on the NCI
+ESGF node as well as files that are locally replicated from other ESGF nodes.
+
+Currently it searches the following datasets:
+
+- **rr3** NCI published data
+- **al33** CMIP5 replicas
+- **oi10** CMIP6 replicas
+
+It can report both datasets that are available at NCI as well as datasets that
+are on external ESGF nodes but not available at NCI
+
 -------
 Install
 -------
