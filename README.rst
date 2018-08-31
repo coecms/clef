@@ -1,5 +1,5 @@
 =============================
-[clef](https://clef.readthedocs.io/en/stable)
+`clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
 NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
@@ -103,7 +103,8 @@ dependencies.
 
 To work on the database tables you may need to start up a test database.
 
-You can do this either with Docker::
+You can start a test database either with Docker::
+
     docker-compose up # (In a separate terminal)
     psql -h localhost -U postgres -f db/nci.sql
     psql -h localhost -U postgres -f db/tables.sql
@@ -111,6 +112,7 @@ You can do this either with Docker::
     docker-compose rm
 
 Or with Vagrant::
+
     vagrant up
     # ... do testing
     vagrant destroy
@@ -127,4 +129,4 @@ Build the documentation using Sphinx::
 New releases are packaged and uploaded to anaconda.org by CircleCI when a new
 Github release is made
 
-Documentation is available on ReadTheDocs, both for [stable](https://clef.readthedocs.io/en/stable/) and [latest](https://clef.readthedocs.io/en/latest/) versions.
+Documentation is available on ReadTheDocs, both for `stable <https://clef.readthedocs.io/en/stable/>`_ and `latest <https://clef.readthedocs.io/en/latest/>`_ versions.
