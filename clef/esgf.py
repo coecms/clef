@@ -22,6 +22,11 @@ from sqlalchemy.orm import aliased
 from sqlalchemy import String, Float, Integer, or_, func
 from .pgvalues import values
 from .model import Path, Checksum, c5_metadata_dataset_link, c6_metadata_dataset_link
+from .exception import ClefException
+
+
+class ESGFException(ClefException):
+    pass
 
 
 def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False, latest=None, **kwargs):
@@ -79,7 +84,7 @@ def link_to_esgf(query, **kwargs):
     return r.prepare().url
 
 
-def find_checksum_id(query, project, **kwargs):
+def find_checksum_id(query, project='CMIP5', **kwargs):
     """
     Returns a sqlalchemy selectable containing the ESGF id and checksum for
     each query match
@@ -89,14 +94,10 @@ def find_checksum_id(query, project, **kwargs):
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
 
     if response['response']['numFound'] == 0:
-        #raise Exception('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
-        print('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
-        sys.exit()
+        raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        #raise Exception('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
-        print('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
-        sys.exit()
+        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
 
     table = values([
             column('checksum', String),

@@ -17,6 +17,7 @@ from __future__ import print_function
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import find_local_path, find_missing_id, find_checksum_id
+from .exception import ClefException
 import click
 import logging
 from sqlalchemy import any_, or_
@@ -26,6 +27,13 @@ import six
 import os
 import json
 import pkg_resources
+
+def clef_catch():
+    try:
+        clef()
+    except ClefException as e:
+        click.echo('ERROR: %s'%e)
+        sys.exit(1)
 
 
 @click.group()

@@ -34,6 +34,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker
 
+from .exception import ClefException
+
 Session = sessionmaker()
 
 
@@ -64,6 +66,6 @@ def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=Fa
         c = engine.connect()
         c.close()
     except sqlalchemy.exc.OperationalError:
-        raise Exception('Failed to authenticate with NCI MAS database')
+        raise ClefException('Failed to authenticate with NCI MAS database')
 
     return engine
