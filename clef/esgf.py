@@ -55,6 +55,20 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
     return r.json()
 
 def link_to_esgf(query, **kwargs):
+    """Convert search terms to a ESGF search URL
+
+    Returns a link to the user-facing ESGF web search matching a particular query
+
+    This is helpful for error messages, users can follow the URL to find the matches as ESGF sees them
+
+    Args:
+        query: Free text query
+        **kwargs: As :func:`esgf_query`
+
+    Returns:
+        str URL to the ESGF search website
+    """
+
     
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     params = {
