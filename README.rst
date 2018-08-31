@@ -4,20 +4,12 @@ clef
 
 clef
 
-.. image:: https://readthedocs.org/projects/clef/badge/?version=latest
-  :target: https://readthedocs.org/projects/clef/?badge=latest
-.. image:: https://travis-ci.org/coecms/clef.svg?branch=master
-  :target: https://travis-ci.org/coecms/clef
-.. image:: https://circleci.com/gh/coecms/clef.svg?style=shield
-  :target: https://circleci.com/gh/coecms/clef
-.. image:: http://codecov.io/github/coecms/clef/coverage.svg?branch=master
-  :target: http://codecov.io/github/coecms/clef?branch=master
-.. image:: https://landscape.io/github/coecms/clef/master/landscape.svg?style=flat
-  :target: https://landscape.io/github/coecms/clef/master
-.. image:: https://codeclimate.com/github/coecms/clef/badges/gpa.svg
-  :target: https://codeclimate.com/github/coecms/clef
-.. image:: https://badge.fury.io/py/clef.svg
-  :target: https://pypi.python.org/pypi/clef
+.. image:: https://readthedocs.org/projects/clef/badge/?version=stable
+  :target: https://readthedocs.org/projects/clef/?badge=stable
+.. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
+  :target: https://circleci.com/gh/coecms/clef/tree/master
+.. image:: https://img.shields.io/conda/v/coecms/clef.svg
+  :target: https://anaconda.org/coecms/clef
 
 .. content-marker-for-sphinx
 
@@ -28,10 +20,6 @@ Install
 Conda install::
 
     conda install -c coecms clef
-
-Pip install (into a virtual environment)::
-
-    pip install clef
 
 ---
 Use
