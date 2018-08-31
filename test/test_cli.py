@@ -72,11 +72,7 @@ def test_versions(command, runner, mock_query):
 
 @pytest.mark.parametrize('command', [cmip5])
 def test_mip(command, runner, mock_query):
-    cli_run(runner, command, ['--mip=Amon'])
+    cli_run(runner, command, ['--mip=3hr'])
     assert mock_query.called
-    assert mock_query.call_args[1]['cmor_table'] == ['Amon']
-
-    cli_run(runner, command, ['--mip=Amon', '-t', 'day'])
-    assert mock_query.called
-    assert mock_query.call_args[1]['cmor_table'] == ['Amon', 'day']
+    assert mock_query.call_args[1]['cmor_table'] == ['3hr']
 
