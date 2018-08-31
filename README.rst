@@ -8,12 +8,12 @@ NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and th
   :target: https://readthedocs.org/projects/clef/?badge=stable
 .. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
   :target: https://circleci.com/gh/coecms/clef/tree/master
-.. image:: https://img.shields.io/conda/v/coecms/clef.svg
-  :target: https://anaconda.org/coecms/clef
 .. image:: https://api.codacy.com/project/badge/Grade/aabc5bed0d284dc3970d32e5ecbfe460
   :target: https://www.codacy.com/app/ScottWales/clef
 .. image:: https://api.codacy.com/project/badge/Coverage/aabc5bed0d284dc3970d32e5ecbfe460
   :target: https://www.codacy.com/app/ScottWales/clef
+.. image:: https://img.shields.io/conda/v/coecms/clef.svg
+  :target: https://anaconda.org/coecms/clef
 
 .. content-marker-for-sphinx
 
