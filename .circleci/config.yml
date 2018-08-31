@@ -19,7 +19,7 @@ run_conda: &run_conda
         - run:
             name: setup
             command: |
-                mkdir /tmp/artefacts
+                mkdir -p tmp/artefacts/pytest
                 source ~/miniconda/bin/activate
                 conda install --yes conda-build conda-verify anaconda-client postgresql
                 conda config --system --add channels conda-forge
@@ -34,6 +34,8 @@ run_conda: &run_conda
         - persist_to_workspace:
             root: /tmp/artefacts
             paths: '*'
+        - store_test_results:
+            path: /tmp/artefacts
 
 version: 2
 jobs:
