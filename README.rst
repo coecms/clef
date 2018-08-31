@@ -21,9 +21,18 @@ NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and th
 Install
 -------
 
-Conda install::
+Clef is pre-installed into a Conda environment at NCI. Load it with::
+
+    module use /g/data3/hh5/public/modules
+    module load conda
+    source activate clef-test
+
+You can install it to your own environment with::
 
     conda install -c coecms -c conda-forge clef
+
+But note that the MAS database necessary for running ``clef`` can only be accessed
+from NCI systems
 
 ---
 Use
