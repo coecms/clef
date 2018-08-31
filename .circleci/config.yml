@@ -26,6 +26,8 @@ run_conda: &run_conda
         - run:
             name: build
             command: |
+                # Enable coverage
+                mv conda/run_test_coverage.sh conda/run_test.sh
                 ~/miniconda/bin/conda build conda -c conda-forge --python=${PYTHON_VER}
         - run: 
             name: archive
