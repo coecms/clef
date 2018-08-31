@@ -19,20 +19,17 @@ run_conda: &run_conda
         - run:
             name: setup
             command: |
-                ~/miniconda/bin/conda install --yes conda-build conda-verify anaconda-client postgresql
-                ~/miniconda/bin/conda config --system --add channels conda-forge
-                ~/miniconda/bin/psql -h localhost -U postgres -f db/nci.sql
-                ~/miniconda/bin/psql -h localhost -U postgres -f db/tables.sql
+                mkdir /tmp/artefacts
+                source ~/miniconda/bin/activate
+                conda install --yes conda-build conda-verify anaconda-client postgresql
+                conda config --system --add channels conda-forge
+                psql -h localhost -U postgres -f db/nci.sql
+                psql -h localhost -U postgres -f db/tables.sql
         - run:
             name: build
             command: |
-                ~/miniconda/bin/conda build conda -c conda-forge --python=${PYTHON_VER}
-        - run: 
-            name: archive
-            command: |
-                mkdir /tmp/artefacts
-                cp $(~/miniconda/bin/conda build conda --python=${PYTHON_VER} --output) /tmp/artefacts
-
+                source ~/miniconda/bin/activate
+                conda build conda -c conda-forge --python=${PYTHON_VER} --output /tmp/artefacts
         - persist_to_workspace:
             root: /tmp/artefacts
             paths: '*'
