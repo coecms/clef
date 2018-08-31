@@ -29,6 +29,7 @@ run_conda: &run_conda
             name: build
             command: |
                 source ~/miniconda/bin/activate
+                mv conda/run_test_coverage.sh conda/run_test.sh
                 conda build conda -c conda-forge --python=${PYTHON_VER} --output /tmp/artefacts
         - persist_to_workspace:
             root: /tmp/artefacts
