@@ -19,7 +19,7 @@ run_conda: &run_conda
         - run:
             name: setup
             command: |
-                mkdir -p /tmp/artefacts/pytest
+                mkdir -p /tmp/artefacts/{tests/pytest,persist}
                 source ~/miniconda/bin/activate
                 conda install --yes conda-build conda-verify anaconda-client postgresql
                 conda config --system --add channels conda-forge
@@ -31,18 +31,19 @@ run_conda: &run_conda
                 source ~/miniconda/bin/activate
                 mv conda/run_test_coverage.sh conda/run_test.sh
                 conda build conda -c conda-forge --python=${PYTHON_VER} --output-folder /tmp/artefacts
+                cp /tmp/artefacts/linux-64/*.tar.bz2 /tmp/artefacts/persist
         - run:
             name: report-coverage
             when: always
             command: |
                 source ~/miniconda/bin/activate
                 pip install codacy-coverage
-                python-codacy-coverage -r /tmp/artefacts/pytest/coverage.xml
+                python-codacy-coverage -r /tmp/artefacts/tests/pytest/coverage.xml
         - persist_to_workspace:
-            root: /tmp/artefacts
+            root: /tmp/artefacts/persist
             paths: '*'
         - store_test_results:
-            path: /tmp/artefacts
+            path: /tmp/artefacts/tests
 
 version: 2
 jobs:
@@ -61,10 +62,10 @@ jobs:
             - image: scottwales/conda-build
         steps:
             - attach_workspace:
-                at: /tmp/artefacts
+                at: /tmp/artefacts/persist
 
             - run:
-                anaconda --token "${ANACONDA_TOKEN}" upload --user "${ANACONDA_USER}" /tmp/artefacts/*.tar.bz2
+                anaconda --token "${ANACONDA_TOKEN}" upload --user "${ANACONDA_USER}" /tmp/artefacts/persist/*.tar.bz2
 
 workflows:
     version: 2
@@ -87,5 +88,5 @@ workflows:
                 filters:
                     tags:
                         only: /.*/
-                    branches:
-                        ignore: /.*/
+                    # branches:
+                    #     ignore: /.*/
