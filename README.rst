@@ -23,7 +23,7 @@ Install
 
 Conda install::
 
-    conda install -c coecms clef
+    conda install -c coecms -c conda-forge clef
 
 ---
 Use
