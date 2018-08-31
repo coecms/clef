@@ -19,7 +19,7 @@ run_conda: &run_conda
         - run:
             name: setup
             command: |
-                mkdir -p tmp/artefacts/pytest
+                mkdir -p /tmp/artefacts/pytest
                 source ~/miniconda/bin/activate
                 conda install --yes conda-build conda-verify anaconda-client postgresql
                 conda config --system --add channels conda-forge
@@ -30,7 +30,10 @@ run_conda: &run_conda
             command: |
                 source ~/miniconda/bin/activate
                 mv conda/run_test_coverage.sh conda/run_test.sh
-                conda build conda -c conda-forge --python=${PYTHON_VER} --output /tmp/artefacts
+                conda build conda -c conda-forge --python=${PYTHON_VER} --output-folder /tmp/artefacts
+
+                pip install codacy-coverage
+                python-codacy-coverage -r /tmp/artefacts/pytest/coverage.xml
         - persist_to_workspace:
             root: /tmp/artefacts
             paths: '*'
