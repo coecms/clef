@@ -2,7 +2,7 @@
 clef
 =============================
 
-clef
+NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
 
 .. image:: https://readthedocs.org/projects/clef/badge/?version=stable
   :target: https://readthedocs.org/projects/clef/?badge=stable
