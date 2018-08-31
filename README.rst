@@ -1,11 +1,11 @@
 =============================
-clef
+[clef](https://clef.readthedocs.io/en/stable)
 =============================
 
 NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
 
 .. image:: https://readthedocs.org/projects/clef/badge/?version=stable
-  :target: https://readthedocs.org/projects/clef/?badge=stable
+  :target: https://clef.readthedocs.io/en/stable/
 .. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
   :target: https://circleci.com/gh/coecms/clef/tree/master
 .. image:: https://api.codacy.com/project/badge/Grade/aabc5bed0d284dc3970d32e5ecbfe460
@@ -40,7 +40,7 @@ Use
 
 Find CMIP5 files matching the constraints::
 
-    clef cmip5 --model mpi% --variable tas --experiment historical --table day
+    clef cmip5 --model BCC-CSM1.1 --variable tas --experiment historical --table day
 
 You can filter CMIP5 by the following terms:
  
@@ -56,8 +56,6 @@ You can filter CMIP5 by the following terms:
  * cf-standard-name
 
 See ``clef cmip5 --help`` for all available filters and their aliases
-
-``%`` acts as a wildcard character
 
 ``--latest`` will check the latest versions of the datasets on the ESGF
 website, and will only return matching files
@@ -103,23 +101,30 @@ The `dev-environment.yml` file is for speeding up installs and installing
 packages unavailable on pypi, `requirements.txt` is the source of truth for
 dependencies.
 
-Start test DB (optional, requires Docker)::
+To work on the database tables you may need to start up a test database.
+
+You can do this either with Docker::
     docker-compose up # (In a separate terminal)
     psql -h localhost -U postgres -f db/nci.sql
     psql -h localhost -U postgres -f db/tables.sql
+    # ... do testing
+    docker-compose rm
 
-Run tests::
+Or with Vagrant::
+    vagrant up
+    # ... do testing
+    vagrant destroy
+
+Run tests with py.test (they will default to using the test database)::
 
     py.test
 
-Build documentation::
+Build the documentation using Sphinx::
 
     python setup.py build_sphinx
     firefox docs/_build/index.html
 
-Upload documentation::
-
-    git subtree push --prefix docs/_build/html/ origin gh-pages
-
 New releases are packaged and uploaded to anaconda.org by CircleCI when a new
 Github release is made
+
+Documentation is available on ReadTheDocs, both for [stable](https://clef.readthedocs.io/en/stable/) and [latest](https://clef.readthedocs.io/en/latest/) versions.
