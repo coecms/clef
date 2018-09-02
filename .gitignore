@@ -63,3 +63,7 @@ target/
 *.db
 
 /README.cookiecutter.md
+
+.vagrant
+.pytest_cache
+

@@ -11,7 +11,7 @@ CREATE OR REPLACE VIEW metadata AS
         md_ingested,
         md_type,
         md_json
-    FROM ua6.metadata
+    FROM al33.metadata
     UNION ALL
     SELECT
         md_hash,
@@ -34,7 +34,7 @@ CREATE OR REPLACE VIEW paths AS
         pa_type,
         pa_path,
         pa_parents
-    FROM ua6.paths
+    FROM al33.paths
     UNION ALL
     SELECT
         pa_hash,
@@ -43,6 +43,7 @@ CREATE OR REPLACE VIEW paths AS
         pa_parents
     FROM oi10.paths;
 
+/*
 CREATE OR REPLACE VIEW checksums AS
     SELECT
         ch_hash,
@@ -54,36 +55,65 @@ CREATE OR REPLACE VIEW checksums AS
         ch_hash,
         ch_md5,
         ch_sha256
-    FROM ua6.checksums
+    FROM al33.checksums
     UNION ALL
     SELECT
         ch_hash,
         ch_md5,
         ch_sha256
     FROM oi10.checksums;
+*/
 
+
+/* Filter to unify the schemas and only return CMIP data files
+ */
 CREATE OR REPLACE VIEW esgf_filter AS
     SELECT
-        pa_hash AS file_id
-    FROM paths
+        pa_hash AS file_id,
+        5 AS cmip_era,
+        pa_path AS path
+    FROM rr3.paths
     WHERE
         pa_type IN ('file', 'link')
-        AND (
-            pa_parents[6] = md5('/g/data1/ua6/unofficial-ESG-replica/tmp/tree')::uuid
-            OR pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
-            OR pa_parents[4] = md5('/g/data1b/oi10/replicas')::uuid
-         );
+    AND pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
+    AND split_part(pa_path, '/', 6) != 'CMIP5RT'
+    AND split_part(pa_path, '/', 15) != 'files'
+    AND split_part(pa_path, '/', 17) != 'files'
+    AND pa_path LIKE '%.nc'
+    UNION ALL
+    SELECT
+        pa_hash AS file_id,
+        6 AS cmip_era,
+        pa_path AS path
+    FROM oi10.paths
+    WHERE
+        pa_type IN ('file', 'link')
+    AND pa_parents[4] = md5('/g/data1b/oi10/replicas')::uuid
+    AND pa_path LIKE '%.nc'
+    UNION ALL
+    SELECT
+        pa_hash AS file_id,
+        5 AS cmip_era,
+        pa_path AS path
+    FROM al33.paths
+    WHERE
+        pa_type IN ('file', 'link')
+    AND pa_parents[4] = md5('/g/data1b/al33/replicas')::uuid
+    AND split_part(pa_path, '/', 7) = 'combined'
+    AND pa_path LIKE '%.nc';
 
+
+/* Materialize the filter
+ */
 CREATE MATERIALIZED VIEW IF NOT EXISTS esgf_paths AS
     SELECT
         file_id,
-        pa_path AS path
-    FROM esgf_filter
-    JOIN paths ON file_id = pa_hash;
+        cmip_era,
+        path
+    FROM esgf_filter;
 CREATE UNIQUE INDEX IF NOT EXISTS esgf_path_file_id_idx ON esgf_paths(file_id);
 CREATE INDEX IF NOT EXISTS esgf_paths_basename_idx ON esgf_paths (regexp_replace(path, '^.*/', ''));
 
-/*
 CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
     SELECT
         md_hash as ch_hash,
@@ -95,10 +125,9 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS checksums AS
 CREATE UNIQUE INDEX IF NOT EXISTS checksums_hash_idx ON checksums(ch_hash);
 CREATE INDEX IF NOT EXISTS checksums_md5_idx ON checksums(ch_md5);
 CREATE INDEX IF NOT EXISTS checksums_sha256_idx ON checksums(ch_sha256);
-*/
 
 /* modified this so it works with both cmip5 and cmip6 using attributes_map.json */
-CREATE MATERIALIZED VIEW IF NOT EXISTS c5_dataset_metadata AS
+CREATE OR REPLACE VIEW c5_dataset_metadata AS
     SELECT
         md_hash AS file_id,
         md_json->'attributes'->>'project_id' as project,
@@ -114,8 +143,8 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS c5_dataset_metadata AS
         substring(md_json->'attributes'->>'table_id','Table (\S+) .*') as cmor_table
     FROM metadata
     JOIN esgf_paths ON md_hash = file_id
-    WHERE md_type = 'netcdf';
-CREATE UNIQUE INDEX IF NOT EXISTS c5_dataset_metadata_file_id ON c5_dataset_metadata(file_id);
+    WHERE md_type = 'netcdf'
+    AND cmip_era = 5;
 
 /* modified this so it works with both cmip5 and cmip6 using attributes_map.json */
 CREATE OR REPLACE VIEW c6_dataset_metadata AS
@@ -139,9 +168,10 @@ CREATE OR REPLACE VIEW c6_dataset_metadata AS
         md_json->'attributes'->>'grid_label' as grid_label,
         md_json->'attributes'->>'nominal_resolution' as nominal_resolution,
         md_json->'attributes'->>'table_id' as table_id
-    FROM oi10.metadata
-    WHERE md_type = 'netcdf';
-/* CREATE UNIQUE INDEX IF NOT EXISTS c6_dataset_metadata_file_id ON c6_dataset_metadata(file_id); */
+    FROM metadata
+    JOIN esgf_paths ON md_hash = file_id
+    WHERE md_type = 'netcdf'
+    AND cmip_era = 6;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS c5_metadata_dataset_link AS
     SELECT

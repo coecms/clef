@@ -1,37 +1,50 @@
 =============================
-clef
+`clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
-clef
+NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
 
-.. image:: https://readthedocs.org/projects/clef/badge/?version=latest
-  :target: https://readthedocs.org/projects/clef/?badge=latest
-.. image:: https://travis-ci.org/coecms/clef.svg?branch=master
-  :target: https://travis-ci.org/coecms/clef
-.. image:: https://circleci.com/gh/coecms/clef.svg?style=shield
-  :target: https://circleci.com/gh/coecms/clef
-.. image:: http://codecov.io/github/coecms/clef/coverage.svg?branch=master
-  :target: http://codecov.io/github/coecms/clef?branch=master
-.. image:: https://landscape.io/github/coecms/clef/master/landscape.svg?style=flat
-  :target: https://landscape.io/github/coecms/clef/master
-.. image:: https://codeclimate.com/github/coecms/clef/badges/gpa.svg
-  :target: https://codeclimate.com/github/coecms/clef
-.. image:: https://badge.fury.io/py/clef.svg
-  :target: https://pypi.python.org/pypi/clef
+.. image:: https://readthedocs.org/projects/clef/badge/?version=stable
+  :target: https://clef.readthedocs.io/en/stable/
+.. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
+  :target: https://circleci.com/gh/coecms/clef/tree/master
+.. image:: https://api.codacy.com/project/badge/Grade/aabc5bed0d284dc3970d32e5ecbfe460
+  :target: https://www.codacy.com/app/ScottWales/clef
+.. image:: https://api.codacy.com/project/badge/Coverage/aabc5bed0d284dc3970d32e5ecbfe460
+  :target: https://www.codacy.com/app/ScottWales/clef
+.. image:: https://img.shields.io/conda/v/coecms/clef.svg
+  :target: https://anaconda.org/coecms/clef
 
 .. content-marker-for-sphinx
+
+Clef searches the ESGF datasets stored at NCI, both data published on the NCI
+ESGF node as well as files that are locally replicated from other ESGF nodes.
+
+Currently it searches the following datasets:
+
+- **rr3** NCI published data
+- **al33** CMIP5 replicas
+- **oi10** CMIP6 replicas
+
+It can report both datasets that are available at NCI as well as datasets that
+are on external ESGF nodes but not available at NCI
 
 -------
 Install
 -------
 
-Conda install::
+Clef is pre-installed into a Conda environment at NCI. Load it with::
 
-    conda install -c coecms clef
+    module use /g/data3/hh5/public/modules
+    module load conda
+    source activate clef-test
 
-Pip install (into a virtual environment)::
+You can install it to your own environment with::
 
-    pip install clef
+    conda install -c coecms -c conda-forge clef
+
+But note that the MAS database necessary for running ``clef`` can only be accessed
+from NCI systems
 
 ---
 Use
@@ -39,7 +52,7 @@ Use
 
 Find CMIP5 files matching the constraints::
 
-    clef cmip5 --model mpi% --variable tas --experiment historical --table day
+    clef cmip5 --model BCC-CSM1.1 --variable tas --experiment historical --table day
 
 You can filter CMIP5 by the following terms:
  
@@ -55,8 +68,6 @@ You can filter CMIP5 by the following terms:
  * cf-standard-name
 
 See ``clef cmip5 --help`` for all available filters and their aliases
-
-``%`` acts as a wildcard character
 
 ``--latest`` will check the latest versions of the datasets on the ESGF
 website, and will only return matching files
@@ -102,23 +113,32 @@ The `dev-environment.yml` file is for speeding up installs and installing
 packages unavailable on pypi, `requirements.txt` is the source of truth for
 dependencies.
 
-Start test DB (optional, requires Docker)::
+To work on the database tables you may need to start up a test database.
+
+You can start a test database either with Docker::
+
     docker-compose up # (In a separate terminal)
     psql -h localhost -U postgres -f db/nci.sql
     psql -h localhost -U postgres -f db/tables.sql
+    # ... do testing
+    docker-compose rm
 
-Run tests::
+Or with Vagrant::
+
+    vagrant up
+    # ... do testing
+    vagrant destroy
+
+Run tests with py.test (they will default to using the test database)::
 
     py.test
 
-Build documentation::
+Build the documentation using Sphinx::
 
     python setup.py build_sphinx
     firefox docs/_build/index.html
 
-Upload documentation::
-
-    git subtree push --prefix docs/_build/html/ origin gh-pages
-
 New releases are packaged and uploaded to anaconda.org by CircleCI when a new
 Github release is made
+
+Documentation is available on ReadTheDocs, both for `stable <https://clef.readthedocs.io/en/stable/>`_ and `latest <https://clef.readthedocs.io/en/latest/>`_ versions.

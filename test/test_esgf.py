@@ -65,8 +65,8 @@ def present_query(*args, **kwags):
                 'numFound': 1,
                 'docs': [{
                     'id': 'abcde',
-                    'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
-                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'checksum': ['6cf73c8c375f0005fa6dea53608a660e'],
+                    'title': 'clt_3hr_ACCESS1-3_1pctCO2_r1i1p1_036001010130-036412312230.nc',
                     'version': '1',
                     'latest': 'true',
                     'score': 1.0,
@@ -86,8 +86,8 @@ def partial_query(*args, **kwargs):
                 'numFound': 2,
                 'docs': [{
                     'id': 'abcde',
-                    'checksum': ['3ea60eacd2a6e98b13fc3b242f585fdc'],
-                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'checksum': ['6cf73c8c375f0005fa6dea53608a660e'],
+                    'title': 'clt_3hr_ACCESS1-3_1pctCO2_r1i1p1_036001010130-036412312230.nc',
                     'version': '1',
                     'latest': 'true',
                     'score': 1.0,
@@ -116,7 +116,7 @@ def updated_query(*args, **kwags):
                     'id': 'abcde',
                     'checksum': ['1234'],
                     'version': '2',
-                    'title': 'va_6hrPlev_FGOALS-g2_historical_r3i1p1_1999010106-2000010100.nc',
+                    'title': 'clt_3hr_ACCESS1-3_1pctCO2_r1i1p1_036001010130-036412312230.nc',
                     'latest': 'true',
                     'score': 1.0,
                     'dataset_id': 'dataset_bar|example.com',
@@ -220,7 +220,7 @@ def test_find_local_path_dataset(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         results = find_local_path(session, '', format='dataset')
         assert results.count() == 1
-        assert results[0][0] == '/g/data1/ua6/unofficial-ESG-replica/tmp/tree/albedo2.dkrz.de/thredds/fileServer/cmip5/output1/LASG-CESS/FGOALS-g2/historical/6hr/atmos/6hrPlev/r3i1p1/v1/va/'
+        assert results[0][0] == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/v20121011/clt/'
 
 def test_find_partial_dataset(session):
     """
