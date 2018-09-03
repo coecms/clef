@@ -2,7 +2,7 @@
 𝄞 `clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
-NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
+NCI ESGF Replica Search - Developed by the `CLEX <https://climateextremes.org.au>`_ `CMS <https://climate-cms.org>`_ team, powered by `ESGF <https://esgf-node.llnl.gov/>`_ and the `NCI <https://nci.org.au>`_ MAS database
 
 .. image:: https://readthedocs.org/projects/clef/badge/?version=latest
   :target: https://clef.readthedocs.io/en/stable/
