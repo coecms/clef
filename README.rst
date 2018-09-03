@@ -1,10 +1,10 @@
 =============================
-`clef <https://clef.readthedocs.io/en/stable>`_
+𝄞 `clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
 NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
 
-.. image:: https://readthedocs.org/projects/clef/badge/?version=stable
+.. image:: https://readthedocs.org/projects/clef/badge/?version=latest
   :target: https://clef.readthedocs.io/en/stable/
 .. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
   :target: https://circleci.com/gh/coecms/clef/tree/master
