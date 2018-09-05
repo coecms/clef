@@ -17,7 +17,7 @@ CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://clim
 
 .. content-marker-for-sphinx
 
-Clef searches the Eerth System Grid Federation (ESGF) datasets stored at the Australian National Computational Infrastructure (NCI), both data published on the NCI
+Clef searches the Earth System Grid Federation datasets stored at the Australian National Computational Infrastructure, both data published on the NCI
 ESGF node as well as files that are locally replicated from other ESGF nodes.
 
 Currently it searches the following datasets:
