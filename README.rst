@@ -20,14 +20,13 @@ CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://clim
 Clef searches the Earth System Grid Federation datasets stored at the Australian National Computational Infrastructure, both data published on the NCI
 ESGF node as well as files that are locally replicated from other ESGF nodes.
 
-Currently it searches the following datasets:
+Currently it searches for the following datasets:
 
-- **rr3** NCI published data
-- **al33** CMIP5 replicas
-- **oi10** CMIP6 replicas
+- **CMIP5**  raijin projects: rr3, where NCI is the primary publisher and al33 for replicas 
+- **CMIP6**  raijin projects: rr3, where NCI is the primary publisher and 0i10 for replicas 
 
-It can report both datasets that are available at NCI as well as datasets that
-are on external ESGF nodes but not available at NCI
+The search returns both the path of data that is already available at NCI as well as information on data that
+is on external ESGF nodes but not yet available locally.
 
 -------
 Install
@@ -49,6 +48,9 @@ from NCI systems
 ---
 Use
 ---
+~~~~~
+CMIP5
+~~~~~
 
 Find CMIP5 files matching the constraints::
 
@@ -82,6 +84,10 @@ You can use the flags ``--local`` and ``--missing`` to return respectively only 
 You can repeat arguments more than once:: 
 
     clef --missing cmip5 --model MPI-ESM-LR -v tas -v tasmax -t day -t Amon
+
+~~~~~
+CMIP5
+~~~~~
 
 You can filter CMIP6 by the following terms:
  

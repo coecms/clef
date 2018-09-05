@@ -55,7 +55,7 @@ In particular CMIP6 has some new flags available::
                --variable va
 
  `activity` - MIPS or sub-projects, for example CMIP refers to the DECK group of experiments
- `source_type` - model type in the example iabove AOGCM is coupled Atmosphere-Ocean Global Climate Model
+ `source_type` - model type, in the example above AOGCM is coupled Atmosphere-Ocean Global Climate Model
  `grid` - grid kind, in the example 'gr' stands for "regridded data reported on the data provider's preferred target grid"
  `resolution` - nominal resolution of the grid, there are two kind of nominal resolution. 
              If the value is in degrees then this is a standard CMIP6 grid, currently only "1x1 degree" is available.
