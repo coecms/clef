@@ -1,10 +1,10 @@
 =============================
-`clef <https://clef.readthedocs.io/en/stable>`_
+𝄞 `clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
-CleF - Climate Finder - Dataset search tool developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
+CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://climateextremes.org.au>`_ `CMS <https://climate-cms.org>`_ team, powered by `ESGF <https://esgf-node.llnl.gov/>`_ and the `NCI <https://nci.org.au>`_ MAS database
 
-.. image:: https://readthedocs.org/projects/clef/badge/?version=stable
+.. image:: https://readthedocs.org/projects/clef/badge/?version=latest
   :target: https://clef.readthedocs.io/en/stable/
 .. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
   :target: https://circleci.com/gh/coecms/clef/tree/master
