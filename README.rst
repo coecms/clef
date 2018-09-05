@@ -23,7 +23,7 @@ ESGF node as well as files that are locally replicated from other ESGF nodes.
 Currently it searches for the following datasets:
 
 - **CMIP5**  raijin projects: rr3, where NCI is the primary publisher and al33 for replicas 
-- **CMIP6**  raijin projects: rr3, where NCI is the primary publisher and 0i10 for replicas 
+- **CMIP6**  raijin projects: 0i10 for replicas 
 
 The search returns both the path of data that is already available at NCI as well as information on data that
 is on external ESGF nodes but not yet available locally.
@@ -48,8 +48,8 @@ from NCI systems
 ---
 Use
 ---
-~~~~~
-CMIP5
+
+clef cmip5
 ~~~~~
 
 Find CMIP5 files matching the constraints::
@@ -85,8 +85,7 @@ You can repeat arguments more than once::
 
     clef --missing cmip5 --model MPI-ESM-LR -v tas -v tasmax -t day -t Amon
 
-~~~~~
-CMIP5
+clef cmip6
 ~~~~~
 
 You can filter CMIP6 by the following terms:
