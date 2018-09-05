@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-clef is presently installed in an anaconda environment, which must be
+CleF is presently installed in an anaconda environment, which must be
 loaded before use (on either VDI or Raijin)::
 
     $ module use /g/data3/hh5/public/modules
@@ -28,7 +28,7 @@ and four optional flags are available for each command to limit the output or su
 
 If these flags are omitted then the tool will search on the ESGF datasets matching the constraints and return both the local and missing files lists
 
-The search works like the ESGF search website, e.g. https://clef.nci.org.au/search/clef_nci.
+The search works like the ESGF search website, e.g. https://esgf.nci.org.au/search/esgf_nci.
 Results can be filtered by using flags matching the ESGF search facets::
 
     $ clef cmip5 --model ACCESS1.0 \
@@ -54,15 +54,13 @@ In particular CMIP6 has some new flags available::
                --variable ua \
                --variable va
 
-activity - refers to the new MIPS which are sub-projects, CMIP referes to the DECK group of experiments
-source_type - refers to the model type in the example coupled Atmosphere-Ocean Global Climate Model
-grid - refers to the grid kind (optional) in this case 'gr' stands for "regridded data reported on 
-       the data provider's preferred target grid"
-resolution - refers to the nominal resolution of the grid, there are two kind of nominal resolution. 
+ `activity` - MIPS or sub-projects, for example CMIP refers to the DECK group of experiments
+ `source_type` - model type in the example iabove AOGCM is coupled Atmosphere-Ocean Global Climate Model
+ `grid` - grid kind, in the example 'gr' stands for "regridded data reported on the data provider's preferred target grid"
+ `resolution` - nominal resolution of the grid, there are two kind of nominal resolution. 
              If the value is in degrees then this is a standard CMIP6 grid, currently only "1x1 degree" is available.
-             If the resolution is in kms then this is an approximate resolution. Details are available in the 
-             appendix 2 of this document:  https://goo.gl/v1drZl
-             Also note that resolution is always composed of two separate words and will need to be passed as a string, i.e. enclosed in quotes ("") 
+             If the resolution is in kms then this is an approximate resolution. Details are available in the appendix 2 of the CMIP6 attributes documentation:  https://goo.gl/v1drZl
+             Note that resolution is always composed of two separate words and will need to be passed as a string enclosed in quotes "". 
 
 When querying the ESGF website, the total amount of results is limited to
 1,000. If `clef` finds more results it will ask you to refine your query.
@@ -71,7 +69,7 @@ website::
 
     $ clef cmip5
     Exception: Too many results (1030069), try limiting your search
-    https://clef.nci.org.au/search/clef_nci?query=&distrib=on&latest=on&project=CMIP5
+    https://esgf.nci.org.au/search/esgf_nci?query=&distrib=on&latest=on&project=CMIP5
 
 Options
 ========
@@ -107,7 +105,7 @@ NOTE: Presently the default behaviour is to check for the most recent (latest) v
 on ESGF, and return only files with that version. This can be disabled with the :code:`--all-versions` flag.
 If a version has been unpublished by the ESGF but it is still available locally,
  even using the `--all-versions` flag this won't appear in the results. We are working on a solution for this.
-If you are sure a version should exists only for CMIP5 you could try using the first version of the arccssive module to locate it.
+If you are sure a version should exists only for CMIP5 you could try using the ARCCSSive module https://github.com/coecms/arccssive to locate it.
 
 tips
 --------

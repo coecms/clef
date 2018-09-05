@@ -21,7 +21,7 @@ clef --missing
 
     c. Return the ESGF id for any files whose checksums cannot be found in the local database
 
-esgf --local
+clef --local
 ----------
 
   1. Query the local database for files::

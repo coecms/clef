@@ -2,7 +2,7 @@
 `clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
-NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
+CleF - Climate Finder - Dataset search tool developed by the CLEX CMS team, powered by ESGF and the NCI MAS database
 
 .. image:: https://readthedocs.org/projects/clef/badge/?version=stable
   :target: https://clef.readthedocs.io/en/stable/
@@ -17,7 +17,7 @@ NCI ESGF Replica Search - Developed by the CLEX CMS team, powered by ESGF and th
 
 .. content-marker-for-sphinx
 
-Clef searches the ESGF datasets stored at NCI, both data published on the NCI
+Clef searches the Eerth System Grid Federation (ESGF) datasets stored at the Australian National Computational Infrastructure (NCI), both data published on the NCI
 ESGF node as well as files that are locally replicated from other ESGF nodes.
 
 Currently it searches the following datasets:
@@ -69,17 +69,17 @@ You can filter CMIP5 by the following terms:
 
 See ``clef cmip5 --help`` for all available filters and their aliases
 
-``--latest`` will check the latest versions of the datasets on the ESGF
+   ``--latest`` will check the latest versions of the datasets on the ESGF
 website, and will only return matching files
 
-It will return a path for all the files available locally at NCI and a dataset-id for the ones that haven't been downloaded yet
+It will return a path for all the files available locally at NCI and a dataset-id for the ones that haven't been downloaded yet.
 
 You can use the flags ``--local`` and ``--missing`` to return respectively only the local paths or the missing dataset-id::
 
     clef --local cmip5 --model MPI-ESM-LR --variable tas --table day
     clef --missing cmip5 --model MPI-ESM-LR --variable tas --table day
 
-You can repeat arguments more than once 
+You can repeat arguments more than once:: 
 
     clef --missing cmip5 --model MPI-ESM-LR -v tas -v tasmax -t day -t Amon
 
