@@ -39,7 +39,7 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
 
     if query is not None and len(query) == 0:
         query = None
-
+    
     params = {
           'query': query,
           'fields': fields,
@@ -98,13 +98,12 @@ def link_to_esgf(query, **kwargs):
     return r.prepare().url
 
 
-def find_checksum_id(query, project='CMIP5', **kwargs):
+def find_checksum_id(query, **kwargs):
     """
     Returns a sqlalchemy selectable containing the ESGF id and checksum for
     each query match
     """
     constraints = {k: v for k,v in kwargs.items() if v != ()}
-    constraints['project'] = project
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
 
     if response['response']['numFound'] == 0:
@@ -123,7 +122,7 @@ def find_checksum_id(query, project='CMIP5', **kwargs):
         ],
         *[(
             doc['checksum'][0],
-            doc['id'],
+            doc['id'].split('|')[0], # drop the server name
             doc['dataset_id'].split('|')[0], # Drop the server name
             doc['title'],
             doc['version'],
@@ -149,18 +148,18 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-def find_local_path(session, query, latest=None, format='file', **kwargs):
+def find_local_path(session, query, latest=None, oformat='file', **kwargs):
     """
     Returns the `model.Path` for each local file found in the ESGF query
     """
 
     subq = match_query(session, query, latest, **kwargs)
-    if format == 'file':
+    if oformat == 'file':
         return (session
                 .query('esgf_paths.path')
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None))
-    elif format == 'dataset':
+    elif oformat == 'dataset':
         return (session
                 .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
                 .select_from(subq)
@@ -169,19 +168,19 @@ def find_local_path(session, query, latest=None, format='file', **kwargs):
     else:
         raise NotImplementedError
 
-def find_missing_id(session, query, latest=None, format='file', **kwargs):
+def find_missing_id(session, query, latest=None, oformat='file', **kwargs):
     """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
     """
 
     subq = match_query(session, query, latest, **kwargs)
-    if format == 'file':
+    if oformat == 'file':
         return (session
                 .query('esgf_query.id')
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id == None))
-    elif format == 'dataset':
+    elif oformat == 'dataset':
         return (session
                 .query('esgf_query.dataset_id')
                 .select_from(subq)

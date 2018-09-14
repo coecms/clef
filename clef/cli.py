@@ -17,6 +17,7 @@ from __future__ import print_function
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import find_local_path, find_missing_id, find_checksum_id
+from .request import *
 from .exception import ClefException
 import click
 import logging
@@ -98,7 +99,8 @@ def common_args(f):
     constraints = [
         click.argument('query', nargs=-1),
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
-        click.option('--format', type=click.Choice(['file','dataset']), default='dataset', help="Return dataset/directory (default) or individual files"),
+        click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
+                     help="Return dataset/directory (default) or individual files"),
         click.option('--all-versions', '-a', 'latest', flag_value='all', default=True, help="All versions, disabled by default"),
         click.option('--latest', 'latest', flag_value='true',  help="Latest version only, this is the default behaviour"),
         click.option('--replica', default=False, help="Search also replicas, by default searches only official versions"),
@@ -144,7 +146,7 @@ def cmip6_args(f):
 @cmip5_args
 @common_args
 @click.pass_context
-def cmip5(ctx, query, debug, distrib, replica, latest, format,
+def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         cf_standard_name,
         ensemble,
         experiment,
@@ -188,6 +190,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
         'realm': realm,
         'time_frequency': time_frequency,
         'cmor_table': cmor_table,
+        'variable': variable
         }
 
 
@@ -212,33 +215,22 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
             time_frequency=time_frequency,
             variable=variable
             )
-        for result in s.query(q):
-            print(result.id)
+
+        if oformat == 'file':
+            for result in s.query(q):
+                print(result.id)
+        else:
+            ids=set(x.dataset_id for x in s.query(q))
+            for did in ids:
+                print(did)
+              
         return
 
     terms = {}
-    filters = []
 
-    # Add filters
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
-            filters.append(getattr(C5Dataset,key).ilike(any_([x for x in value])))
-
-            # If this key was filtered get a list of the matching values, used
-            # in the ESGF query
-            terms[key] = [x[0] for x in (s.query(getattr(C5Dataset,key))
-                .distinct()
-                .filter(getattr(C5Dataset,key).ilike(any_([x for x in value]))))]
-
-    if len(variable) > 0:
-        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable])))
-
-        terms['variable'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
-            .distinct()
-            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable]))))]
-
-    #if len(version) > 0:
-    #    filters.append(ExtendedMetadata.version.ilike(any_(['%d'%x for x in version])))
+           terms[key] = value
 
     ql = find_local_path(s, query=None,
             distrib=True,
@@ -246,7 +238,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
-            format=format,
+            oformat=oformat,
             project=project,
             **terms
             )
@@ -262,7 +254,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
-            format=format,
+            oformat=oformat,
             project=project,
             **terms
             )
@@ -275,7 +267,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
 @cmip6_args
 @common_args
 @click.pass_context
-def cmip6(ctx,query, debug, distrib, replica, latest, format,
+def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         cf_standard_name,
         variant_label,
         member_id,
@@ -329,9 +321,9 @@ def cmip6(ctx,query, debug, distrib, replica, latest, format,
         'nominal_resolution': nominal_resolution
         }
 
-    if ctx.obj['flow'] == 'request':
-        print('Sorry! This option is not yet implemented')
-        return
+    #if ctx.obj['flow'] == 'request':
+    #    print('Sorry! This option is not yet implemented')
+        #return
 
     if ctx.obj['flow'] == 'remote':
         q = find_checksum_id(' '.join(query),
@@ -354,37 +346,29 @@ def cmip6(ctx,query, debug, distrib, replica, latest, format,
             grid_label=grid_label,
             nominal_resolution=nominal_resolution
             )
-        for result in s.query(q):
-            print(result.id)
+
+        if oformat == 'file':
+            for result in s.query(q):
+                print(result.id)
+        else:
+            ids=set(x.dataset_id for x in s.query(q))
+            for did in ids:
+                print(did)
         return
 
     terms = {}
-    filters = []
 
     # Add filters
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
-            filters.append(getattr(C6Dataset,key).ilike(any_([x for x in value])))
-
-            # If this key was filtered get a list of the matching values, used
-            # in the ESGF query
-            terms[key] = [x[0] for x in (s.query(getattr(C6Dataset,key))
-                .distinct()
-                .filter(getattr(C6Dataset,key).ilike(any_([x for x in value]))))]
-
-    if len(variable_id) > 0:
-        filters.append(ExtendedMetadata.variable.ilike(any_([x for x in variable_id])))
-
-        terms['variable_id'] = [x[0] for x in (s.query(ExtendedMetadata.variable)
-            .distinct()
-            .filter(ExtendedMetadata.variable.ilike(any_([x for x in variable_id]))))]
+            terms[key] = value
 
     ql = find_local_path(s, query=None,
             distrib=True,
             replica=replica,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
-            format=format,
+            oformat=oformat,
             project='CMIP6',
             **terms
             )
@@ -399,7 +383,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, format,
             replica=replica,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
-            format=format,
+            oformat=oformat,
             project='CMIP6',
             **terms
             )
@@ -408,4 +392,12 @@ def cmip6(ctx,query, debug, distrib, replica, latest, format,
         print('Available on ESGF but not locally:')
         for result in qm:
             print(result[0])
+        search_queuee(qm)
 
+    if ctx.obj['flow'] == 'request':
+        if qm.count() >0:
+            #fargs = check_args_cmip6(dataset_constraints,qm)
+            #create_file('CMIP6',fargs)
+            write_request('CMIP6',qm)
+        else:
+            print("All the published data is already available locally, nothing to request")
