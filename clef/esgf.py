@@ -158,12 +158,11 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-def find_local_path(session, query, latest=None, oformat='file', **kwargs):
+def find_local_path(session, subq, latest=None, oformat='file'):
     """
     Returns the `model.Path` for each local file found in the ESGF query
     """
 
-    subq = match_query(session, query, latest, **kwargs)
     if oformat == 'file':
         return (session
                 .query('esgf_paths.path')
@@ -178,13 +177,12 @@ def find_local_path(session, query, latest=None, oformat='file', **kwargs):
     else:
         raise NotImplementedError
 
-def find_missing_id(session, query, latest=None, oformat='file', **kwargs):
+def find_missing_id(session, subq, oformat='file'):
     """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
     """
 
-    subq = match_query(session, query, latest, **kwargs)
     if oformat == 'file':
         return (session
                 .query('esgf_query.id')

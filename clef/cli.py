@@ -16,7 +16,7 @@
 from __future__ import print_function
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
-from .esgf import find_local_path, find_missing_id, find_checksum_id
+from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
 from .request import *
 from .exception import ClefException
 import click
@@ -229,36 +229,28 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
            terms[key] = value
 
-    ql = find_local_path(s, query=None,
-            distrib=True,
+    subq = match_query(s, query=' '.join(query),
+            distrib= distrib,
             replica=replica,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
-            oformat=oformat,
             project=project,
             **terms
             )
+
+    ql = find_local_path(s, subq, oformat=oformat)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
     if ctx.obj['flow'] == 'local': 
         return
 
-    qm = find_missing_id(s, ' '.join(query),
-            distrib=distrib,
-            replica=replica,
-            latest=(None if latest == 'all' else latest),
-            cf_standard_name=cf_standard_name,
-            experiment_family=experiment_family,
-            oformat=oformat,
-            project=project,
-            **terms
-            )
+    qm = find_missing_id(s, subq, oformat=oformat)
 
-    # if there are missing datasets, search for dataset_id in synda queuee, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queuee(qm, project)
+        updated = search_queue(qm, project)
         print('Available on ESGF but not locally:')
         for result in updated:
             print(result)
@@ -309,6 +301,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     connect(user=user)
     s = Session()
 
+    project='CMIP6'
+
     ensemble_terms = None
     model_terms = None
 
@@ -344,7 +338,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             institution_id=institution_id,
             table_id=table_id,
             source_id=source_id,
-            project='CMIP6',
+            project=project,
             realm=realm,
             frequency=frequency,
             variable_id=variable_id,
@@ -369,41 +363,33 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
             terms[key] = value
 
-    ql = find_local_path(s, query=None,
-            distrib=True,
+    subq = match_query(s, query=' '.join(query),
+            distrib=distrib,
             replica=replica,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
-            oformat=oformat,
-            project='CMIP6',
+            project=project,
             **terms
             )
+
+    ql = find_local_path(s, subq, oformat=oformat)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
     if ctx.obj['flow'] == 'local': 
         return
 
-    qm = find_missing_id(s, ' '.join(query),
-            distrib=distrib,
-            replica=replica,
-
-            latest=(None if latest == 'all' else latest),
-            cf_standard_name=cf_standard_name,
-            oformat=oformat,
-            project='CMIP6',
-            **terms
-            )
+    qm = find_missing_id(s, subq, oformat=oformat)
     
-    # if there are missing datasets, search for dataset_id in synda queuee, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queuee(qm, project)
+        updated = search_queue(qm, project)
         print('Available on ESGF but not locally:')
         for result in updated:
             print(result)
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
-            write_request('CMIP6',updated)
+            write_request(project,updated)
         else:
             print("All the published data is already available locally, or has been requested, nothing to request")

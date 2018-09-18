@@ -63,8 +63,8 @@ def helpdesk(user, rootdir, fname, project):
     return
 
 
-def search_queuee(qm, project):
-    ''' search missing dataset ids in download queuee '''
+def search_queue(qm, project):
+    ''' search missing dataset ids in download queue '''
     # CMIP5/CMIP6 index url
     url = 'http://atlantis.nci.org.au/~kxs900/cmip_index/index_'+project+'.htm'
     # open url
