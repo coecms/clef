@@ -24,15 +24,15 @@ from bs4 import BeautifulSoup
 import requests
 
 
-def write_request(project,qm):
+def write_request(project,missing):
     ''' write missing dataset_ids to file to create download request for synda '''
     rootdir = '/g/data/ua8/Download/CMIP6/'
     user = os.environ['USER']
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
     f = open(rootdir+fname, 'w')
-    for q in qm:
-        f.write('instance_id='+q[0]+'\n')
+    for did in missing:
+        f.write('instance_id='+did+'\n')
     f.close()
     helpdesk(user, rootdir, fname, project)
     print('Finished writing file: '+fname)
@@ -43,11 +43,11 @@ def helpdesk(user, rootdir, fname, project):
     ''' Send e-mail and synda request to helpdesk '''
     msg = MIMEMultipart()
     msg['From'] = user+'@nci.org.au'
-    msg['To'] = 'help@nf.nci.org.au'
-    #msg['To'] = 'paolap@utas.edu.au'
-    msg['Subject'] = 'Synda request: ' + fname
-    #message = project + " synda download requested from user: " + user
-    message = project + " synda download requested from user: " + user + "\n This is a test message for Kate"
+    #msg['To'] = 'help@nf.nci.org.au'
+    msg['To'] = 'paolap@utas.edu.au'
+    msg['Subject'] = 'Test Synda request: ' + fname
+    message = project + " synda download requested from user: " + user
+    #message = project + " synda download requested from user: " + user + "\n This is a test message for Kate"
     msg.attach(MIMEText(message, 'plain'))
     f = open(rootdir + fname)
     attachment=MIMEText(f.read())
@@ -63,10 +63,10 @@ def helpdesk(user, rootdir, fname, project):
     return
 
 
-def search_queuee(qm):
+def search_queuee(qm, project):
     ''' search missing dataset ids in download queuee '''
-    # CMIP6 index url
-    url = 'http://atlantis.nci.org.au/~kxs900/cmip_index/index_CMIP6.htm'
+    # CMIP5/CMIP6 index url
+    url = 'http://atlantis.nci.org.au/~kxs900/cmip_index/index_'+project+'.htm'
     # open url
     r =requests.get(url=url)
     # parse url response
@@ -78,11 +78,10 @@ def search_queuee(qm):
         td = soup.table.find('td',string=re.compile(".*" + q[0] + ".*"))
         if td:
             status[q[0]] = td.find_next_sibling()
-    td = soup.table.find('td',string=re.compile(".*CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.cl.gr.v20180626*"))
-    if td:
-        status['CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.cl.gr.v20180626 '] = td.find_next_sibling().text
     if len(status) > 0:
         print("The following datasets are not yet available in the database, but they have been requested or recently downloaded")
         for k,v in status.items():
-            print(k + 'status: ' + v)
-    return
+            print(k + '   status: ' + v.text)
+    queued = [k.strip() for k in status.keys()]
+    missing = [q[0] for q in qm if q[0] not in queued] 
+    return missing

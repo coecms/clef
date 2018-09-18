@@ -37,9 +37,8 @@ Results can be filtered by using flags matching the ESGF search facets::
                --variable ua \
                --variable va
 
-If the same flag is used multiple times both terms will be searched for. You
-can also use :code:`%` as a wildcard, e.g. :code:`--model ACCESS%` to return
-ACCESS1.0 and ACCESS1.3 data.
+If the same flag is used multiple times both terms will be searched for.
+{ NOT IMPLEMENTED YET! You can also use :code:`%` as a wildcard, e.g. :code:`--model ACCESS%` to return ACCESS1.0 and ACCESS1.3 data}
 
 Please note that CMIP5 and CMIP6 have different names and number of flags, 
 we tried to use the same names wherever possible.

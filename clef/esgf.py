@@ -111,6 +111,16 @@ def find_checksum_id(query, **kwargs):
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
         raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
+    # separate records that do not have checksum in response (nosums list) from others (records list)
+    # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
+    nosums=[]
+    records=[]
+    for doc in response['response']['docs']:
+        if 'checksum' in doc.keys():
+            records.append(doc)
+        else:
+            nosums.append(doc)
+        
 
     table = values([
             column('checksum', String),
@@ -127,7 +137,7 @@ def find_checksum_id(query, **kwargs):
             doc['title'],
             doc['version'],
             doc['score']) 
-            for doc in response['response']['docs']],
+            for doc in records],
         alias_name = 'esgf_query'
         )
 

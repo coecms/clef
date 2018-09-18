@@ -161,11 +161,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     """
     Search local database for files matching the given constraints
 
-    Constraints can be specified multiple times, in which case they are ORed.
-    `%` can be used as a wildcard, e.g. `--model access%` will match ACCESS1-0
-    and ACCESS1-3
-
-    The --latest flag will check ESGF for the latest version available
+    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
+    The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
 
     if debug:
@@ -194,9 +191,9 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         }
 
 
-    if ctx.obj['flow'] == 'request':
-        print('Sorry! This option is not yet implemented')
-        return
+    #if ctx.obj['flow'] == 'request':
+    #    print('Sorry! This option is not yet implemented')
+    #    return
 
     if ctx.obj['flow'] == 'remote':
         q = find_checksum_id(' '.join(query),
@@ -258,10 +255,22 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
             project=project,
             **terms
             )
+
+    # if there are missing datasets, search for dataset_id in synda queuee, update list and print result 
     if qm.count() > 0:
+        updated = search_queuee(qm, project)
         print('Available on ESGF but not locally:')
-        for result in qm:
-            print(result[0])
+        for result in updated:
+            print(result)
+    else:
+        print('Everything available on ESGF is also available locally')
+
+    if ctx.obj['flow'] == 'request':
+        if len(updated) >0:
+            write_request('CMIP5',updated)
+        else:
+            print("All the published data is already available locally, or has been requested, nothing to request")
+
 
 @clef.command()
 @cmip6_args
@@ -287,11 +296,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     """
     Search local database for files matching the given constraints
 
-    Constraints can be specified multiple times, in which case they are ORed.
-    `%` can be used as a wildcard, e.g. `--model access%` will match ACCESS1-0
-    and ACCESS1-3
-
-    The --latest flag will check ESGF for the latest version available
+    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
+    The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
 
     if debug:
@@ -381,6 +387,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     qm = find_missing_id(s, ' '.join(query),
             distrib=distrib,
             replica=replica,
+
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             oformat=oformat,
@@ -388,16 +395,15 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             **terms
             )
     
+    # if there are missing datasets, search for dataset_id in synda queuee, update list and print result 
     if qm.count() > 0:
+        updated = search_queuee(qm, project)
         print('Available on ESGF but not locally:')
-        for result in qm:
-            print(result[0])
-        search_queuee(qm)
+        for result in updated:
+            print(result)
 
     if ctx.obj['flow'] == 'request':
-        if qm.count() >0:
-            #fargs = check_args_cmip6(dataset_constraints,qm)
-            #create_file('CMIP6',fargs)
-            write_request('CMIP6',qm)
+        if len(updated) >0:
+            write_request('CMIP6',updated)
         else:
-            print("All the published data is already available locally, nothing to request")
+            print("All the published data is already available locally, or has been requested, nothing to request")
