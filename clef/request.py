@@ -79,7 +79,7 @@ def search_queue(qm, project):
         if td:
             status[q[0]] = td.find_next_sibling()
     if len(status) > 0:
-        print("The following datasets are not yet available in the database, but they have been requested or recently downloaded")
+        print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
         for k,v in status.items():
             print(k + '   status: ' + v.text)
     queued = [k.strip() for k in status.keys()]

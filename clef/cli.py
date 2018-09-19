@@ -251,17 +251,17 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
         updated = search_queue(qm, project)
-        print('Available on ESGF but not locally:')
+        print('\nAvailable on ESGF but not locally:')
         for result in updated:
             print(result)
     else:
-        print('Everything available on ESGF is also available locally')
+        print('\nEverything available on ESGF is also available locally')
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
             write_request('CMIP5',updated)
         else:
-            print("All the published data is already available locally, or has been requested, nothing to request")
+            print("\nAll the published data is already available locally, or has been requested, nothing to request")
 
 
 @clef.command()
@@ -317,6 +317,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'realm': realm,
         'frequency': frequency,
         'table_id': table_id,
+        'variable_id': variable_id,
         'grid_label': grid_label,
         'nominal_resolution': nominal_resolution
         }
@@ -384,12 +385,14 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
         updated = search_queue(qm, project)
-        print('Available on ESGF but not locally:')
+        print('\nAvailable on ESGF but not locally:')
         for result in updated:
             print(result)
+    else:
+        print('\nEverything available on ESGF is also available locally')
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
             write_request(project,updated)
         else:
-            print("All the published data is already available locally, or has been requested, nothing to request")
+            print("\nAll the published data is already available locally, or has been requested, nothing to request")
