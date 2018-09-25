@@ -100,12 +100,15 @@ def common_args(f):
         click.argument('query', nargs=-1),
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
-                     help="Return dataset/directory (default) or individual files"),
-        click.option('--all-versions', '-a', 'latest', flag_value='all', default=True, help="All versions, disabled by default"),
-        click.option('--latest', 'latest', flag_value='true',  help="Latest version only, this is the default behaviour"),
-        click.option('--replica', default=False, help="Search also replicas, by default searches only official versions"),
-        click.option('--no-distrib', 'distrib', default=True, is_flag=True, help="Search only one ESGF node instead of default distributed search"),
-        click.option('--debug', default=False, is_flag=True, help="Show debug log")
+                     help="Return output for datasets (default) or individual files"),
+        click.option('--latest/--all-versions', 'latest', default=True,  
+                     help="Return only the latest version or all of them. Default: --latest"),
+        click.option('--replica/--no-replica', default=False, 
+                     help="Return both original files and replicas. Default: --no-replica"),
+        click.option('--distrib/--no-distrib', 'distrib', default=True, 
+                     help="Distribute search across all ESGF nodes. Default: --distrib"),
+        click.option('--debug/--no-debug', default=False,
+                     help="Show debug output. Default: --no-debug")
     ]
     for c in reversed(constraints):
         f = c(f)
