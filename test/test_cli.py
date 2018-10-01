@@ -88,15 +88,21 @@ def test_remote(command, runner, mock_query):
     assert mock_query.called
 
 
-@pytest.mark.parametrize('command', [cmip5, cmip6])
-def test_variable(command, runner, mock_query):
-    cli_run(runner, command, ['--variable=clt', '--variable=va'])
+def test_variable(runner, mock_query):
+    cli_run(runner, cmip5, ['--variable=ts', '--variable=ua'])
     assert mock_query.called
-    assert set(mock_query.call_args[1]['variable']) == set(['clt', 'va'])
+    assert set(mock_query.call_args[1]['variable']) == set(['ts', 'ua'])
+
+    cli_run(runner, cmip6, ['--variable=ts', '--variable=ua'])
+    assert mock_query.called
+    assert set(mock_query.call_args[1]['variable_id']) == set(['ts', 'ua'])
 
 
-@pytest.mark.parametrize('command', [cmip5, cmip6])
-def test_model(command, runner, mock_query):
-    cli_run(runner, command, ['--model=ACCESS1.3'])
+def test_model(runner, mock_query):
+    cli_run(runner, cmip5, ['--model=ACCESS1.3'])
     assert mock_query.called
     assert mock_query.call_args[1]['model'] == ['ACCESS1.3']
+
+    cli_run(runner, cmip6, ['--model=CNRM-CM6-1'])
+    assert mock_query.called
+    assert mock_query.call_args[1]['source_id'] == ['CNRM-CM6-1']
