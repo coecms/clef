@@ -13,6 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""
+Functions for searching the ESGF and matching the results against the MAS
+database
+
+* :func:`esgf_query` performs a query against the ESGF web API.
+* :func:`match_query` performs an outer join of the :func:`esgf_query` results
+  against the :class:`clef.model.Path` table
+* :func:`find_local_path` and :func:`find_missing_id` use the results of
+  :func:`match_query` to return the files that are replicated locally and
+  missing from the replica respectively.
+"""
+
 from __future__ import print_function
 import requests
 import json
@@ -26,14 +39,33 @@ from .exception import ClefException
 
 
 class ESGFException(ClefException):
+    """Error from the ESGF API
+    """
     pass
 
 
 def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False, latest=None, **kwargs):
+    """Search the ESGF
+
+    Searches the ESGF using its `API
+    <https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API>`_.
+    Keyword arguments not listed here are passed on to the API search, they can
+    either be single values or lists.
+
+    Args:
+        query (str): Full text query
+        fields (list): Fields to return
+        limit (int): Maximum items to return
+        offset (int): Starting offset of returned items (use with limit for paging)
+        distrib (bool): Distribute the search across all nodes
+        replica (bool): Return replicated datasets
+        latest (bool or None): Return only latest (True), only not latest (False) or all versions (None)
+        **kwargs: See the `ESGF API docs <https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API>`_
+
+    Returns:
+        API response from ESGF, decoded from JSON into a Python dict
     """
-    Search the ESGF
-    """
-    #facets = define_facets(project)
+
     if latest == 'all':
         latest = None
 
@@ -59,21 +91,23 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
 
     return r.json()
 
+
 def link_to_esgf(query, **kwargs):
     """Convert search terms to a ESGF search URL
 
-    Returns a link to the user-facing ESGF web search matching a particular query
+    Returns a link to the user-facing ESGF web search matching a particular
+    query. This is helpful for error messages, users can follow the URL to find
+    the matches as ESGF sees them
 
-    This is helpful for error messages, users can follow the URL to find the matches as ESGF sees them
+    Note that this link is to the ESGF user-facing search page, rather than the
+    web API that :func:`esgf_query` uses.
 
     Args:
-        query: Free text query
         **kwargs: As :func:`esgf_query`
 
     Returns:
-        str URL to the ESGF search website
+        str: URL to the ESGF search website
     """
-
     
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     params = {
@@ -99,9 +133,22 @@ def link_to_esgf(query, **kwargs):
 
 
 def find_checksum_id(query, project='CMIP5', **kwargs):
-    """
-    Returns a sqlalchemy selectable containing the ESGF id and checksum for
-    each query match
+    """Get checksums and IDs of matching files from ESGF
+
+    Searches ESGF using :func:`esgf_query`, then converts the response into a
+    SQLAlchemy selectable for further processing
+
+    Args:
+        **kwargs: See :func:`esgf_query`
+
+    Returns:
+        Values table of matching File objects, containing
+         * checksum
+         * id
+         * dataset_id
+         * title
+         * version
+        This table can be joined against the MAS database tables
     """
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     constraints['project'] = project
@@ -134,7 +181,22 @@ def find_checksum_id(query, project='CMIP5', **kwargs):
 
     return table
 
+
 def match_query(session, query, latest=None, **kwargs):
+    """Match ESGF results against :class:`clef.model.Path`
+
+    Matches the results of :func:`find_checksum_id` with the :class:`Path`
+    table. If `latest` is True the checksums will be matched, otherwise only
+    the file name is used in order to spot outdated versions that have been
+    removed from ESGF.
+
+    Args:
+        latest (bool): Match the checksums (True) or filenames (False)
+        **kwargs: See :func:`esgf_query`
+
+    Returns:
+        Joined result of :class:`clef.model.Path` and :func:`find_checksum_id`
+    """
     values = find_checksum_id(query, latest=latest, **kwargs)
 
     if latest is True:
@@ -149,9 +211,19 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
+
 def find_local_path(session, query, latest=None, format='file', **kwargs):
-    """
-    Returns the `model.Path` for each local file found in the ESGF query
+    """Find the filesystem paths of ESGF matches
+
+    Converts the results of :func:`match_query` to local filesystem paths,
+    either to the file itself or to the containing dataset.
+
+    Args:
+        format ('file' or 'dataset'): Return the path to the file or the dataset directory
+        **kwargs: See :func:`esgf_query`
+
+    Returns:
+        Iterable of strings with the paths to either paths or datasets
     """
 
     subq = match_query(session, query, latest, **kwargs)
@@ -169,10 +241,19 @@ def find_local_path(session, query, latest=None, format='file', **kwargs):
     else:
         raise NotImplementedError
 
+
 def find_missing_id(session, query, latest=None, format='file', **kwargs):
-    """
+    """Find ESGF matches that are not at NCI
+
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
+
+    Args:
+        format ('file' or 'dataset'): Return the path to the file or the dataset directory
+        **kwargs: See :func:`esgf_query`
+
+    Returns:
+        Iterable of strings with the ESGF file or dataset id
     """
 
     subq = match_query(session, query, latest, **kwargs)
