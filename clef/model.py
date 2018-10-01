@@ -16,6 +16,22 @@
 
 """
 Model of NCI's MAS database
+
+The MAS database has two main tables - ``path`` and ``metadata``. These base
+tables are available in the model as :class:`Path` and :class:`Metadata`, they
+have a SQLAlchemy relationship so that the two table can be joined in queries.
+
+There may be multiple :class:`Metadata` entries for a single :class:`Path`,
+these represent different metadata types, such as checksums, netCDF attributes
+and POSIX file attributes. The type can be identified from
+:attr:`Metadata.type`, and is used as a polymorphic identity to SQLAlchemy's
+`single table inheritance <https://docs.sqlalchemy.org/en/latest/orm/inheritance.html#relationships-with-single-table-inheritance>`_,
+creating the :class:`Checksum`, :class:`Netcdf` and :class:`Posix` models.
+
+The :class:`C5Dataset` and :class:`C6Dataset` models represent datasets like
+you would find on ESGF, although without a version. They are created in the
+database from a ``DISTINCT`` view of the NetCDF attributes, and can be used to
+group paths on the filesystem into datasets.
 """
 
 from __future__ import print_function
@@ -63,12 +79,22 @@ class Path(Base):
     __tablename__ = 'esgf_paths'
 
     id = Column('file_id', UUID, primary_key=True)
+
+    #: File path at NCI
     path = Column('path', Text)
 
+    #: :class:`C5Dataset`:
     c5dataset = relationship('C5Dataset', secondary=c5_metadata_dataset_link, viewonly=True)
+
+    #: :class:`C6Dataset`:
     c6dataset = relationship('C6Dataset', secondary=c6_metadata_dataset_link, viewonly=True)
+
+    #: :class:`Netcdf`:
     netcdf = relationship('Netcdf', viewonly=True)
+
+    #: :class:`Checksum`:
     checksum = relationship('Checksum', viewonly=True)
+
     extended = relationship('ExtendedMetadata', viewonly=True)
 
 
@@ -80,9 +106,14 @@ class Metadata(Base):
     __tablename__ = 'metadata'
 
     id = Column('md_hash', UUID, ForeignKey('esgf_paths.file_id'), primary_key=True)
+
+    #: Metadata type
     type = Column('md_type', Text, primary_key=True)
+
+    #: Metadata value
     json = Column('md_json', JSONB)
 
+    #: :class:`Path`:
     path = relationship("Path")
 
     __mapper_args__ = {
@@ -96,9 +127,14 @@ class Checksum(Base):
     __tablename__ = 'checksums'
 
     id = Column('ch_hash', UUID, ForeignKey('esgf_paths.file_id'), ForeignKey('metadata.md_hash'), primary_key=True)
+
+    #: md5 checksum
     md5 = Column('ch_md5', String)
+
+    #: sha256 checksum
     sha256 = Column('ch_sha256', String)
 
+    #: :class:`Path`:
     path = relationship("Path")
 
 
@@ -122,8 +158,14 @@ class Netcdf(Metadata):
     }
 
     format = pg_json_property('json', 'format', Text)
+
+    #: File variables
     variables = index_property('json', 'variables')
+
+    #: File attributes
     attributes = index_property('json', 'attributes')
+
+    #: File dimensions
     dimensions = index_property('json', 'dimensions')
 
 
@@ -143,46 +185,104 @@ class ExtendedMetadata(Base):
 
 
 class C5Dataset(Base):
-    """A CMIP5 ESGF dataset
+    """A CMIP5-era ESGF dataset
+
+    This class only has access to attributes from the file itself, so version
+    information is not present.
+
+    See the CMIP documentation for descriptions of the attributes
     """
     __tablename__ = 'cmip5_dataset'
 
     dataset_id = Column(Text, primary_key=True)
+
+    #:
     project = Column(Text)
+
+    #:
     institute = Column(Text)
+
+    #:
     model = Column(Text)
+
+    #:
     experiment = Column(Text)
+
+    #:
     time_frequency = Column('frequency', Text)
+
+    #:
     realm = Column(Text)
+
     r = Column(Integer)
     i = Column(Integer)
     p = Column(Integer)
+
+    #:
     ensemble = Column(Text)
+
+    #:
     cmor_table = Column(Text)
 
 
 class C6Dataset(Base):
-    """A CMIP6 ESGF dataset
+    """A CMIP6-era ESGF dataset
+
+    This class only has access to attributes from the file itself, so version
+    information is not present.
+
+    See the CMIP documentation for descriptions of the attributes
     """
     __tablename__ = 'cmip6_dataset'
 
     dataset_id = Column(Text, primary_key=True)
+
+    #:
     project = Column(Text)
+
+    #:
     activity_id = Column('activity_id', Text)
+
+    #:
     institution_id = Column('institution_id', Text)
+
+    #:
     source_id = Column('source_id', Text)
+
+    #:
     source_type = Column('source_type', Text)
+
+    #:
     experiment_id = Column('experiment_id', Text)
+
+    #:
     sub_experiment_id = Column('sub_experiment_id', Text)
+
+    #:
     frequency = Column('frequency', Text)
+
+    #:
     realm = Column(Text)
+
     r = Column(Integer)
     i = Column(Integer)
     p = Column(Integer)
     f = Column(Integer)
+
+    #:
     variant_label = Column('variant_label', Text)
+
+    #:
     member_id = Column('member_id', Text)
+
+    #:
     variable_id = Column(Text)
+
+    #:
     grid_label = Column('grid_label', Text)
+
+    #:
     nominal_resolution = Column('nominal_resolution', Text)
+
+    #:
     table_id = Column('table_id', Text)
