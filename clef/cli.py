@@ -252,6 +252,12 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
             project=project,
             **terms
             )
+
+    # Make sure that if find_local_path does an all-version search using the
+    # filename, the resulting project is still CMIP5 (and not say a PMIP file
+    # with the same name)
+    ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
+
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
@@ -390,6 +396,12 @@ def cmip6(ctx,query, debug, distrib, replica, latest, format,
             project='CMIP6',
             **terms
             )
+
+    # Make sure that if find_local_path does an all-version search using the
+    # filename, the resulting project is still CMIP5 (and not say a PMIP file
+    # with the same name)
+    ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
+
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
