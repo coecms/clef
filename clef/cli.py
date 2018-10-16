@@ -180,8 +180,6 @@ def cmip5(ctx, query, debug, distrib, replica, latest, format,
     ensemble_terms = None
     model_terms = None
 
-    print(model)
-
     dataset_constraints = {
         'ensemble': ensemble,
         'experiment': experiment,
