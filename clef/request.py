@@ -32,7 +32,7 @@ def write_request(project,missing):
     fname = "_".join([project,user,tstamp])+".txt" 
     f = open(rootdir+fname, 'w')
     for did in missing:
-        f.write('instance_id='+did+'\n')
+        f.write('dataset_id='+did+'\n')
     f.close()
     helpdesk(user, rootdir, fname, project)
     print('Finished writing file: '+fname)
