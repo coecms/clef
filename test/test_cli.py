@@ -20,6 +20,7 @@ import pytest
 
 from click.testing import CliRunner
 from test_esgf import updated_query
+import sys
 
 try:
     import unittest.mock as mock
@@ -48,6 +49,7 @@ def mock_query(session):
 def cli_run(runner, cmd, args=[]):
     ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': False}
     result = runner.invoke(cmd, args, obj=ctx, catch_exceptions=False)
+    print(result.output, file=sys.stderr)
     assert result.exit_code == 0
     return result
 
@@ -70,9 +72,37 @@ def test_versions(command, runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['latest'] == 'true'
 
+
 @pytest.mark.parametrize('command', [cmip5])
 def test_mip(command, runner, mock_query):
     cli_run(runner, command, ['--mip=3hr'])
     assert mock_query.called
     assert mock_query.call_args[1]['cmor_table'] == ['3hr']
 
+
+@pytest.mark.parametrize('command', [cmip5, cmip6])
+def test_remote(command, runner, mock_query):
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'remote'}
+    result = runner.invoke(command, [], obj=ctx, catch_exceptions=False)
+    assert result.exit_code == 0
+    assert mock_query.called
+
+
+def test_variable(runner, mock_query):
+    cli_run(runner, cmip5, ['--variable=ts', '--variable=ua'])
+    assert mock_query.called
+    assert set(mock_query.call_args[1]['variable']) == set(['ts', 'ua'])
+
+    cli_run(runner, cmip6, ['--variable=ts', '--variable=ua'])
+    assert mock_query.called
+    assert set(mock_query.call_args[1]['variable_id']) == set(['ts', 'ua'])
+
+
+def test_model(runner, mock_query):
+    cli_run(runner, cmip5, ['--model=ACCESS1.3'])
+    assert mock_query.called
+    assert mock_query.call_args[1]['model'] == ['ACCESS1.3']
+
+    cli_run(runner, cmip6, ['--model=CNRM-CM6-1'])
+    assert mock_query.called
+    assert mock_query.call_args[1]['source_id'] == ['CNRM-CM6-1']
