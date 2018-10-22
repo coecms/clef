@@ -84,7 +84,9 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
           'format': 'application/solr+json',
           } 
     params.update(kwargs)
-    r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
+    #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
+    #                 params = params )
+    r = requests.get('https://esgf-data.dkrz.de/esg-search/search',
                      params = params )
 
     r.raise_for_status()
@@ -125,7 +127,9 @@ def link_to_esgf(query, **kwargs):
     if params.get('project','').lower() == 'cmip6':
         endpoint = 'cmip6'
 
-    r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
+
+    #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
+    r = requests.Request('GET','https://https://esgf-data.dkrz.de/esg-search/search/%s'%endpoint,
             params=params,
             )
     p = r.prepare()
@@ -162,11 +166,14 @@ def find_checksum_id(query, **kwargs):
     # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
     nosums=[]
     records=[]
+    # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
+    matches_list = ['.'+var+'_' for var in constraints['variable'] ]
     for doc in response['response']['docs']:
-        if 'checksum' in doc.keys():
-            records.append(doc)
-        else:
-            nosums.append(doc)
+        if  any(st in doc['id'] for st in matches_list):
+            if 'checksum' in doc.keys():
+                records.append(doc)
+            else:
+                nosums.append(doc)
         
 
     table = values([

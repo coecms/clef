@@ -191,7 +191,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         model,
         realm,
         time_frequency,
-        variable,
+        variable
         ):
     """
     Search local database for files matching the given constraints
@@ -280,9 +280,9 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     # Make sure that if find_local_path does an all-version search using the
     # filename, the resulting project is still CMIP5 (and not say a PMIP file
     # with the same name)
-    ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
 
-    #ql = find_local_path(s, subq, oformat=oformat)
+    ql = find_local_path(s, subq, oformat=oformat)
+    ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
@@ -423,9 +423,9 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     # Make sure that if find_local_path does an all-version search using the
     # filename, the resulting project is still CMIP5 (and not say a PMIP file
     # with the same name)
-    ql = ql.join(Path.c6dataset).filter(C6Dataset.project=='CMIP6')
+    ql = find_local_path(s, subq, oformat=oformat)
+    ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
 
-    #ql = find_local_path(s, subq, oformat=oformat)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
