@@ -220,7 +220,7 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-def find_local_path(session, query, latest=None, oformat='file', **kwargs):
+def find_local_path(session, subq, latest=None, oformat='file'):
     """Find the filesystem paths of ESGF matches
 
     Converts the results of :func:`match_query` to local filesystem paths,
@@ -228,13 +228,12 @@ def find_local_path(session, query, latest=None, oformat='file', **kwargs):
 
     Args:
         format ('file' or 'dataset'): Return the path to the file or the dataset directory
-        **kwargs: See :func:`esgf_query`
+        subq: result of func:`esgf_query`
 
     Returns:
         Iterable of strings with the paths to either paths or datasets
     """
 
-    subq = match_query(session, query, latest, **kwargs)
     if oformat == 'file':
         return (session
                 .query('esgf_paths.path')
@@ -249,21 +248,19 @@ def find_local_path(session, query, latest=None, oformat='file', **kwargs):
     else:
         raise NotImplementedError
 
-def find_missing_id(session, query, latest=None, oformat='file', **kwargs):
-    """Find ESGF matches that are not at NCI
-
+def find_missing_id(session, subq, latest=None, oformat='file'):
+    """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
 
     Args:
         format ('file' or 'dataset'): Return the path to the file or the dataset directory
-        **kwargs: See :func:`esgf_query`
+        subq: result of func:`esgf_query`
 
     Returns:
         Iterable of strings with the ESGF file or dataset id
     """
 
-    subq = match_query(session, query, latest, **kwargs)
     if oformat == 'file':
         return (session
                 .query('esgf_query.id')

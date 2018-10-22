@@ -16,11 +16,12 @@
 from __future__ import print_function
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
-from .esgf import find_local_path, find_missing_id, find_checksum_id
+from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
 from .request import *
 from .exception import ClefException
 import click
 import logging
+from datetime import datetime
 from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
 import sys
@@ -50,8 +51,39 @@ def clef_catch():
 @click.pass_context
 def clef(ctx, flow):
     ctx.obj={}
+    # set up a default value for flow if none selected for logging
+    if flow is None: flow = 'default'
     ctx.obj['flow'] = flow
+    ctx.obj['log'] = config_log()
     
+
+def config_log():
+    ''' configure log file to keep track of users queries '''
+    # start a logger
+    logger = logging.getLogger('cleflog')
+    # set a formatter to manage the output format of our handler
+    formatter = logging.Formatter('%(asctime)s; %(message)s',"%Y-%m-%d %H:%M:%S")
+    # set the level for the logger, has to be logging.LEVEL not a string
+    # until we do so cleflog doesn't have a level and inherits the root logger level:WARNING
+    logger.setLevel(logging.INFO)
+    
+    # add a handler to send WARNING level messages to console
+    clog = logging.StreamHandler()
+    clog.setLevel(logging.WARNING)
+    logger.addHandler(clog)    
+
+    # add a handler to send INFO level messages to file 
+    # the messagges will be appended to the same file
+    # create a new log file every month
+    month = datetime.now().strftime("%Y%m") 
+    logname = 'clef_log_' + month + '.txt' 
+    flog = logging.FileHandler('/g/data/ua8/Download/CMIP6/'+logname) 
+    flog.setLevel(logging.INFO)
+    flog.setFormatter(formatter)
+    logger.addHandler(flog)
+
+    # return the logger object
+    return logger
 
 def warning(message):
     print("WARNING: %s"%message, file=sys.stderr)
@@ -100,12 +132,15 @@ def common_args(f):
         click.argument('query', nargs=-1),
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
-                     help="Return dataset/directory (default) or individual files"),
-        click.option('--all-versions', '-a', 'latest', flag_value='all', default=True, help="All versions, disabled by default"),
-        click.option('--latest', 'latest', flag_value='true',  help="Latest version only, this is the default behaviour"),
-        click.option('--replica', default=False, help="Search also replicas, by default searches only official versions"),
-        click.option('--no-distrib', 'distrib', default=True, is_flag=True, help="Search only one ESGF node instead of default distributed search"),
-        click.option('--debug', default=False, is_flag=True, help="Show debug log")
+                     help="Return output for datasets (default) or individual files"),
+        click.option('--latest/--all-versions', 'latest', default=True,  
+                     help="Return only the latest version or all of them. Default: --latest"),
+        click.option('--replica/--no-replica', default=False, 
+                     help="Return both original files and replicas. Default: --no-replica"),
+        click.option('--distrib/--no-distrib', 'distrib', default=True, 
+                     help="Distribute search across all ESGF nodes. Default: --distrib"),
+        click.option('--debug/--no-debug', default=False,
+                     help="Show debug output. Default: --no-debug")
     ]
     for c in reversed(constraints):
         f = c(f)
@@ -169,15 +204,16 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
-    #user=os.environ['USER']
+    clef_log = ctx.obj['log']
+    user_name=os.environ['USER']
     user=None
     connect(user=user)
     s = Session()
 
     project='CMIP5'
 
-    ensemble_terms = None
-    model_terms = None
+    #ensemble_terms = None
+    #model_terms = None
 
     dataset_constraints = {
         'ensemble': ensemble,
@@ -189,8 +225,10 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'cmor_table': cmor_table,
         'variable': variable
         }
-
-
+    
+    # keep track of query arguments in clef_log file
+    args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
+    clef_log.info('  ;  '.join([user_name,'CMIP5',ctx.obj['flow'],args_str]))
     #if ctx.obj['flow'] == 'request':
     #    print('Sorry! This option is not yet implemented')
     #    return
@@ -229,13 +267,12 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
            terms[key] = value
 
-    ql = find_local_path(s, query=None,
-            distrib=True,
+    subq = match_query(s, query=' '.join(query),
+            distrib= distrib,
             replica=replica,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
-            oformat=oformat,
             project=project,
             **terms
             )
@@ -245,37 +282,29 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     # with the same name)
     ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
 
+    #ql = find_local_path(s, subq, oformat=oformat)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
     if ctx.obj['flow'] == 'local': 
         return
 
-    qm = find_missing_id(s, ' '.join(query),
-            distrib=distrib,
-            replica=replica,
-            latest=(None if latest == 'all' else latest),
-            cf_standard_name=cf_standard_name,
-            experiment_family=experiment_family,
-            oformat=oformat,
-            project=project,
-            **terms
-            )
+    qm = find_missing_id(s, subq, oformat=oformat)
 
-    # if there are missing datasets, search for dataset_id in synda queuee, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queuee(qm, project)
-        print('Available on ESGF but not locally:')
+        updated = search_queue(qm, project)
+        print('\nAvailable on ESGF but not locally:')
         for result in updated:
             print(result)
     else:
-        print('Everything available on ESGF is also available locally')
+        print('\nEverything available on ESGF is also available locally')
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
             write_request('CMIP5',updated)
         else:
-            print("All the published data is already available locally, or has been requested, nothing to request")
+            print("\nAll the published data is already available locally, or has been requested, nothing to request")
 
 
 @clef.command()
@@ -310,13 +339,16 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
-    #user=os.environ['USER']
+    clef_log = ctx.obj['log']
+    user_name=os.environ['USER']
     user=None
     connect(user=user)
     s = Session()
 
-    ensemble_terms = None
-    model_terms = None
+    project='CMIP6'
+
+    #ensemble_terms = None
+    #model_terms = None
 
     dataset_constraints = {
         'member_id': member_id,
@@ -329,10 +361,14 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'realm': realm,
         'frequency': frequency,
         'table_id': table_id,
+        'variable_id': variable_id,
         'grid_label': grid_label,
         'nominal_resolution': nominal_resolution
         }
 
+    # keep track of query arguments in clef_log file
+    args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
+    clef_log.info('  ;  '.join([user_name,'CMIP6',ctx.obj['flow'],args_str]))
     #if ctx.obj['flow'] == 'request':
     #    print('Sorry! This option is not yet implemented')
         #return
@@ -350,7 +386,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             institution_id=institution_id,
             table_id=table_id,
             source_id=source_id,
-            project='CMIP6',
+            project=project,
             realm=realm,
             frequency=frequency,
             variable_id=variable_id,
@@ -375,13 +411,12 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
             terms[key] = value
 
-    ql = find_local_path(s, query=None,
-            distrib=True,
+    subq = match_query(s, query=' '.join(query),
+            distrib=distrib,
             replica=replica,
             latest=(None if latest == 'all' else latest),
             cf_standard_name=cf_standard_name,
-            oformat=oformat,
-            project='CMIP6',
+            project=project,
             **terms
             )
 
@@ -390,32 +425,26 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     # with the same name)
     ql = ql.join(Path.c6dataset).filter(C6Dataset.project=='CMIP6')
 
+    #ql = find_local_path(s, subq, oformat=oformat)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
     if ctx.obj['flow'] == 'local': 
         return
 
-    qm = find_missing_id(s, ' '.join(query),
-            distrib=distrib,
-            replica=replica,
-
-            latest=(None if latest == 'all' else latest),
-            cf_standard_name=cf_standard_name,
-            oformat=oformat,
-            project='CMIP6',
-            **terms
-            )
+    qm = find_missing_id(s, subq, oformat=oformat)
     
-    # if there are missing datasets, search for dataset_id in synda queuee, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queuee(qm, project)
-        print('Available on ESGF but not locally:')
+        updated = search_queue(qm, project)
+        print('\nAvailable on ESGF but not locally:')
         for result in updated:
             print(result)
+    else:
+        print('\nEverything available on ESGF is also available locally')
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
-            write_request('CMIP6',updated)
+            write_request(project,updated)
         else:
-            print("All the published data is already available locally, or has been requested, nothing to request")
+            print("\nAll the published data is already available locally, or has been requested, nothing to request")
