@@ -39,6 +39,7 @@ run_conda: &run_conda
                 source ~/miniconda/bin/activate
                 pip install codacy-coverage
                 python-codacy-coverage -r /tmp/artefacts/tests/pytest/coverage.xml
+                bash <(curl -s https://codecov.io/bash) -f /tmp/artefacts/tests/pytest/coverage.xml
         - persist_to_workspace:
             root: /tmp/artefacts/persist
             paths: '*'

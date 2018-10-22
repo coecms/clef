@@ -36,6 +36,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .exception import ClefException
 
+
 Session = sessionmaker()
 
 
