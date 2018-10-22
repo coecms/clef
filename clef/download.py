@@ -26,16 +26,21 @@ import requests
 
 def write_request(project,missing):
     ''' write missing dataset_ids to file to create download request for synda '''
-    rootdir = '/g/data/ua8/Download/CMIP6/'
+    current_dir = os.getcwd() + '/'
     user = os.environ['USER']
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
-    f = open(rootdir+fname, 'w')
+    f = open(current_dir+fname, 'w')
     for did in missing:
         f.write('dataset_id='+did+'\n')
     f.close()
-    helpdesk(user, rootdir, fname, project)
     print('Finished writing file: '+fname)
+    answer = input('Do you want to proceed with request for missing files? (N/Y)\n No is default\n')
+    if answer  in ['Y','y','yes','YES']:
+        helpdesk(user, current_dir, fname, project)
+    else:
+        print(f'Your request has been saved in \n {current_dir}/{fname}')
+        print('You can always use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
 

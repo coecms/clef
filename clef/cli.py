@@ -21,6 +21,7 @@ from .request import *
 from .exception import ClefException
 import click
 import logging
+from datetime import datetime
 from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
 import sys
@@ -50,8 +51,39 @@ def clef_catch():
 @click.pass_context
 def clef(ctx, flow):
     ctx.obj={}
+    # set up a default value for flow if none selected for logging
+    if flow is None: flow = 'default'
     ctx.obj['flow'] = flow
+    ctx.obj['log'] = config_log()
     
+
+def config_log():
+    ''' configure log file to keep track of users queries '''
+    # start a logger
+    logger = logging.getLogger('cleflog')
+    # set a formatter to manage the output format of our handler
+    formatter = logging.Formatter('%(asctime)s; %(message)s',"%Y-%m-%d %H:%M:%S")
+    # set the level for the logger, has to be logging.LEVEL not a string
+    # until we do so cleflog doesn't have a level and inherits the root logger level:WARNING
+    logger.setLevel(logging.INFO)
+    
+    # add a handler to send WARNING level messages to console
+    clog = logging.StreamHandler()
+    clog.setLevel(logging.WARNING)
+    logger.addHandler(clog)    
+
+    # add a handler to send INFO level messages to file 
+    # the messagges will be appended to the same file
+    # create a new log file every month
+    month = datetime.now().strftime("%Y%m") 
+    logname = 'clef_log_' + month + '.txt' 
+    flog = logging.FileHandler('/g/data/ua8/Download/CMIP6/'+logname) 
+    flog.setLevel(logging.INFO)
+    flog.setFormatter(formatter)
+    logger.addHandler(flog)
+
+    # return the logger object
+    return logger
 
 def warning(message):
     print("WARNING: %s"%message, file=sys.stderr)
@@ -172,15 +204,16 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
-    #user=os.environ['USER']
+    clef_log = ctx.obj['log']
+    user_name=os.environ['USER']
     user=None
     connect(user=user)
     s = Session()
 
     project='CMIP5'
 
-    ensemble_terms = None
-    model_terms = None
+    #ensemble_terms = None
+    #model_terms = None
 
     dataset_constraints = {
         'ensemble': ensemble,
@@ -192,8 +225,10 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'cmor_table': cmor_table,
         'variable': variable
         }
-
-
+    
+    # keep track of query arguments in clef_log file
+    args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
+    clef_log.info('  ;  '.join([user_name,'CMIP5',ctx.obj['flow'],args_str]))
     #if ctx.obj['flow'] == 'request':
     #    print('Sorry! This option is not yet implemented')
     #    return
@@ -299,15 +334,16 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
-    #user=os.environ['USER']
+    clef_log = ctx.obj['log']
+    user_name=os.environ['USER']
     user=None
     connect(user=user)
     s = Session()
 
     project='CMIP6'
 
-    ensemble_terms = None
-    model_terms = None
+    #ensemble_terms = None
+    #model_terms = None
 
     dataset_constraints = {
         'member_id': member_id,
@@ -325,6 +361,9 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'nominal_resolution': nominal_resolution
         }
 
+    # keep track of query arguments in clef_log file
+    args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
+    clef_log.info('  ;  '.join([user_name,'CMIP6',ctx.obj['flow'],args_str]))
     #if ctx.obj['flow'] == 'request':
     #    print('Sorry! This option is not yet implemented')
         #return
