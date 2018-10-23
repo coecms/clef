@@ -173,7 +173,6 @@ def find_checksum_id(query, **kwargs):
         no_filter = False
 
     for doc in response['response']['docs']:
-        print(doc, file=sys.stderr)
         if  no_filter or any(st in doc['id'] for st in matches_list):
             if 'checksum' in doc.keys():
                 records.append(doc)
