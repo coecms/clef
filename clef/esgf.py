@@ -171,12 +171,16 @@ def find_checksum_id(query, **kwargs):
     if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None)==False:
         matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
         no_filter = False
+
     for doc in response['response']['docs']:
+        print(doc, file=sys.stderr)
         if  no_filter or any(st in doc['id'] for st in matches_list):
             if 'checksum' in doc.keys():
                 records.append(doc)
             else:
                 nosums.append(doc)
+        else:
+            records.append(doc)
         
 
     table = values([

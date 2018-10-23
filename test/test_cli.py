@@ -64,15 +64,15 @@ def test_versions(command, runner, mock_query):
     # Check the query args are passed correctly
     cli_run(runner, command)
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == None
+    assert mock_query.call_args[1]['latest'] == True
 
     cli_run(runner, command, ['--all-versions'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == None
+    assert mock_query.call_args[1]['latest'] == False
 
     cli_run(runner, command, ['--latest'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == 'true'
+    assert mock_query.call_args[1]['latest'] == True
 
 
 @pytest.mark.parametrize('command', [cmip5])
