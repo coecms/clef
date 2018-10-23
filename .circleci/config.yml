@@ -68,11 +68,6 @@ workflows:
     version: 2
     build_and_publsh:
         jobs:
-            - py2:
-                filters:
-                    tags:
-                        only: /.*/
-
             - py3:
                 filters:
                     tags:
@@ -80,7 +75,6 @@ workflows:
 
             - publish:
                 requires:
-                    - py2
                     - py3
                 filters:
                     tags:
