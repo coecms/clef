@@ -48,10 +48,6 @@ run_conda: &run_conda
 
 version: 2
 jobs:
-    py2:
-        environment:
-            PYTHON_VER: 2.7
-        <<: *run_conda
     py3:
         environment:
             PYTHON_VER: 3
