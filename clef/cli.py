@@ -205,7 +205,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
-    user_name=os.environ['USER']
+    user_name=os.environ.get('USER','unknown')
     user=None
     connect(user=user)
     s = Session()
@@ -340,7 +340,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
-    user_name=os.environ['USER']
+    user_name=os.environ.get('USER','unknown')
     user=None
     connect(user=user)
     s = Session()
@@ -368,7 +368,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
 
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
-    print(args_str)
     clef_log.info('  ;  '.join([user_name,'CMIP6',ctx.obj['flow'],args_str]))
     #if ctx.obj['flow'] == 'request':
     #    print('Sorry! This option is not yet implemented')

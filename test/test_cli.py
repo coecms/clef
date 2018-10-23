@@ -84,7 +84,8 @@ def test_mip(command, runner, mock_query):
 
 @pytest.mark.parametrize('command', [cmip5, cmip6])
 def test_remote(command, runner, mock_query):
-    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'remote'}
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'remote',
+            'log': logging.getLogger('cleflog')}
     result = runner.invoke(command, [], obj=ctx, catch_exceptions=False)
     assert result.exit_code == 0
     assert mock_query.called

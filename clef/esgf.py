@@ -168,8 +168,8 @@ def find_checksum_id(query, **kwargs):
     records=[]
     # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
     no_filter = True
-    if constraints['project'] == 'CMIP5' and constraints['latest']==False:
-        matches_list = ['.'+var+'_' for var in constraints['variable'] ]
+    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None)==False:
+        matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
         no_filter = False
     for doc in response['response']['docs']:
         if  no_filter or any(st in doc['id'] for st in matches_list):
