@@ -129,7 +129,7 @@ def link_to_esgf(query, **kwargs):
 
 
     #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
-    r = requests.Request('GET','https://https://esgf-data.dkrz.de/esg-search/search/%s'%endpoint,
+    r = requests.Request('GET','https://esgf-data.dkrz.de/esg-search/search/%s'%endpoint,
             params=params,
             )
     p = r.prepare()
@@ -168,16 +168,17 @@ def find_checksum_id(query, **kwargs):
     records=[]
     # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
     no_filter = True
-    if constraints['project'] == 'CMIP5' and constraints['latest']==False:
-        matches_list = ['.'+var+'_' for var in constraints['variable'] ]
+        
+    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None)==False:
+        matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
         no_filter = False
+
     for doc in response['response']['docs']:
         if  no_filter or any(st in doc['id'] for st in matches_list):
             if 'checksum' in doc.keys():
                 records.append(doc)
             else:
                 nosums.append(doc)
-        
 
     table = values([
             column('checksum', String),
@@ -230,7 +231,7 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-def find_local_path(session, subq, latest=None, oformat='file'):
+def find_local_path(session, subq, oformat='file'):
     """Find the filesystem paths of ESGF matches
 
     Converts the results of :func:`match_query` to local filesystem paths,
@@ -258,7 +259,7 @@ def find_local_path(session, subq, latest=None, oformat='file'):
     else:
         raise NotImplementedError
 
-def find_missing_id(session, subq, latest=None, oformat='file'):
+def find_missing_id(session, subq, oformat='file'):
     """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
