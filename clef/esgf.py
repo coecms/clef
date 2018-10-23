@@ -233,7 +233,7 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-def find_local_path(session, subq, latest=None, oformat='file'):
+def find_local_path(session, subq, oformat='file'):
     """Find the filesystem paths of ESGF matches
 
     Converts the results of :func:`match_query` to local filesystem paths,
@@ -261,7 +261,7 @@ def find_local_path(session, subq, latest=None, oformat='file'):
     else:
         raise NotImplementedError
 
-def find_missing_id(session, subq, latest=None, oformat='file'):
+def find_missing_id(session, subq, oformat='file'):
     """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match

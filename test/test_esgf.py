@@ -204,8 +204,8 @@ def test_find_missing_id_updated_latest(session):
     latest=true should prefer ESGF replies when they have the latest flag
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
-        subq = match_query(session, '')
-        results = find_missing_id(session, subq, latest=True)
+        subq = match_query(session, '', latest=True)
+        results = find_missing_id(session, subq)
         assert results.count() == 1
 
 def test_find_local_path_updated_latest(session):
@@ -214,8 +214,8 @@ def test_find_local_path_updated_latest(session):
     latest=true should prefer ESGF replies when they have the latest flag
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
-        subq = match_query(session, '')
-        results = find_local_path(session, subq, latest=True)
+        subq = match_query(session, '', latest=True)
+        results = find_local_path(session, subq)
         assert results.count() == 0
 
 def test_find_missing_id_dataset(session):
