@@ -17,7 +17,7 @@ from __future__ import print_function
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
-from .request import *
+from .download import *
 from .exception import ClefException
 import click
 import logging
