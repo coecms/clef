@@ -21,6 +21,7 @@ import pytest
 from click.testing import CliRunner
 from test_esgf import updated_query
 import sys
+import logging
 
 try:
     import unittest.mock as mock
@@ -47,7 +48,8 @@ def mock_query(session):
                 yield query
 
 def cli_run(runner, cmd, args=[]):
-    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': False}
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'default', 
+            'log': logging.getLogger('cleflog')}
     result = runner.invoke(cmd, args, obj=ctx, catch_exceptions=False)
     print(result.output, file=sys.stderr)
     assert result.exit_code == 0
