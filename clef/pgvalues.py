@@ -13,6 +13,9 @@ class values(FromClause):
         self.list = args
         self.alias_name = self.name = kw.pop('alias_name', None)
 
+        if len(args) == 0:
+            raise Exception("No entries in VALUES table")
+
     def _populate_column_collection(self):
         for c in self._column_args:
             c._make_proxy(self)

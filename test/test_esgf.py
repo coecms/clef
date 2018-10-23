@@ -149,7 +149,8 @@ def test_find_local_path_missing(session):
     No local results found, return nothing
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
-        results = find_local_path(session, '')
+        subq = match_query(session, '')
+        results = find_local_path(session, subq)
         assert results.count() == 0
 
 def test_find_local_path_present(session):
@@ -157,7 +158,8 @@ def test_find_local_path_present(session):
     One local result found, return its path
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
-        results = find_local_path(session, '')
+        subq = match_query(session, '')
+        results = find_local_path(session, subq)
         assert results.count() == 1
 
 def test_find_missing_id_missing(session):
@@ -165,7 +167,8 @@ def test_find_missing_id_missing(session):
     No local results found, return the missing match
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
-        results = find_missing_id(session, '')
+        subq = match_query(session, '')
+        results = find_missing_id(session, subq)
         assert results.count() == 1
 
 def test_find_missing_id_present(session):
@@ -173,7 +176,8 @@ def test_find_missing_id_present(session):
     One local result found, return nothing
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
-        results = find_missing_id(session, '')
+        subq = match_query(session, '')
+        results = find_missing_id(session, subq)
         assert results.count() == 0
 
 def test_find_missing_id_updated(session):
@@ -181,7 +185,8 @@ def test_find_missing_id_updated(session):
     File has been updated, but is still present
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
-        results = find_missing_id(session, '')
+        subq = match_query(session, '')
+        results = find_missing_id(session, subq)
         assert results.count() == 0
 
 def test_find_local_path_updated(session):
@@ -189,7 +194,8 @@ def test_find_local_path_updated(session):
     File has been updated, but is still present
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
-        results = find_local_path(session, '')
+        subq = match_query(session, '')
+        results = find_local_path(session, subq)
         assert results.count() == 1
 
 def test_find_missing_id_updated_latest(session):
@@ -198,7 +204,8 @@ def test_find_missing_id_updated_latest(session):
     latest=true should prefer ESGF replies when they have the latest flag
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
-        results = find_missing_id(session, '', latest=True)
+        subq = match_query(session, '', latest=True)
+        results = find_missing_id(session, subq)
         assert results.count() == 1
 
 def test_find_local_path_updated_latest(session):
@@ -207,18 +214,21 @@ def test_find_local_path_updated_latest(session):
     latest=true should prefer ESGF replies when they have the latest flag
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
-        results = find_local_path(session, '', latest=True)
+        subq = match_query(session, '', latest=True)
+        results = find_local_path(session, subq)
         assert results.count() == 0
 
 def test_find_missing_id_dataset(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
-        results = find_missing_id(session, '', format='dataset')
+        subq = match_query(session, '')
+        results = find_missing_id(session, subq, oformat='dataset')
         assert results.count() == 1
         assert results[0][0] == 'dataset_bar'
 
 def test_find_local_path_dataset(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
-        results = find_local_path(session, '', format='dataset')
+        subq = match_query(session, '')
+        results = find_local_path(session, subq, oformat='dataset')
         assert results.count() == 1
         assert results[0][0] == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/v20121011/clt/'
 
@@ -228,7 +238,8 @@ def test_find_partial_dataset(session):
     Return no match by default
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
-        results = find_local_path(session, '', format='dataset')
+        subq = match_query(session, '')
+        results = find_local_path(session, subq, oformat='dataset')
         assert results.count() == 0
 
 

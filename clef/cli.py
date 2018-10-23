@@ -205,7 +205,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
-    user_name=os.environ['USER']
+    user_name=os.environ.get('USER','unknown')
     user=None
     connect(user=user)
     s = Session()
@@ -340,7 +340,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
-    user_name=os.environ['USER']
+    user_name=os.environ.get('USER','unknown')
     user=None
     connect(user=user)
     s = Session()
