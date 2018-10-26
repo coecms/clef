@@ -71,7 +71,7 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
 
     if query is not None and len(query) == 0:
         query = None
-
+    
     params = {
           'query': query,
           'fields': fields,
@@ -84,7 +84,9 @@ def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False,
           'format': 'application/solr+json',
           } 
     params.update(kwargs)
-    r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
+    #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
+    #                 params = params )
+    r = requests.get('https://esgf-data.dkrz.de/esg-search/search',
                      params = params )
 
     r.raise_for_status()
@@ -125,14 +127,16 @@ def link_to_esgf(query, **kwargs):
     if params.get('project','').lower() == 'cmip6':
         endpoint = 'cmip6'
 
-    r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
+
+    #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
+    r = requests.Request('GET','https://esgf-data.dkrz.de/esg-search/search/%s'%endpoint,
             params=params,
             )
     p = r.prepare()
     return r.prepare().url
 
 
-def find_checksum_id(query, project='CMIP5', **kwargs):
+def find_checksum_id(query, **kwargs):
     """Get checksums and IDs of matching files from ESGF
 
     Searches ESGF using :func:`esgf_query`, then converts the response into a
@@ -151,7 +155,6 @@ def find_checksum_id(query, project='CMIP5', **kwargs):
         This table can be joined against the MAS database tables
     """
     constraints = {k: v for k,v in kwargs.items() if v != ()}
-    constraints['project'] = project
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
 
     if response['response']['numFound'] == 0:
@@ -159,6 +162,22 @@ def find_checksum_id(query, project='CMIP5', **kwargs):
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
         raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
+    # separate records that do not have checksum in response (nosums list) from others (records list)
+    # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
+    nosums=[]
+    records=[]
+    # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
+    no_filter = True
+    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None)==False and constraints.get('variable', None) is not None:
+        matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
+        no_filter = False
+
+    for doc in response['response']['docs']:
+        if  no_filter or any(st in doc['id'] for st in matches_list):
+            if 'checksum' in doc.keys():
+                records.append(doc)
+            else:
+                nosums.append(doc)
 
     table = values([
             column('checksum', String),
@@ -170,12 +189,12 @@ def find_checksum_id(query, project='CMIP5', **kwargs):
         ],
         *[(
             doc['checksum'][0],
-            doc['id'],
+            doc['id'].split('|')[0], # drop the server name
             doc['dataset_id'].split('|')[0], # Drop the server name
             doc['title'],
             doc['version'],
             doc['score']) 
-            for doc in response['response']['docs']],
+            for doc in records],
         alias_name = 'esgf_query'
         )
 
@@ -211,8 +230,7 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-
-def find_local_path(session, query, latest=None, format='file', **kwargs):
+def find_local_path(session, subq, oformat='file'):
     """Find the filesystem paths of ESGF matches
 
     Converts the results of :func:`match_query` to local filesystem paths,
@@ -220,19 +238,18 @@ def find_local_path(session, query, latest=None, format='file', **kwargs):
 
     Args:
         format ('file' or 'dataset'): Return the path to the file or the dataset directory
-        **kwargs: See :func:`esgf_query`
+        subq: result of func:`esgf_query`
 
     Returns:
         Iterable of strings with the paths to either paths or datasets
     """
 
-    subq = match_query(session, query, latest, **kwargs)
-    if format == 'file':
+    if oformat == 'file':
         return (session
                 .query('esgf_paths.path')
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None))
-    elif format == 'dataset':
+    elif oformat == 'dataset':
         return (session
                 .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
                 .select_from(subq)
@@ -241,28 +258,25 @@ def find_local_path(session, query, latest=None, format='file', **kwargs):
     else:
         raise NotImplementedError
 
-
-def find_missing_id(session, query, latest=None, format='file', **kwargs):
-    """Find ESGF matches that are not at NCI
-
+def find_missing_id(session, subq, oformat='file'):
+    """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
 
     Args:
         format ('file' or 'dataset'): Return the path to the file or the dataset directory
-        **kwargs: See :func:`esgf_query`
+        subq: result of func:`esgf_query`
 
     Returns:
         Iterable of strings with the ESGF file or dataset id
     """
 
-    subq = match_query(session, query, latest, **kwargs)
-    if format == 'file':
+    if oformat == 'file':
         return (session
                 .query('esgf_query.id')
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id == None))
-    elif format == 'dataset':
+    elif oformat == 'dataset':
         return (session
                 .query('esgf_query.dataset_id')
                 .select_from(subq)

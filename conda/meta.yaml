@@ -28,6 +28,7 @@ requirements:
         - requests
         - click
         - mock # [py27]
+        - beautifulsoup4
 
 test:
     source_files:

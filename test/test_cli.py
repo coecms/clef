@@ -21,6 +21,7 @@ import pytest
 from click.testing import CliRunner
 from test_esgf import updated_query
 import sys
+import logging
 
 try:
     import unittest.mock as mock
@@ -47,7 +48,8 @@ def mock_query(session):
                 yield query
 
 def cli_run(runner, cmd, args=[]):
-    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': False}
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'default', 
+            'log': logging.getLogger('cleflog')}
     result = runner.invoke(cmd, args, obj=ctx, catch_exceptions=False)
     print(result.output, file=sys.stderr)
     assert result.exit_code == 0
@@ -62,27 +64,28 @@ def test_versions(command, runner, mock_query):
     # Check the query args are passed correctly
     cli_run(runner, command)
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == None
+    assert mock_query.call_args[1]['latest'] == True
 
     cli_run(runner, command, ['--all-versions'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == None
+    assert mock_query.call_args[1]['latest'] == False
 
     cli_run(runner, command, ['--latest'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == 'true'
+    assert mock_query.call_args[1]['latest'] == True
 
 
 @pytest.mark.parametrize('command', [cmip5])
 def test_mip(command, runner, mock_query):
     cli_run(runner, command, ['--mip=3hr'])
     assert mock_query.called
-    assert mock_query.call_args[1]['cmor_table'] == ['3hr']
+    assert mock_query.call_args[1]['cmor_table'] == ('3hr',)
 
 
 @pytest.mark.parametrize('command', [cmip5, cmip6])
 def test_remote(command, runner, mock_query):
-    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'remote'}
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'remote',
+            'log': logging.getLogger('cleflog')}
     result = runner.invoke(command, [], obj=ctx, catch_exceptions=False)
     assert result.exit_code == 0
     assert mock_query.called
@@ -101,8 +104,8 @@ def test_variable(runner, mock_query):
 def test_model(runner, mock_query):
     cli_run(runner, cmip5, ['--model=ACCESS1.3'])
     assert mock_query.called
-    assert mock_query.call_args[1]['model'] == ['ACCESS1.3']
+    assert mock_query.call_args[1]['model'] == ('ACCESS1.3',)
 
     cli_run(runner, cmip6, ['--model=CNRM-CM6-1'])
     assert mock_query.called
-    assert mock_query.call_args[1]['source_id'] == ['CNRM-CM6-1']
+    assert mock_query.call_args[1]['source_id'] == ('CNRM-CM6-1',)
