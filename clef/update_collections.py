@@ -17,7 +17,8 @@ limitations under the License.
 from __future__ import print_function
 
 from sqlalchemy.orm.exc import NoResultFound
-from clef import dataset
+from clef import dataset 
+from clef.db_noesgf import *
 
 
 def search_item(db, klass, **kwargs):
@@ -44,7 +45,6 @@ def insert_unique(db, klass, **kwargs):
         db.add(item)
         new=True
         db.commit() 
-    return item, new
 
 def add_bulk_items(db, klass, rows):
     """Batched INSERT statements via the ORM "bulk", using dictionaries.
@@ -79,7 +79,8 @@ def add_dataset(name, version, fformat, **kwargs):
     :kwargs: other fields (optional): 
     '''
     # open connection to database
-    clefdb = dataset.connect()
+    db = dataset.connect()
+    clefdb = db.session
     # first check if dataset as defined by (name, version, format) already exists
     ds = clefdb.query(Dataset.name==name).all()
     if len(ds) > 0:
@@ -94,3 +95,57 @@ def add_dataset(name, version, fformat, **kwargs):
             insert_unique(clefdb, Dataset, **kwargs)
             print(f'Dataset $name v$version ($fformat) added to collection.')
             return 
+
+
+def add_ecmwf_table(table):
+    ''' 
+    Add an ECMWF table as a bulk transaction
+    :input: table a list of dictionaries representing the table 
+    '''
+    # open connection to database
+    db = dataset.connect()
+    clefdb = db.session
+    # check that table is a list of dictionaries with the right keys
+    keys = ['code', 'name', 'cds_name', 'units', 'long_name', 'standard_name', 'cmor_name', 'cell_methods']
+    table_keys = list(table[0].keys())  
+    assert sorted(keys) == sorted(table_keys)
+    # add bulk
+    add_bulk_items(clefdb, ECMWF, table)
+    return
+
+
+def add_variable_table(rows,dname,fformat,version):
+    ''' 
+    Add an Variable table as a bulk transaction
+    :input: rows a list of dictionaries representing the table rows 
+    '''
+    # open connection to database
+    db = dataset.connect()
+    clefdb = db.session
+    # find the dataset_id
+    dsid = clefdb.query(Dataset.id).filter_by(**{'name': dname, 'fileformat': fformat, 'version': version}).one_or_none()
+    assert dsid 
+    # add dataset_id to all the rows
+    for row in rows:
+        row['dataset_id'] = dsid[0] 
+    # find missing information for each parameter code from ECMWF table
+    if dname in ['ERAI', 'MACC', 'ERA5', 'YOTC']:
+        for row in rows:
+            code = row.pop('code')
+            vals = clefdb.query(ECMWF).filter(ECMWF.code == code).one_or_none()
+            if vals:
+                row['name'] = vals.name
+                row['standard_name'] = vals.standard_name
+                row['long_name'] = vals.long_name
+                row['cmor_name'] = vals.cmor_name
+                row['units'] = vals.units
+            else:
+                print(f'Warning: unrecognised code {code} in ECMWF table, this variable will be added with incomplete information')
+    # check that table is a list of dictionaries with the right keys
+    keys = ['dataset_id', 'name', 'long_name', 'standard_name', 'cmor_name', 'units', 'levels', 'grid', 'resolution', 'frequency', 'fdate', 'tdate']
+    rows_keys = list(rows[0].keys())  
+    assert sorted(keys) == sorted(rows_keys)
+        
+    # add bulk
+    add_bulk_items(clefdb, Variable, rows)
+    return

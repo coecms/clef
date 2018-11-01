@@ -109,6 +109,47 @@ class Variable(Base):
     tdate          = Column(String)
     updated_on     = Column(String)
 
+
+class ECMWF(Base):
+    """
+    Each record represents a variable for a specific dataset. 
+    i.e. you can have T defined for ERAI and for ERA5 and they will be two seperate records even if all attributes might be the same  
+    .. attribute:: id 
+    .. attribute:: code 
+        Grib code for variable: <code>.<table>
+    .. attribute:: name 
+        Variable name used in ECMWF files
+    .. attribute:: cds_name 
+        Variable name used for requests via Copernicus climate service
+    .. attribute:: units
+        Variable units 
+    .. attribute:: long_name 
+        long_name attribute definition 
+    .. attribute:: standard_name 
+        standard_name attribute definition 
+    .. attribute:: cmor_name 
+        corresponding cmor_name if exists 
+    .. attribute:: cell_methods 
+       Cell_methods attribute for variable if applicable
+    """
+    __tablename__ = 'ecmwf_vars'
+    id          = Column(Integer, name='ecmwf_var_id', primary_key = True)
+
+    code           = Column(String)
+    name           = Column(String)
+    cds_name      = Column(String)
+    units          = Column(String)
+    long_name      = Column(String)
+    standard_name  = Column(String, index=True)
+    cmor_name      = Column(String, index=True)
+    cell_methods   = Column(String)
+
+    #def build_filepaths(self):
+    #    """
+    #    Returns the filepath pattern based on the drs and filename pattern 
+    #    :returns: 
+    #    """
+    #    return glob.glob(g)
     #def build_filepaths(self):
     #    """
     #    Returns the filepath pattern based on the drs and filename pattern 

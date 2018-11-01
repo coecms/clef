@@ -20,7 +20,7 @@ import os
 from sqlalchemy import create_engine, func, select, and_
 from sqlalchemy.orm import sessionmaker
 
-from clef.db_noesgf import Base, Dataset, Variable
+from clef.db_noesgf import Base, Dataset, Variable, ECMWF
 
 SQASession = sessionmaker()
 
@@ -59,7 +59,7 @@ class Session(object):
         return [x[0] for x in self.query(Variable.standard_name).distinct().all()]
 
 # Default collections database
-default_db = 'sqlite:////g/data1/ua8/Download/datadb.db'
+default_db = 'sqlite:////g/data1/ua8/Download/clef.db'
 
 def connect(path = None):
     """Connect to the not-ESGF datasets catalog
