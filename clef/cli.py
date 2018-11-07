@@ -18,6 +18,7 @@ from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
 from .download import *
+from . import collections as colls 
 from .exception import ClefException
 import click
 import logging
@@ -176,6 +177,37 @@ def cmip6_args(f):
         f = c(f)
     return f
 
+
+def ds_args(f):
+    #st_names = dataset.standard_names()
+    #cm_names = dataset.cmor_names()
+    #variables = dataset.vars_names()
+    st_names = ['air_temperature','air_pressure','rainfall_rate']
+    cm_names = ['ps','pres','psl','tas','ta','pr','tos']
+    variables = ['T','U','V','Z']
+    constraints = [
+        click.option('--dataset', '-d', 'dname',  multiple=False, help="Dataset name"),
+        click.option('--version', '-v', multiple=False, help="Dataset version"),
+        click.option('--format', '-f', 'fileformat', multiple=False, type=click.Choice(['netcdf','grib','HDF5','binary']),
+                      help="Dataset file format as defined in clef.db Dataset table"),
+        click.option('--standard-name', '-sn', multiple=True, type=click.Choice(st_names),
+        #click.option('--standard-name', '-sn', multiple=False, type=click.Choice(st_names),
+                      help="Variable standard_name this is the most reliable way to look for a variable across datasets"),
+        click.option('--cmor-name', '-cn', multiple=True, type=click.Choice(cm_names),
+        #click.option('--cmor-name', '-cn', multiple=False, type=click.Choice(cm_names),
+                      help="Variable cmor_name useful to look for a variable across datasets"),
+        click.option('--variable', '-va', 'name', multiple=True, type=click.Choice(variables), 
+                      help="Variable name as defined in files: tas, pr, sic, T ... "),
+        click.option('--frequency', 'frequency', multiple=True, type=click.Choice(['yr','mon','day','6hr','3hr','1hr']), 
+                      help="Time frequency on which variable is defined"),
+        click.option('--from-date', 'fdate', multiple=False, help="""To define a time range of availability of a variable, 
+                      can be used on its own or together with to-date. Format is YYYYMMDD"""),
+        click.option('--to-date', 'tdate', multiple=False, help="""To define a time range of availability of a variable, 
+                      can be used on its own or together with from-date. Format is YYYYMMDD""")
+    ]
+    for c in reversed(constraints):
+        f = c(f)
+    return f
 
 @clef.command()
 @cmip5_args
@@ -448,3 +480,21 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             write_request(project,updated)
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
+
+@clef.command()
+@ds_args
+# should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
+# we should have two outputs option though one genric info and the other filepath! 
+def ds(**kwargs):
+#def ds(dname, version, fformat, variable, standard_name, cmor_name, frequency, period):
+#    kwargs
+    # open noesgf connection
+    db = colls.connect()
+    clefdb = db.session
+    datasets, variables = db.command_query(**kwargs)
+    for ds in datasets:
+        print(" ".join([ds.name,'v'+ds.version + ":",ds.drs]))
+        for v in variables:
+            if v.dataset_id == ds.id:
+                print(v.name + ": " + v.path() ) 
+    return

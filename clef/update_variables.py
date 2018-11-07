@@ -24,28 +24,30 @@ def read_json(ifile):
                   units, cmor_name, long_name
     :return: rows list of dictionaries
     ''' 
-    # open json file and read data as dictionary
-    with open(ifile) as f:
-        data = json.load(f)
     # create empty rows list
     rows=[]
-    # separate varlist from data dictionary
-    variables = data.pop('varlist')
-    # add other data columns to each var dictionary
-    for var in variables:
-        var.update(data)
-    return variables 
+    # open json file and read data as dictionary
+    with open(ifile) as f:
+        lines = f.readlines()
+    for l in lines:
+        r={}
+        r['cmor_name'],r['stream'],r['realm'] = l[:-1].split(',')
+        rows.append(r)
+    return rows 
 
-@click.command()
-@dset_args
-def blip(dname,version,fformat,ifile):
+def blip():
 
     # open table
-    rows = read_json(ifile)
-    #print(rows)
+    #rows = read_json(ifile)
+    dname='ERAI'
+    fformat='netcdf'
+    version='1.0'
+    ifile='up_erai_var.txt'
+    rows = read_json(ifile) 
+    identifiers=['cmor_name']
     
     # bulk add to table
-    add_variable_table(rows,dname,fformat,version)
+    update_variable_table(rows,identifiers,dname,fformat,version)
 
 if __name__ == "__main__":
     blip()

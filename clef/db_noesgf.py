@@ -13,14 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import print_function
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 #from clef.data import *
 
 import os
-import glob
+import re
 
 Base = declarative_base()
 
@@ -57,7 +56,7 @@ class Dataset(Base):
     manager    = Column(String)
     reference  = Column(String)
 
-    variables  = relationship('Variable', order_by='Variable.name', 
+    variables  = relationship('Variable', backref='dataset', order_by='Variable.name', 
                  cascade="all, delete-orphan", passive_deletes=True)
 
     __table_args__ = (
@@ -85,6 +84,10 @@ class Variable(Base):
         Label for grid on which variable is defined (or actual boundary?)
     .. attribute:: resolution 
        Grid resolution
+    .. attribute:: stream 
+       Group/subset to which variable belongs to where it applies, i.e. for ECMWF datasets 
+    .. attribute:: realm 
+       variable realm: ie. atmos, ocean etc where it applies, i.e. for all datasets following CMOR conventions
     .. attribute:: frequency 
        Frequency as: mon, 6hr, yr, ...
     .. attribute:: levels 
@@ -103,11 +106,31 @@ class Variable(Base):
     units          = Column(String)
     grid           = Column(String)
     resolution     = Column(String)
+    stream         = Column(String)
+    realm          = Column(String)
     frequency      = Column(String, index=True)
     levels         = Column(String)
     fdate          = Column(String)
     tdate          = Column(String)
-    updated_on     = Column(String)
+    #updated_on     = Column(String)
+
+    def path(self):
+        """
+        Returns the filepath pattern for a variable based on the drs and filename pattern 
+        :returns: 
+        """
+        drs = self.dataset.drs + self.dataset.filename 
+        placeholds = re.findall('<[a-zA-Z]*>', drs)
+        print(placeholds)
+        #placeholds = ['<variable>', '<yr>','<mn>','<stream>','<realm>','<fileformat>','<name>','<cmor_name>',
+        #              '<frequency>','<version>']
+        for col in Dataset.__table__.columns.keys():
+            if "<"+col+">" in placeholds:
+                drs = drs.replace("<"+col+">",getattr(self.dataset,col))
+        for col in Variable.__table__.columns.keys():
+            if "<"+col+">" in placeholds and 'date' not in col:
+                drs = drs.replace("<"+col+">",getattr(self,col))
+        return drs 
 
 
 class ECMWF(Base):
@@ -144,12 +167,6 @@ class ECMWF(Base):
     cmor_name      = Column(String, index=True)
     cell_methods   = Column(String)
 
-    #def build_filepaths(self):
-    #    """
-    #    Returns the filepath pattern based on the drs and filename pattern 
-    #    :returns: 
-    #    """
-    #    return glob.glob(g)
     #def build_filepaths(self):
     #    """
     #    Returns the filepath pattern based on the drs and filename pattern 
