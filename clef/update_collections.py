@@ -135,7 +135,7 @@ def add_variable_table(rows,dname,fformat,version):
             code = row.pop('code')
             vals = clefdb.query(ECMWF).filter(ECMWF.code == code).one_or_none()
             if vals:
-                row['name'] = vals.name
+                row['varname'] = vals.name
                 row['standard_name'] = vals.standard_name
                 row['long_name'] = vals.long_name
                 row['cmor_name'] = vals.cmor_name
@@ -143,7 +143,7 @@ def add_variable_table(rows,dname,fformat,version):
             else:
                 print(f'Warning: unrecognised code {code} in ECMWF table, this variable will be added with incomplete information')
     # check that table is a list of dictionaries with the right keys
-    keys = ['dataset_id', 'name', 'long_name', 'standard_name', 'cmor_name', 'units', 'levels', 'grid', 'resolution', 'frequency', 'fdate', 'tdate','stream','realm']
+    keys = ['dataset_id', 'varname', 'long_name', 'standard_name', 'cmor_name', 'units', 'levels', 'grid', 'resolution', 'frequency', 'fdate', 'tdate','stream','realm']
     rows_keys = list(rows[0].keys())  
     assert sorted(keys) == sorted(rows_keys)
         

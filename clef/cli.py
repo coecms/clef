@@ -196,7 +196,7 @@ def ds_args(f):
         click.option('--cmor-name', '-cn', multiple=True, type=click.Choice(cm_names),
         #click.option('--cmor-name', '-cn', multiple=False, type=click.Choice(cm_names),
                       help="Variable cmor_name useful to look for a variable across datasets"),
-        click.option('--variable', '-va', 'name', multiple=True, type=click.Choice(variables), 
+        click.option('--variable', '-va', 'varname', multiple=True, type=click.Choice(variables), 
                       help="Variable name as defined in files: tas, pr, sic, T ... "),
         click.option('--frequency', 'frequency', multiple=True, type=click.Choice(['yr','mon','day','6hr','3hr','1hr']), 
                       help="Time frequency on which variable is defined"),
@@ -226,7 +226,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         variable
         ):
     """
-    Search local database for files matching the given constraints
+    Search ESGF and local database for CMIP5 files
 
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
@@ -361,7 +361,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         nominal_resolution
         ):
     """
-    Search local database for files matching the given constraints
+    Search ESGF and local database for CMIP6 files
 
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
@@ -481,20 +481,22 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
 
-@clef.command()
-@ds_args
 # should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
 # we should have two outputs option though one genric info and the other filepath! 
+@clef.command()
+@ds_args
 def ds(**kwargs):
-#def ds(dname, version, fformat, variable, standard_name, cmor_name, frequency, period):
-#    kwargs
+    """
+    Search local database for non-ESGF datasets 
+    """
     # open noesgf connection
     db = colls.connect()
     clefdb = db.session
-    datasets, variables = db.command_query(**kwargs)
+    datasets, variables, varsearch = db.command_query(**kwargs)
     for ds in datasets:
-        print(" ".join([ds.name,'v'+ds.version + ":",ds.drs]))
+        if not varsearch:
+            print(" ".join([ds.name,'v'+ds.version + ":",ds.drs]))
         for v in variables:
             if v.dataset_id == ds.id:
-                print(v.name + ": " + v.path() ) 
+                print(v.varname + ": " + v.path() ) 
     return

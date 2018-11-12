@@ -20,7 +20,7 @@ def read_json(ifile):
     ''' Read variable information from a text file and returns a list of dictionaries.
         Each dictionary represents a row to be added to the Variable table
     :input: ifile input json file with keys: grid, resolution, fdate, tdate,levels, frequency, varlist
-                  varlist is a list of dictionaries one for variable with keys: name, standard_name,
+                  varlist is a list of dictionaries one for variable with keys: varname, standard_name,
                   units, cmor_name, long_name
     :return: rows list of dictionaries
     ''' 

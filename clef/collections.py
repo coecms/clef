@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import print_function
-
 import os
 
 from sqlalchemy import create_engine, func, select, and_, text
@@ -22,7 +20,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects import sqlite
 
 from .db_noesgf import Base, Dataset, Variable, ECMWF
-from .helpers import combine_constraints 
 
 SQASession = sessionmaker()
 
@@ -64,7 +61,7 @@ class Session(object):
         """ Get the list of all variables in datasets collection as actual names
         :return: A list of strings
         """
-        return [x[0] for x in self.query(Variable.name).distinct().all()]
+        return [x[0] for x in self.query(Variable.varname).distinct().all()]
 
     def cmor_names(self):
         """ Get the list of all variables in datasets collection as cmor names
@@ -72,11 +69,12 @@ class Session(object):
         """
         return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
 
-    def build_drs(self):
-        """ Get the list of all variables in datasets collection as cmor names
-        :return: A list of strings
-        """
-        return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
+    #def build_drs(self):
+    #    """ Get the list of all variables in datasets collection as cmor names
+    #    :return: A list of strings
+    #    """
+    #    return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
+
     def command_query(self,**kwargs):
         """ Calling query after working out if output should be a dataset or variable list, depending on constraints
             passed by the user.
@@ -94,7 +92,6 @@ class Session(object):
         ds_outs = self.query(Dataset).filter_by(**dsargs).all()
         if ds_outs:
             kwargs['dataset_id'] = [ds.id for ds in ds_outs]
-            #datasets = [x.name + " v"+ x.version + " (" + x.fileformat + ")" for x in ds_outs]
             datasets = [x for x in ds_outs]
         for k,v in kwargs.items():
             if v not in [None, ()]:
@@ -104,7 +101,7 @@ class Session(object):
                     vargs[k] = v[0] 
         # if dataset_id is the only key in vargs, return datasets only
         if len(vargs.keys()) + len(vlargs.keys()) == 1:
-            return datasets, variables 
+            return datasets, variables, False 
         # build query filtering all single value arguments: vargs
         # filter query results using in_() for list of values arguments: vlargs
         q1 = self.query(Variable).filter_by(**vargs) 
@@ -113,9 +110,8 @@ class Session(object):
         #print( str(q.statement.compile(dialect=sqlite.dialect())))
         var_outs = q.all()
         if var_outs:
-            #variables= [", ".join([x.name,x.units,x.standard_name,x.cmor_name])  for x in var_outs]
             variables= [x for x in var_outs]
-        return datasets, variables
+        return datasets, variables, True
 
 # Default collections database
 default_db = 'sqlite:////g/data1/ua8/Download/clef.db'
@@ -125,7 +121,7 @@ def connect(path = None):
     :return: A new :py:class:`Session`
     Example::
     >>> from clef import dataset 
-    >>> clefdb   = dataset.connect() # doctest: +SKIP
+    >>> clefdb   = collections.connect() # doctest: +SKIP
     >>> outputs = clefdb.query() # doctest: +SKIP
     """
 

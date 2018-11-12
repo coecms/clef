@@ -48,7 +48,8 @@ def helpdesk(user, rootdir, fname, project):
     ''' Send e-mail and synda request to helpdesk '''
     msg = MIMEMultipart()
     msg['From'] = user+'@nci.org.au'
-    msg['To'] = 'help@nf.nci.org.au'
+    #msg['To'] = 'help@nf.nci.org.au'
+    msg['To'] = 'paolap@utas.edu.au'
     msg['Subject'] = 'Synda request: ' + fname
     message = project + " synda download requested from user: " + user
     msg.attach(MIMEText(message, 'plain'))
@@ -84,7 +85,7 @@ def search_queue(qm, project):
     if len(status) > 0:
         print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
         for k,v in status.items():
-            print(k + '   status: ' + v.text)
+            print(k + '   status: ' + v.text.split(",")[0])
     queued = [k.strip() for k in status.keys()]
     missing = [q[0] for q in qm if q[0] not in queued] 
     return missing

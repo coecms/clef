@@ -56,7 +56,7 @@ class Dataset(Base):
     manager    = Column(String)
     reference  = Column(String)
 
-    variables  = relationship('Variable', backref='dataset', order_by='Variable.name', 
+    variables  = relationship('Variable', backref='dataset', order_by='Variable.varname', 
                  cascade="all, delete-orphan", passive_deletes=True)
 
     __table_args__ = (
@@ -70,7 +70,7 @@ class Variable(Base):
     i.e. you can have T defined for ERAI and for ERA5 and they will be two seperate records even if all attributes might be the same  
     .. attribute:: id 
         :class:`Dataset` associated with this record (foreign key)
-    .. attribute:: name 
+    .. attribute:: varname 
         Variable name as defined in the file (for self-describing formats)
     .. attribute:: long_name 
         long_name attribute definition 
@@ -99,7 +99,7 @@ class Variable(Base):
     id          = Column(Integer, name='variable_id', primary_key = True)
     dataset_id  = Column(Integer, ForeignKey('datasets.dataset_id'), index=True)
 
-    name           = Column(String)
+    varname           = Column(String)
     long_name      = Column(String)
     standard_name  = Column(String, index=True)
     cmor_name      = Column(String, index=True)
@@ -112,7 +112,7 @@ class Variable(Base):
     levels         = Column(String)
     fdate          = Column(String)
     tdate          = Column(String)
-    #updated_on     = Column(String)
+    updated_on     = Column(String)
 
     def path(self):
         """
@@ -120,10 +120,7 @@ class Variable(Base):
         :returns: 
         """
         drs = self.dataset.drs + self.dataset.filename 
-        placeholds = re.findall('<[a-zA-Z]*>', drs)
-        print(placeholds)
-        #placeholds = ['<variable>', '<yr>','<mn>','<stream>','<realm>','<fileformat>','<name>','<cmor_name>',
-        #              '<frequency>','<version>']
+        placeholds = re.findall('<[a-zA-Z]*[_]?[a-zA-Z]*>', drs)
         for col in Dataset.__table__.columns.keys():
             if "<"+col+">" in placeholds:
                 drs = drs.replace("<"+col+">",getattr(self.dataset,col))
@@ -167,9 +164,3 @@ class ECMWF(Base):
     cmor_name      = Column(String, index=True)
     cell_methods   = Column(String)
 
-    #def build_filepaths(self):
-    #    """
-    #    Returns the filepath pattern based on the drs and filename pattern 
-    #    :returns: 
-    #    """
-    #    return glob.glob(g)
