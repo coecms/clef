@@ -293,10 +293,14 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queue(qm, project)
+        if 'variable' in terms.keys():
+            varlist = terms['variable']
+        else:
+            varlist = []
+        updated = search_queue(qm, project, varlist)
         print('\nAvailable on ESGF but not locally:')
         for result in updated:
-            print(result)
+            print(result[0],result[1])
     else:
         print('\nEverything available on ESGF is also available locally')
 
@@ -436,10 +440,10 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queue(qm, project)
+        updated = search_queue(qm, project, [])
         print('\nAvailable on ESGF but not locally:')
         for result in updated:
-            print(result)
+            print(result[0],result[1])
     else:
         print('\nEverything available on ESGF is also available locally')
 

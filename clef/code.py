@@ -268,7 +268,7 @@ def row_to_dict(row, project):
         cdata =  row.c6dataset[0]
     result={}
     for col in cdata.__table__.columns:
-        if col.name == 'frequency': 
+        if col.name == 'frequency' and project == 'cmip5': 
             result[col.name] = cdata.__getattribute__('time_frequency') 
         else:
             result[col.name] = cdata.__getattribute__(col.name) 
@@ -295,12 +295,27 @@ def files_to_dataset(results):
         #for g in group:
             d = {k: v for k,v in g[0].items()}
             d['filenames'] = []
-            d['periods'] = []
+            #d['periods'] = []
+            periods = []
             d.pop('filename')
             d.pop('period')
             for ds in g:
                 d['filenames'].append(ds['filename'])
-                d['periods'].append(ds['period'])
+                #d['periods'].append(ds['period'])
+                periods.append(ds['period'])
+            #d['fdate'], d['tdate'] = convert_period(d['periods'])
+            d['fdate'], d['tdate'] = convert_period(periods)
             datasets.append(d)
 
     return datasets
+
+def convert_period(nranges):
+    """
+    Convert a list of NumericRange period to a from-date,to-date separate values
+    """
+    lower, higher = nranges[0].lower, nranges[0].upper
+    for nr in nranges[1:]:
+        low, high = nr.lower, nr.upper
+        lower = min(low,lower)
+        higher = max(high, higher)
+    return lower, higher

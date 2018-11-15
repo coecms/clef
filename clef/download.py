@@ -22,19 +22,24 @@ from email.mime.text import MIMEText
 import re
 from bs4 import BeautifulSoup
 import requests
+import itertools 
 
 
-def write_request(project,missing):
+def write_request(project, missing):
     ''' write missing dataset_ids to file to create download request for synda '''
     current_dir = os.getcwd() + '/'
     user = os.environ['USER']
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
     f = open(current_dir+fname, 'w')
+    variables=set()
     for did in missing:
-        f.write('dataset_id='+did+'\n')
+        f.write('dataset_id='+did[0]+'\n')
+        if did[1] != "": variables.add(did[1])
+    if len(variables) > 0:
+        f.write(" ".join(['variable='] + list(variables)))
     f.close()
-    print('Finished writing file: '+fname)
+    print('\nFinished writing file: '+fname)
     answer = input('Do you want to proceed with request for missing files? (N/Y)\n No is default\n')
     if answer  in ['Y','y','yes','YES']:
         helpdesk(user, current_dir, fname, project)
@@ -66,7 +71,7 @@ def helpdesk(user, rootdir, fname, project):
     return
 
 
-def search_queue(qm, project):
+def search_queue(qm, project, varlist):
     ''' search missing dataset ids in download queue '''
     # CMIP5/CMIP6 index url
     url = 'http://atlantis.nci.org.au/~kxs900/cmip_index/index_'+project+'.htm'
@@ -79,12 +84,24 @@ def search_queue(qm, project):
     # retrieve from table in response the missing dataset_ids
     for q in qm:
         td = soup.table.find('td',string=re.compile(".*" + q[0] + ".*"))
+        # if CMIP5 you need to match also the variable
         if td:
-            status[q[0]] = td.find_next_sibling()
+            if project == "CMIP5" and varlist != []:
+                variable=td.find_previous_siblings()[-1].text
+                if variable[:-1] not in varlist:
+                    continue 
+                status[(q[0],variable[:-1])] = td.find_next_sibling()
+            else:
+                status[(q[0],"")] = td.find_next_sibling()
     if len(status) > 0:
         print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
         for k,v in status.items():
-            print(k + '   status: ' + v.text)
-    queued = [k.strip() for k in status.keys()]
-    missing = [q[0] for q in qm if q[0] not in queued] 
+            print("  ".join([k[0],k[1],'status:',v.text]))
+    #queued = [k.strip() for k in status.keys()]
+    if project == 'CMIP5' and varlist != []:
+        # this combines every dataset_id with all the variables, returns (did,var) tuples
+        combs = [x for x in itertools.product([q[0] for q in qm], varlist)]
+        missing = [x for x in combs if x not in status.keys()] 
+    else:
+        missing = [(q[0],"") for q in qm if (q[0],"") not in status.keys()] 
     return missing
