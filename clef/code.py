@@ -28,95 +28,13 @@ import json
 import pkg_resources
 
 
-def warning(message):
-    print("WARNING: %s"%message, file=sys.stderr)
-
-def load_vocabularies(project):
-    vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
-    with open(vfile, 'r') as f:
-         data = f.read()
-         models = json.loads(data)['models'] 
-         realms = json.loads(data)['realms'] 
-         variables = json.loads(data)['variables'] 
-         frequencies = json.loads(data)['frequencies'] 
-         tables = json.loads(data)['tables'] 
-         #experiments = json.loads(data)['experiments'] 
-         if project == 'CMIP6':
-             activities = json.loads(data)['activities'] 
-             stypes = json.loads(data)['source_types'] 
-             return models, realms, variables, frequencies, tables, activities, stypes
-    return models, realms, variables, frequencies, tables 
-    
-
-#def cmip5_args(f):
-#    models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')
-#    constraints = [
-#        tion('--experiment', '-e', multiple=True, help="CMIP5 experiment: piControl, rcp85, amip ..."),
-#        click.option('--experiment_family',multiple=True, help="CMIP5 experiment family: Decadal, RCP ..."),
-#        click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x', 
-#                      help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
-#        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(tables) ),
-#                      #help="CMIP5 CMOR table: Amon, day, Omon ..."),
-#        click.option('--variable', '-v', multiple=True, type=click.Choice(variables), metavar='x',
-#                      help="Variable name as shown in filanames: tas, pr, sic ... "),
-#        click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
-#        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ), 
-                     # help="Frequency"),
-#        click.option('--realm', multiple=True, type=click.Choice(realms) ),
-                     # help="CMIP5 realm"),
-#        click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
-#    ]
-#    return f
-
-#def common_args(f):
-#    constraints = [
-#        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
-#        click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
-#                     help="Return output for datasets (default) or individual files"),
-#        click.option('--latest/--all-versions', 'latest', default=True,  
-#                     help="Return only the latest version or all of them. Default: --latest"),
-#        click.option('--replica/--no-replica', default=False, 
-#                     help="Return both original files and replicas. Default: --no-replica"),
-#        click.option('--distrib/--no-distrib', 'distrib', default=True, 
-#                     help="Distribute search across all ESGF nodes. Default: --distrib"),
-#        click.option('--debug/--no-debug', default=False,
-#                     help="Show debug output. Default: --no-debug")
-#    ]
-#    return f
-
-#def cmip6_args(f):
-# 
-#    models, realms, variables, frequencies, tables, activities, stypes = load_vocabularies('CMIP6')
-#    constraints = [
-#        ('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
-#                     #help="CMIP6 MIP or project id"),
-#        ('--experiment', '-e', 'experiment_id', multiple=True, help="CMIP6 experiment, list of available depends on activity"),
-#        ('--source_type',multiple=True, type=click.Choice(stypes) ),
-#                     #help="Model configuration"),
-#        ('--table', '-t', 'table_id', multiple=True, type=click.Choice(tables), metavar='x',
-#                     help="CMIP6 CMOR table: Amon, SIday, Oday ..."),
-#        ('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(models),  metavar='x',
-#                     help="CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ..."),
-#        ('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(variables),  metavar='x', 
-#                     help="CMIP6 variable name as in filenames"),
-#        ('--member', '-mi', 'member_id', multiple=True, help="CMIP6 member id: <sub-exp-id>-r#i#p#f#"),
-#        ('--grid', '--grid_label', '-g', 'grid_label', multiple=True, help="CMIP6 grid label: i.e. gn for the model native grid"),
-#        ('--resolution', '--nominal_resolution','-nr' , 'nominal_resolution', multiple=True, help="Approximate resolution: '250 km', pass in quotes"),
-#        ('--frequency',multiple=True, type=click.Choice(frequencies) ),
-                     # help="Frequency"),
-#        ('--realm', multiple=True, type=click.Choice(realms) ),
-                     # help="CMIP6 realm"),
-#        ('--sub_experiment_id', '-se', multiple=True, help="Only available for hindcast and forecast experiments: sYYYY"),
-#        ('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
-#        ('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ..."),
-#    ]
-#    return f
 
 def cmip5(debug=False, distrib=True, replica=False, latest=True, oformat='dataset',**kwargs):
     """
     Search local database for CMIP5 files
 
-    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
+    Constraints can be specified multiple times, in which case they are combined
+    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
 
@@ -239,14 +157,17 @@ def local_query(session,project='cmip5',**kwargs):
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
     results=[]
-    if project == 'cmip5':
-        # separate var from other 
-        var = kwargs.pop('variable')
+    project = project.lower()
+    # check that all arguments keys and values are valid
+    args = check_arguments(project, kwargs)
+    # for cmip5 separate var from other constraints 
+    if project == 'cmip5' and 'variable' in args.keys():
+        var = args.pop('variable')
     cmip={'cmip5': [c5_metadata_dataset_link, C5Dataset],
           'cmip6': [c6_metadata_dataset_link, C6Dataset]}
         
-    out=session.query(cmip[project][0],cmip[project][1]).join(cmip[project][1]).filter_by(**kwargs)
-    if project == 'cmip5':
+    out=session.query(cmip[project][0],cmip[project][1]).join(cmip[project][1]).filter_by(**args)
+    if 'var' in locals():
         out1=out.join(Path).join(ExtendedMetadata).filter(ExtendedMetadata.variable == var)
     else:
         out1=out.join(Path).join(ExtendedMetadata).filter()
@@ -309,6 +230,7 @@ def files_to_dataset(results):
 
     return datasets
 
+
 def convert_period(nranges):
     """
     Convert a list of NumericRange period to a from-date,to-date separate values
@@ -319,3 +241,56 @@ def convert_period(nranges):
         lower = min(low,lower)
         higher = max(high, higher)
     return lower, higher
+
+
+def check_arguments(project, kwargs):
+    """
+    Check that arguments keys and values passed to search are valid, if not print warning and exit
+    """
+    # load dictionary to check arguments names are valid
+    # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
+    # representing the corresponding facet for CMIP5 and CMIP6
+    # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
+    with open('clef/data/valid_keys.json', 'r') as f:
+         data = json.loads(f.read()) 
+    valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
+    # rewrite kwargs with the right facet name
+    args = {}
+    for key,value in kwargs.items():
+        facet = [k for k,v in valid_keys.items() if key in v]
+        if facet==[]:
+            print(f"Warning {key} is not a valid constraint name")
+            print(f"Valid constraints are:\n{valid_keys.values()}")
+            sys.exit()
+        else:
+            args[facet[0]] = value
+    # load dictionaries to check arguments values are valid
+    if project == 'cmip5':
+        models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')
+    elif project == 'cmip6':
+        models, realms, variables, frequencies, tables, activities, stypes = load_vocabularies('CMIP6')
+    else:
+        print(f'Search for {project} not yet implemented')
+        sys.exit()
+    #for k,v in args.items():
+    #     if models: 
+    #    args[valid_key[ 
+    return args
+
+
+def load_vocabularies(project):
+    vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
+    with open(vfile, 'r') as f:
+         data = f.read()
+         models = json.loads(data)['models']
+         realms = json.loads(data)['realms']
+         variables = json.loads(data)['variables']
+         frequencies = json.loads(data)['frequencies']
+         tables = json.loads(data)['tables']
+         #experiments = json.loads(data)['experiments'] 
+         if project == 'CMIP6':
+             activities = json.loads(data)['activities']
+             stypes = json.loads(data)['source_types']
+             return models, realms, variables, frequencies, tables, activities, stypes
+    return models, realms, variables, frequencies, tables
+

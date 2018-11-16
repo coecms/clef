@@ -96,7 +96,7 @@ def search_queue(qm, project, varlist):
     if len(status) > 0:
         print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
         for k,v in status.items():
-            print("  ".join([k[0],k[1],'status:',v.text]))
+            print("  ".join([k[0],k[1],'status:',v.text.split(",")[0]]))
     #queued = [k.strip() for k in status.keys()]
     if project == 'CMIP5' and varlist != []:
         # this combines every dataset_id with all the variables, returns (did,var) tuples

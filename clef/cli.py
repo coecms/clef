@@ -19,6 +19,7 @@ from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
 from .download import *
 from .exception import ClefException
+from .code import load_vocabularies
 import click
 import logging
 from datetime import datetime
@@ -88,22 +89,6 @@ def config_log():
 def warning(message):
     print("WARNING: %s"%message, file=sys.stderr)
 
-def load_vocabularies(project):
-    vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
-    with open(vfile, 'r') as f:
-         data = f.read()
-         models = json.loads(data)['models'] 
-         realms = json.loads(data)['realms'] 
-         variables = json.loads(data)['variables'] 
-         frequencies = json.loads(data)['frequencies'] 
-         tables = json.loads(data)['tables'] 
-         #experiments = json.loads(data)['experiments'] 
-         if project == 'CMIP6':
-             activities = json.loads(data)['activities'] 
-             stypes = json.loads(data)['source_types'] 
-             return models, realms, variables, frequencies, tables, activities, stypes
-    return models, realms, variables, frequencies, tables 
-    
 
 def cmip5_args(f):
     models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')

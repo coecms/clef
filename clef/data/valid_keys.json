@@ -1,0 +1,17 @@
+{"source_id:model:m": {"cmip5": "model", "cmip6": "source_id"},
+ "realm": {"cmip5": "realm", "cmip6": "realm"},
+ "source_type:model_type": {"cmip5": "NA", "cmip6": "source_type"},
+ "time_frequency:frequency:f": {"cmip5": "time_frequency", "cmip6": "frequency"},
+ "variable_id:variable:v": {"cmip5": "variable", "cmip6": "variable_id"},
+ "experiment_id:experiment:e": {"cmip5": "experiment", "cmip6": "experiment_id"},
+ "activity_id:activity": {"cmip5": "NA", "cmip6": "activity_id"},
+ "variant_label": {"cmip5": "NA", "cmip6": "variant_label"},
+ "table_id:table:cmor_table:t": {"cmip5": "cmor_table", "cmip6": "table_id"},
+ "member_id:member:ensemble:en:mi": {"cmip5": "ensemble", "cmip6": "member_id"},
+ "institution_id:institution:institute": {"cmip5": "institute", "cmip6": "institution_id"},
+ "nominal_resolution:resolution": {"cmip5": "NA", "cmip6": "nominal_resolution"},
+ "grid:grid_label": {"cmip5": "NA", "cmip6": "grid_label"},
+ "sub_experiment_id:sub_experiment": {"cmip5": "NA", "cmip6": "sub_experiment_id"},
+ "experiment_family": {"cmip5": "experiment_family", "cmip6": "NA"}
+}
+
