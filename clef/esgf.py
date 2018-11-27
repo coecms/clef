@@ -129,7 +129,7 @@ def link_to_esgf(query, **kwargs):
 
 
     #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
-    r = requests.Request('GET','https://esgf-data.dkrz.de/esg-search/search/%s'%endpoint,
+    r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
             params=params,
             )
     p = r.prepare()
