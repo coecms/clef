@@ -356,3 +356,21 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS extended_metadata AS
     NATURAL LEFT JOIN extended_metadata_manual AS m;
 GRANT SELECT ON extended_metadata TO PUBLIC;
 CREATE UNIQUE INDEX IF NOT EXISTS extended_metadata_file_id ON extended_metadata(file_id);
+
+/*
+ * Information-only attributes that are useful to know but won't be searched on
+ */
+CREATE OR REPLACE VIEW info_attributes AS
+    SELECT
+    md_hash as file_id,
+    md_json->'attributes'->>'variant_info' as variant_info,
+    md_json->'attributes'->>'source' as source,
+    md_json->'attributes'->>'parent_experiment_id' as parent_experiment_id,
+    md_json->'attributes'->>'further_info_url' as further_info_url,
+    md_json->'attributes'->>'contact' as contact,
+    md_json->'attributes'->>'title' as title,
+    md_json->'attributes'->>'description' as description,
+    md_json->'attributes'->>'license' as license,
+    md_json->'attributes'->>'tracking_id' as tracking_id
+    FROM metadata
+    WHERE md_type = 'netcdf';
