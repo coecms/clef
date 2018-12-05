@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2018 ARC Centre of Excellence for Climate Extremes
-# author: Scott Wales <paola.petrelli@utas.edu.au>
+# author: Paola Petrelli <paola.petrelli@utas.edu.au>
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .db import connect, Session
-from .model import Path, c5_metadata_dataset_link, c6_metadata_dataset_link, ExtendedMetadata
-from .model import C5Dataset, C6Dataset
+from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 from .exception import ClefException
 from datetime import datetime
 from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
 from itertools import groupby
+import pandas
 import logging
 import sys
 import os
@@ -163,73 +163,45 @@ def local_query(session,project='cmip5',**kwargs):
     # for cmip5 separate var from other constraints 
     if project == 'cmip5' and 'variable' in args.keys():
         var = args.pop('variable')
-    cmip={'cmip5': [c5_metadata_dataset_link, C5Dataset],
-          'cmip6': [c6_metadata_dataset_link, C6Dataset]}
+    ctables={'cmip5': [C5Dataset, Path.c5dataset],
+          'cmip6': [C6Dataset, Path.c6dataset] }
+    
         
-    out=session.query(cmip[project][0],cmip[project][1]).join(cmip[project][1]).filter_by(**args)
     if 'var' in locals():
-        out1=out.join(Path).join(ExtendedMetadata).filter(ExtendedMetadata.variable == var)
+        r = (session.query(Path.path.label('path'),
+            *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
+            *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
+           )
+           .join(Path.extended)
+           .join(ctables[project][1])
+           .filter_by(**args)
+           .filter(ExtendedMetadata.variable == var))
     else:
-        out1=out.join(Path).join(ExtendedMetadata).filter()
-    for o in out1.all():
-        row=session.query(Path).join(cmip[project][0]).filter(Path.id == o.file_id).one_or_none()
-        if not row:
-            print(f'Warning there is a {project} file without path!')
-            sys.exit()
-        result = row_to_dict(row, project) 
-        results.append(result)
+        r = (session.query(Path.path.label('path'),
+            *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
+            *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
+           )
+           .join(Path.extended)
+           .join(ctables[project][1])
+           .filter_by(**args))
+
+    # run the sql using pandas read_sql,index data using path, returns a dataframe
+    df = pandas.read_sql(r.selectable, con=session.connection())
+    df['pdir'] = df['path'].map(os.path.dirname)
+    df['filename'] = df['path'].map(os.path.basename)
+    res = df.groupby(['pdir'])
+    results=[]
+    cols = [x for x in list(df) if x not in ['filename','path','period'] ]
+    for g,v in res.groups.items():
+        gdict={}
+        gdict['filenames'] = df['filename'].iloc[list(v)].tolist()
+        gdict['periods'] = df['period'].iloc[list(v)].tolist()
+        gdict['fdate'], gdict['tdate'] = convert_period(gdict['periods'])
+        for c in cols:
+            gdict[c] = df[c].iloc[list(v)].unique()[0]
+    results.append(gdict)
+
     return results
-
-def row_to_dict(row, project): 
-    """
-    """
-    if project == 'cmip5':
-        cdata =  row.c5dataset[0]
-    else:
-        cdata =  row.c6dataset[0]
-    result={}
-    for col in cdata.__table__.columns:
-        if col.name == 'frequency' and project == 'cmip5': 
-            result[col.name] = cdata.__getattribute__('time_frequency') 
-        else:
-            result[col.name] = cdata.__getattribute__(col.name) 
-    for col in ['version','period','variable']:
-        result[col] = row.extended[0].__getattribute__(col) 
-    dirs = row.path.split("/")
-    result['path'] = "/".join(dirs[:-1])
-    result['filename'] = dirs[-1]
-    result.pop('dataset_id')
-    #result.update(row.c5dataset[0].__dict__)
-    #result.update(row.extended[0].__dict__)
-    return result
-
-def files_to_dataset(results): 
-    """
-    """
-    datasets=[]
-    groups = []
-    keyfunc = lambda x: x['path']
-    data = sorted(results, key=keyfunc)
-    for k, g in groupby(data, key=keyfunc):
-        groups.append(list(g))      # Store group iterator as a list
-    for g in groups:
-        #for g in group:
-            d = {k: v for k,v in g[0].items()}
-            d['filenames'] = []
-            #d['periods'] = []
-            periods = []
-            d.pop('filename')
-            d.pop('period')
-            for ds in g:
-                d['filenames'].append(ds['filename'])
-                #d['periods'].append(ds['period'])
-                periods.append(ds['period'])
-            #d['fdate'], d['tdate'] = convert_period(d['periods'])
-            d['fdate'], d['tdate'] = convert_period(periods)
-            datasets.append(d)
-
-    return datasets
-
 
 def convert_period(nranges):
     """
