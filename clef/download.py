@@ -19,24 +19,32 @@ from datetime import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import re
-from bs4 import BeautifulSoup
-import requests
+import itertools 
+import csv
+import platform
 
 
-def write_request(project,missing):
+def write_request(project, missing):
     ''' write missing dataset_ids to file to create download request for synda '''
     current_dir = os.getcwd() + '/'
     user = os.environ['USER']
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
     f = open(current_dir+fname, 'w')
-    for did in missing:
+    variables=set()
+    for m in missing:
+        if project == 'CMIP5':
+            did,var = m.split("  ")
+            variables.add(var)
+        else:
+            did = m
         f.write('dataset_id='+did+'\n')
+    if len(variables) > 0:
+        f.write(" ".join(['variable='] + list(variables)))
     f.close()
-    print('Finished writing file: '+fname)
+    print('\nFinished writing file: '+fname)
     answer = input('Do you want to proceed with request for missing files? (N/Y)\n No is default\n')
-    if answer  in ['Y','y','yes','YES']:
+    if answer  in ['Y','y','yes','YES'] and platform.node()[0:3] == 'vdi':
         helpdesk(user, current_dir, fname, project)
     else:
         print(f'Your request has been saved in \n {current_dir}/{fname}')
@@ -65,26 +73,37 @@ def helpdesk(user, rootdir, fname, project):
        print("Error: unable to send email")
     return
 
-
-def search_queue(qm, project):
+def search_queue_csv(qm, project, varlist):
     ''' search missing dataset ids in download queue '''
-    # CMIP5/CMIP6 index url
-    url = 'http://atlantis.nci.org.au/~kxs900/cmip_index/index_'+project+'.htm'
-    # open url
-    r =requests.get(url=url)
-    # parse url response
-    soup = BeautifulSoup(r.content,'html.parser')
-    # open dictionary to store results
-    status = {}
-    # retrieve from table in response the missing dataset_ids
+    rows={}
+    # open csv file and read data in dictionary with dataset_id as key 
+    with open("/g/data/ua8/Download/CMIP6/" + project + "_queue.csv","r") as csvfile:
+        table_read = csv.reader(csvfile)
+        for row in table_read:
+            rows[row[1]] = [row[0],row[2]]
+    # retrieve from table the missing dataset_ids
+    queued={}
     for q in qm:
-        td = soup.table.find('td',string=re.compile(".*" + q[0] + ".*"))
-        if td:
-            status[q[0]] = td.find_next_sibling()
-    if len(status) > 0:
+        if q[0] in rows.keys():
+            did = q[0]
+        # if CMIP5 you need to match also the variable
+            if project == "CMIP5" and varlist != []:
+                if rows[did][0] not in varlist:
+                    continue
+                else:
+                    queued[did + "  " + rows[did][0]] = rows[did][1]
+            else:
+                queued[did] = rows[did][1]
+
+    if len(queued) > 0:
         print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
-        for k,v in status.items():
-            print(k + '   status: ' + v.text)
-    queued = [k.strip() for k in status.keys()]
-    missing = [q[0] for q in qm if q[0] not in queued] 
+        for did,status in queued.items():
+            print(" ".join([did,'status:',status]))
+    if project == 'CMIP5' and varlist != []:
+        # this combines every dataset_id with all the variables, returns a list of "did  var" strings
+        combs = [x[0]+"  "+x[1] for x in itertools.product([q[0] for q in qm], varlist)]
+        missing = [x for x in combs if x not in queued] 
+    else:
+        missing = [q[0] for q in qm if q[0] not in queued] 
     return missing
+
