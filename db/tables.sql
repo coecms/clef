@@ -99,7 +99,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
     WHERE
         pa_type IN ('file', 'link')
     AND pa_parents[4] = md5('/g/data1b/al33/replicas')::uuid
-    AND split_part(pa_path, '/', 7) = 'combined'
+    -- AND split_part(pa_path, '/', 7) = 'combined'
     AND pa_path LIKE '%.nc';
 
 

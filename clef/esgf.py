@@ -44,7 +44,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query, fields, limit=1000, offset=0, distrib=True, replica=False, latest=None, **kwargs):
+def esgf_query(query, fields, limit=1200, offset=0, distrib=True, replica=False, latest=None, **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
@@ -132,7 +132,7 @@ def link_to_esgf(query, **kwargs):
     r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
             params=params,
             )
-    p = r.prepare()
+    #p = r.prepare()
     return r.prepare().url
 
 
@@ -158,10 +158,15 @@ def find_checksum_id(query, **kwargs):
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
 
     if response['response']['numFound'] == 0:
-        raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
+        #raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
+        print(f'No matches found on ESGF, check at {link_to_esgf(query, **constraints)}')
+        sys.exit()
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
+        #raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
+        print(f"Too many results {response['response']['numFound']}, try limiting your search:\n ",
+              link_to_esgf(query, **constraints))
+        sys.exit()
     # separate records that do not have checksum in response (nosums list) from others (records list)
     # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
     nosums=[]
