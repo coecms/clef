@@ -77,7 +77,7 @@ def search_queue_csv(qm, project, varlist):
     ''' search missing dataset ids in download queue '''
     rows={}
     # open csv file and read data in dictionary with dataset_id as key 
-    with open("/g/data/ua8/Download/CMIP6/" + project + "_queue.csv","r") as csvfile:
+    with open("/g/data/ua8/Download/CMIP6/" + project + "_clef_table.csv","r") as csvfile:
         table_read = csv.reader(csvfile)
         for row in table_read:
             rows[row[1]] = [row[0],row[2]]

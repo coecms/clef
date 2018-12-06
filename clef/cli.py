@@ -267,7 +267,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     # with the same name)
 
     ql = find_local_path(s, subq, oformat=oformat)
-    ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
+    #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
@@ -413,7 +413,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     # filename, the resulting project is still CMIP5 (and not say a PMIP file
     # with the same name)
     ql = find_local_path(s, subq, oformat=oformat)
-    ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
+    #ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
 
     if not ctx.obj['flow'] == 'missing':
         for result in ql:

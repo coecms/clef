@@ -199,7 +199,7 @@ def local_query(session,project='cmip5',**kwargs):
         gdict['fdate'], gdict['tdate'] = convert_period(gdict['periods'])
         for c in cols:
             gdict[c] = df[c].iloc[list(v)].unique()[0]
-    results.append(gdict)
+        results.append(gdict)
 
     return results
 
