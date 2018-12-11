@@ -29,6 +29,7 @@ requirements:
         - click
         - mock # [py27]
         - beautifulsoup4
+        - pandas
 
 test:
     source_files:
