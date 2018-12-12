@@ -20,7 +20,7 @@ from .esgf import match_query, find_local_path, find_missing_id, find_checksum_i
 from .download import *
 from . import collections as colls 
 from .exception import ClefException
-from .code import load_vocabularies
+from .code import load_vocabularies, call_local_query
 import click
 import logging
 from datetime import datetime
@@ -284,6 +284,12 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
            terms[key] = value
 
+    if ctx.obj['flow'] == 'local':
+        paths = call_local_query(s, project, oformat, **terms) 
+        for p in paths:
+            print(p)
+        return 
+
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,
@@ -303,9 +309,6 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
-    if ctx.obj['flow'] == 'local': 
-        return
-
     qm = find_missing_id(s, subq, oformat=oformat)
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 

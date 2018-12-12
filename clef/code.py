@@ -26,6 +26,7 @@ import sys
 import os
 import json
 import pkg_resources
+import itertools
 
 
 
@@ -150,19 +151,27 @@ def cmip6(debug=False, distrib=True, replica=False, latest=True, oformat='datase
         results['path'].append(resp[0])
     return results 
  
+def search(session, project='cmip5', **kwargs):
+    """
+    This call the local query when integrated in python script before running query checks
+    that the arguments names and values are correct and change model name where necessary
+    """
+    args = check_keys(project, kwargs)
+    check_values(project, args)
+    args = fix_model(project, args)
+    return local_query(session, project, **args)
 
-def local_query(session,project='cmip5',**kwargs):
+
+def local_query(session, project='cmip5', **kwargs):
     """
     """
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
     results=[]
     project = project.lower()
-    # check that all arguments keys and values are valid
-    args = check_arguments(project, kwargs)
     # for cmip5 separate var from other constraints 
-    if project == 'cmip5' and 'variable' in args.keys():
-        var = args.pop('variable')
+    if project == 'cmip5' and 'variable' in kwargs.keys():
+        var = kwargs.pop('variable')
     ctables={'cmip5': [C5Dataset, Path.c5dataset],
           'cmip6': [C6Dataset, Path.c6dataset] }
     
@@ -174,7 +183,7 @@ def local_query(session,project='cmip5',**kwargs):
            )
            .join(Path.extended)
            .join(ctables[project][1])
-           .filter_by(**args)
+           .filter_by(**kwargs)
            .filter(ExtendedMetadata.variable == var))
     else:
         r = (session.query(Path.path.label('path'),
@@ -183,7 +192,7 @@ def local_query(session,project='cmip5',**kwargs):
            )
            .join(Path.extended)
            .join(ctables[project][1])
-           .filter_by(**args))
+           .filter_by(**kwargs))
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
@@ -207,19 +216,22 @@ def convert_period(nranges):
     """
     Convert a list of NumericRange period to a from-date,to-date separate values
     """
-    lower, higher = nranges[0].lower, nranges[0].upper
-    for nr in nranges[1:]:
-        low, high = nr.lower, nr.upper
-        lower = min(low,lower)
-        higher = max(high, higher)
+    try:
+        lower, higher = nranges[0].lower, nranges[0].upper
+        for nr in nranges[1:]:
+            low, high = nr.lower, nr.upper
+            lower = min(low,lower)
+            higher = max(high, higher)
+    except:
+        lower, higher = None, None
     return lower, higher
 
 
-def check_arguments(project, kwargs):
+def check_keys(project, kwargs):
     """
-    Check that arguments keys and values passed to search are valid, if not print warning and exit
+    Check that arguments keys passed to search are valid, if not print warning and exit
     """
-    # load dictionary to check arguments names are valid
+    # load dictionary to check arguments keys are valid
     # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
     # representing the corresponding facet for CMIP5 and CMIP6
     # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
@@ -236,6 +248,12 @@ def check_arguments(project, kwargs):
             sys.exit()
         else:
             args[facet[0]] = value
+    return args
+
+def check_values(project, args):
+    """
+    Check that arguments values passed to search are valid, if not print warning and exit
+    """
     # load dictionaries to check arguments values are valid
     if project == 'cmip5':
         models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')
@@ -244,6 +262,7 @@ def check_arguments(project, kwargs):
     else:
         print(f'Search for {project} not yet implemented')
         sys.exit()
+            
     #for k,v in args.items():
     #     if models: 
     #    args[valid_key[ 
@@ -251,7 +270,9 @@ def check_arguments(project, kwargs):
 
 
 def load_vocabularies(project):
+    ''' '''
     vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
+    mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
     with open(vfile, 'r') as f:
          data = f.read()
          models = json.loads(data)['models']
@@ -264,5 +285,34 @@ def load_vocabularies(project):
              activities = json.loads(data)['activities']
              stypes = json.loads(data)['source_types']
              return models, realms, variables, frequencies, tables, activities, stypes
-    return models, realms, variables, frequencies, tables
+    
+    return models, realms, variables, frequencies, tables 
 
+def fix_model(project, args):
+    """
+    Fix model name where file attribute is different from values accepted by facets
+    """
+    project = project.upper()
+    if project  == 'CMIP5':
+        mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
+        with open(mfile, 'r') as f:
+            mfix = json.loads( f.read() )
+        if args['model'] in mfix.keys():
+            args['model'] = mfix[args['model']]
+    return args
+
+def call_local_query(s, project, oformat, **kwargs):
+    ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
+    datasets = []
+    paths = []
+    combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+    for c in combs:
+        c = fix_model(project, c)
+        datasets.extend( local_query(s,project=project,**c) ) 
+    if oformat == 'dataset':
+        for d in datasets:
+            paths.append(d['pdir'])
+    elif oformat == 'file':
+        for d in datasets:
+            paths.extend([d['pdir']+x for x in d['filenames']])
+    return paths
