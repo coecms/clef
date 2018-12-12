@@ -77,24 +77,29 @@ def helpdesk(user, rootdir, fname, project):
 def search_queue_csv(qm, project, varlist):
     ''' search missing dataset ids in download queue '''
     rows={}
+    dids=set()
     # open csv file and read data in dictionary with dataset_id as key 
     with open("/g/data/ua8/Download/CMIP6/" + project + "_clef_table.csv","r") as csvfile:
         table_read = csv.reader(csvfile)
+     # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
         for row in table_read:
-            rows[row[1]] = [row[0],row[2]]
+            rows[(row[1],row[0])] = row[2]
+            dids.add(row[1])
     # retrieve from table the missing dataset_ids
     queued={}
     for q in qm:
-        if q[0] in rows.keys():
+        if q[0].replace('ouput.','output1.') in dids:
             did = q[0]
         # if CMIP5 you need to match also the variable
             if project == "CMIP5" and varlist != []:
-                if rows[did][0] not in varlist:
-                    continue
-                else:
-                    queued[did + "  " + rows[did][0]] = rows[did][1]
+                queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did and k[1] in varlist})
+                #if rows[did][0] not in varlist:
+                #    continue
+                #else:
+                #    queued[did + "  " + rows[did][0]] = rows[did][1]
             else:
-                queued[did] = rows[did][1]
+                queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did})
+                #queued[did] = rows[did][1]
 
     if len(queued) > 0:
         print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
@@ -102,7 +107,7 @@ def search_queue_csv(qm, project, varlist):
             print(" ".join([did,'status:',status]))
     if project == 'CMIP5' and varlist != []:
         # this combines every dataset_id with all the variables, returns a list of "did  var" strings
-        combs = [x[0]+"  "+x[1] for x in itertools.product([q[0] for q in qm], varlist)]
+        combs = [x[0]+" "+x[1] for x in itertools.product([q[0] for q in qm], varlist)]
         missing = [x for x in combs if x not in queued] 
     else:
         missing = [q[0] for q in qm if q[0] not in queued] 

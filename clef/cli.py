@@ -319,9 +319,10 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
             else:
                 varlist = []
             updated = search_queue_csv(qm, project, varlist)
-            print('\nAvailable on ESGF but not locally:')
-            for result in updated:
-                print(result)
+            if len(updated) > 0:
+                print('\nAvailable on ESGF but not locally:')
+                for result in updated:
+                    print(result)
         else:
             print('\nEverything available on ESGF is also available locally')
     except FileNotFoundError:
