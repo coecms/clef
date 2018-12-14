@@ -286,3 +286,38 @@ class C6Dataset(Base):
 
     #:
     table_id = Column('table_id', Text)
+
+
+class Info(Base):
+    """
+    General information about a dataset file
+
+    This is a database view, its columns shouldn't be used for searching as
+    they are large and not indexed.
+    """
+    __tablename__ = 'info_attributes'
+
+    file_id = Column(UUID,
+                     ForeignKey('metadata.md_hash'),
+                     ForeignKey('checksums.ch_hash'),
+                     ForeignKey('esgf_paths.file_id'),
+                     primary_key=True)
+
+    #:
+    variant_info = Column(Text)
+    #:
+    source = Column(Text)
+    #:
+    parent_experiment_id = Column(Text)
+    #:
+    further_info_url = Column(Text)
+    #:
+    contact = Column(Text)
+    #:
+    title = Column(Text)
+    #:
+    description = Column(Text)
+    #:
+    license = Column(Text)
+    #:
+    tracking_id = Column(Text)
