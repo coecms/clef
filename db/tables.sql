@@ -264,7 +264,10 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS cmip6_dataset AS
         p,
         f,
         'r'||r||'i'||i||'p'||p||'f'||f AS variant_label,
-        sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f AS member_id,
+        CASE when sub_experiment_id != 'none'
+            THEN sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f
+            ELSE 'r'||r||'i'||i||'p'||p||'f'||f
+        END AS member_id,
         variable_id,
         grid_label,
         nominal_resolution,
