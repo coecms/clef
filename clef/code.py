@@ -16,6 +16,7 @@
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 from .exception import ClefException
+from .esgf import match_query, find_local_path
 from datetime import datetime
 from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
@@ -29,7 +30,7 @@ import pkg_resources
 
 
 
-def cmip5(debug=False, distrib=True, replica=False, latest=True, oformat='dataset',**kwargs):
+def cmip5(session=None, debug=False, distrib=True, replica=False, latest=True, oformat='dataset',**kwargs):
     """
     Search local database for CMIP5 files
 
@@ -42,9 +43,10 @@ def cmip5(debug=False, distrib=True, replica=False, latest=True, oformat='datase
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
 
-    user=None
-    connect(user=user)
-    s = Session()
+    if session is None:
+        user=None
+        connect(user=user)
+        session = Session()
 
     project='CMIP5'
 
@@ -68,7 +70,7 @@ def cmip5(debug=False, distrib=True, replica=False, latest=True, oformat='datase
         elif len(value) > 0:
            terms[key] = value
 
-    subq = match_query(s, query=None,
+    subq = match_query(session, query=None,
             distrib= distrib,
             replica=replica,
             latest=(None if latest == 'all' else latest),
@@ -80,7 +82,7 @@ def cmip5(debug=False, distrib=True, replica=False, latest=True, oformat='datase
     # filename, the resulting project is still CMIP5 (and not say a PMIP file
     # with the same name)
 
-    ql = find_local_path(s, subq, oformat=oformat)
+    ql = find_local_path(session, subq, oformat=oformat)
     ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     results = kwargs 
     results['path'] = []

@@ -64,22 +64,38 @@ CREATE OR REPLACE VIEW checksums AS
     FROM oi10.checksums;
 */
 
+/* The netcdf metadata is stored for real files, but the paths we present to users are the symbolic links
+ * The checksums are stored for both though, so link up the real files with the paths using these
+ */
+CREATE OR REPLACE VIEW rr3_paths AS
+    SELECT DISTINCT ON (file_id)
+        file_md.md_hash AS file_id,
+        5 AS cmip_era,
+        link_path.pa_path AS path
+    FROM
+        rr3.metadata as file_md
+        JOIN rr3.metadata AS link_md ON file_md.md_json->>'sha256' = link_md.md_json->>'sha256'
+        JOIN rr3.paths AS link_path ON link_md.md_hash = link_path.pa_hash
+        JOIN rr3.paths AS file_path ON file_md.md_hash = file_path.pa_hash
+    WHERE
+        file_md.md_type = 'checksum'
+        AND link_md.md_type = 'checksum'
+        AND link_path.pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
+        AND split_part(link_path.pa_path, '/', 6) != 'CMIP5RT'
+        AND split_part(link_path.pa_path, '/', 15) != 'files'
+        AND split_part(link_path.pa_path, '/', 17) != 'files'
+        AND link_path.pa_path LIKE '%.nc'
+        AND file_path.pa_type = 'file'
+    ORDER BY file_id, path DESC
+    ;
+
 
 /* Filter to unify the schemas and only return CMIP data files
  */
 CREATE OR REPLACE VIEW esgf_filter AS
     SELECT
-        pa_hash AS file_id,
-        5 AS cmip_era,
-        pa_path AS path
-    FROM rr3.paths
-    WHERE
-        pa_type IN ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
-    AND split_part(pa_path, '/', 6) != 'CMIP5RT'
-    AND split_part(pa_path, '/', 15) != 'files'
-    AND split_part(pa_path, '/', 17) != 'files'
-    AND pa_path LIKE '%.nc'
+        *
+    FROM rr3_paths
     UNION ALL
     SELECT
         pa_hash AS file_id,

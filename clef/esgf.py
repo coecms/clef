@@ -44,7 +44,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query, fields, limit=1200, offset=0, distrib=True, replica=False, latest=None, **kwargs):
+def esgf_query(query=None, fields=[], limit=1200, offset=0, distrib=True, replica=False, latest=None, **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
@@ -84,9 +84,7 @@ def esgf_query(query, fields, limit=1200, offset=0, distrib=True, replica=False,
           'format': 'application/solr+json',
           } 
     params.update(kwargs)
-    #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
-    #                 params = params )
-    r = requests.get('https://esgf-data.dkrz.de/esg-search/search',
+    r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
 
     r.raise_for_status()
@@ -94,7 +92,7 @@ def esgf_query(query, fields, limit=1200, offset=0, distrib=True, replica=False,
     return r.json()
 
 
-def link_to_esgf(query, **kwargs):
+def link_to_esgf(query=None, **kwargs):
     """Convert search terms to a ESGF search URL
 
     Returns a link to the user-facing ESGF web search matching a particular
@@ -123,20 +121,14 @@ def link_to_esgf(query, **kwargs):
             }
     params.update(constraints)
 
-    endpoint = 'cmip5'
-    if params.get('project','').lower() == 'cmip6':
-        endpoint = 'cmip6'
-
-
-    #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
-    r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
+    r = requests.Request('GET','https://esgf.nci.org.au/search/esgf-nci',
             params=params,
             )
     #p = r.prepare()
     return r.prepare().url
 
 
-def find_checksum_id(query, **kwargs):
+def find_checksum_id(**kwargs):
     """Get checksums and IDs of matching files from ESGF
 
     Searches ESGF using :func:`esgf_query`, then converts the response into a
@@ -155,34 +147,16 @@ def find_checksum_id(query, **kwargs):
         This table can be joined against the MAS database tables
     """
     constraints = {k: v for k,v in kwargs.items() if v != ()}
-    response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
+    response = esgf_query(fields='checksum,id,dataset_id,title,version', **constraints)
 
     if response['response']['numFound'] == 0:
-        #raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
-        print(f'No matches found on ESGF, check at {link_to_esgf(query, **constraints)}')
+        print(f'No matches found on ESGF, check at {link_to_esgf(**constraints)}')
         sys.exit()
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        #raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
         print(f"Too many results {response['response']['numFound']}, try limiting your search:\n ",
               link_to_esgf(query, **constraints))
         sys.exit()
-    # separate records that do not have checksum in response (nosums list) from others (records list)
-    # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
-    nosums=[]
-    records=[]
-    # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
-    no_filter = True
-    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None)==False and constraints.get('variable', None) is not None:
-        matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
-        no_filter = False
-
-    for doc in response['response']['docs']:
-        if  no_filter or any(st in doc['id'] for st in matches_list):
-            if 'checksum' in doc.keys():
-                records.append(doc)
-            else:
-                nosums.append(doc)
 
     table = values([
             column('checksum', String),
@@ -199,14 +173,14 @@ def find_checksum_id(query, **kwargs):
             doc['title'],
             doc['version'],
             doc['score']) 
-            for doc in records],
+            for doc in response['response']['docs']],
         alias_name = 'esgf_query'
         )
 
     return table
 
 
-def match_query(session, query, latest=None, **kwargs):
+def match_query(session, latest=None, **kwargs):
     """Match ESGF results against :class:`clef.model.Path`
 
     Matches the results of :func:`find_checksum_id` with the :class:`Path`
@@ -221,7 +195,7 @@ def match_query(session, query, latest=None, **kwargs):
     Returns:
         Joined result of :class:`clef.model.Path` and :func:`find_checksum_id`
     """
-    values = find_checksum_id(query, latest=latest, **kwargs)
+    values = find_checksum_id(latest=latest, **kwargs)
 
     if latest is True:
         # Exact match on checksum
