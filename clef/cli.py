@@ -29,6 +29,7 @@ from sqlalchemy.orm import aliased
 import sys
 import six
 import os
+import stat
 import json
 import pkg_resources
 
@@ -78,8 +79,9 @@ def config_log():
     # the messagges will be appended to the same file
     # create a new log file every month
     month = datetime.now().strftime("%Y%m") 
-    logname = 'clef_log_' + month + '.txt' 
-    flog = logging.FileHandler('/g/data/ua8/Download/CMIP6/'+logname) 
+    logname = '/g/data/ua8/Download/CMIP6/clef_log_' + month + '.txt' 
+    flog = logging.FileHandler(logname) 
+    os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
     flog.setLevel(logging.INFO)
     flog.setFormatter(formatter)
     logger.addHandler(flog)
@@ -92,21 +94,20 @@ def warning(message):
 
 
 def cmip5_args(f):
-    models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')
+    models, realms, variables, frequencies, tables, experiments, families = load_vocabularies('CMIP5')
     constraints = [
-        click.option('--experiment', '-e', multiple=True, help="CMIP5 experiment: piControl, rcp85, amip ..."),
-        click.option('--experiment_family',multiple=True, help="CMIP5 experiment family: Decadal, RCP ..."),
+        click.option('--experiment', '-e', multiple=True, type=click.Choice(experiments), metavar='x',
+                      help="CMIP5 experiment: piControl, rcp85, amip ..."),
+        click.option('--experiment_family',multiple=True, type=click.Choice(families),
+                      help="CMIP5 experiment family: Decadal, RCP ..."),
         click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x', 
                       help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
         click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(tables) ),
-                      #help="CMIP5 CMOR table: Amon, day, Omon ..."),
         click.option('--variable', '-v', multiple=True, type=click.Choice(variables), metavar='x',
                       help="Variable name as shown in filanames: tas, pr, sic ... "),
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
         click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ), 
-                     # help="Frequency"),
         click.option('--realm', multiple=True, type=click.Choice(realms) ),
-                     # help="CMIP5 realm"),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
     for c in reversed(constraints):
@@ -134,13 +135,12 @@ def common_args(f):
 
 def cmip6_args(f):
 # 
-    models, realms, variables, frequencies, tables, activities, stypes = load_vocabularies('CMIP6')
+    models, realms, variables, frequencies, tables, experiments, activities, stypes = load_vocabularies('CMIP6')
     constraints = [
         click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
-                     #help="CMIP6 MIP or project id"),
-        click.option('--experiment', '-e', 'experiment_id', multiple=True, help="CMIP6 experiment, list of available depends on activity"),
+        click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(experiments), metavar='x',
+                     help="CMIP6 experiment, list of available depends on activity"),
         click.option('--source_type',multiple=True, type=click.Choice(stypes) ),
-                     #help="Model configuration"),
         click.option('--table', '-t', 'table_id', multiple=True, type=click.Choice(tables), metavar='x',
                      help="CMIP6 CMOR table: Amon, SIday, Oday ..."),
         click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(models),  metavar='x',

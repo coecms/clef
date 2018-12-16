@@ -156,8 +156,10 @@ def search(session, project='cmip5', **kwargs):
     This call the local query when integrated in python script before running query checks
     that the arguments names and values are correct and change model name where necessary
     """
-    args = check_keys(project, kwargs)
-    check_values(project, args)
+    valid_keys = get_keys(project)
+    args = check_keys(valid_keys, kwargs)
+    vocabularies = load_vocabularies(project)
+    check_values(vocabularies, project, args)
     args = fix_model(project, args)
     return local_query(session, project, **args)
 
@@ -222,22 +224,31 @@ def convert_period(nranges):
             low, high = nr.lower, nr.upper
             lower = min(low,lower)
             higher = max(high, higher)
+        # to keep into account the open interval
+        higher = higher -1
     except:
         lower, higher = None, None
     return lower, higher
 
 
-def check_keys(project, kwargs):
+def get_keys(project):
     """
-    Check that arguments keys passed to search are valid, if not print warning and exit
+    Define valid arguments keys based on project
     """
-    # load dictionary to check arguments keys are valid
     # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
     # representing the corresponding facet for CMIP5 and CMIP6
     # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
     with open('clef/data/valid_keys.json', 'r') as f:
          data = json.loads(f.read()) 
     valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
+    return valid_keys
+
+
+def check_keys(valid_keys, kwargs):
+    """
+    Check that arguments keys passed to search are valid, if not print warning and exit
+    """
+    # load dictionary to check arguments keys are valid
     # rewrite kwargs with the right facet name
     args = {}
     for key,value in kwargs.items():
@@ -250,18 +261,24 @@ def check_keys(project, kwargs):
             args[facet[0]] = value
     return args
 
-def check_values(project, args):
+def check_values(vocabularies, project, args):
     """
     Check that arguments values passed to search are valid, if not print warning and exit
     """
     # load dictionaries to check arguments values are valid
     if project == 'cmip5':
-        models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')
+        model, realm, variable, frequency, table, experiment, experiment_family = vocabularies
     elif project == 'cmip6':
-        models, realms, variables, frequencies, tables, activities, stypes = load_vocabularies('CMIP6')
+        source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
     else:
         print(f'Search for {project} not yet implemented')
         sys.exit()
+    for k,v in args.items():
+        if k in locals() and v not in locals()[k]:
+            print(f'{v} is not a valid value for {k}')
+            sys.exit()
+ 
+    
             
     #for k,v in args.items():
     #     if models: 
@@ -271,6 +288,7 @@ def check_values(project, args):
 
 def load_vocabularies(project):
     ''' '''
+    project = project.upper()
     vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
     mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
     with open(vfile, 'r') as f:
@@ -280,13 +298,15 @@ def load_vocabularies(project):
          variables = json.loads(data)['variables']
          frequencies = json.loads(data)['frequencies']
          tables = json.loads(data)['tables']
-         #experiments = json.loads(data)['experiments'] 
+         experiments = json.loads(data)['experiments']
+         if project == 'CMIP5':
+             families = json.loads(data)['families']
          if project == 'CMIP6':
              activities = json.loads(data)['activities']
              stypes = json.loads(data)['source_types']
-             return models, realms, variables, frequencies, tables, activities, stypes
+             return models, realms, variables, frequencies, tables, experiments, activities, stypes
     
-    return models, realms, variables, frequencies, tables 
+    return models, realms, variables, frequencies, tables, experiments, families 
 
 def fix_model(project, args):
     """

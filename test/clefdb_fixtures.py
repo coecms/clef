@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-file:   test/clefdb_fixture.py
+file:   test/clefdb_fixtures.py
 author: Paola Petrelli <paola.petrelli@utas.edu.au>
 Copyright 2018 ARC Centre of Excellence for Climate Systems Science
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-#from __future__ import print_function
 
 import pytest
 from clef import dataset

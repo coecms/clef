@@ -86,7 +86,7 @@ def esgf_query(query, fields, limit=1200, offset=0, distrib=True, replica=False,
     params.update(kwargs)
     #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
     #                 params = params )
-    r = requests.get('https://esgf-data.dkrz.de/esg-search/search',
+    r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
 
     r.raise_for_status()
@@ -129,7 +129,8 @@ def link_to_esgf(query, **kwargs):
 
 
     #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
-    r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
+    #r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
+    r = requests.Request('GET','https://esgf.nci.org.au/search/esgf-nci',
             params=params,
             )
     #p = r.prepare()
