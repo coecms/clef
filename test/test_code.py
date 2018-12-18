@@ -72,16 +72,23 @@ def test_convert_periods(nranges, periods, dates, empty):
     #assert convert_periods(nranges,'mon') == (periods[0], dates[2]) 
     #assert convert_periods(empty,'mon') == (None, None) 
 
-def test_time_axis(dates, empty):
+def test_time_axis2(dates, empty):
     #test contiguos axis monthly frequency 
-    assert time_axis(dates[2],'mon','20060101','21001231') == True 
+    assert time_axis2(dates[2],'mon','20060101','21001231') == True 
     #test contiguos axis, 2 files, daily frequency 
-    assert time_axis(dates[1],'day','20050101','20050228') == True 
+    assert time_axis2(dates[1],'day','20050101','20050228') == True 
     #test contiguos axis, 1 file, daily frequency 
-    assert time_axis(dates[0],'day','20050101','20050228') == True 
+    assert time_axis2(dates[0],'day','20050101','20050228') == True 
     #test non-contiguos axis, monthly frequency 
-    assert time_axis(dates[3],'mon','20060101','21001231') == False 
+    assert time_axis2(dates[3],'mon','20060101','21001231') == False 
     #assert time_axis(empty) == False 
+
+def test_time_axis(periods):
+    #test contiguos axis monthly frequency 
+    assert time_axis(periods[0],'20060101','21001231') == True 
+    #test contiguos axis, 2 files, daily frequency 
+    bad_list=periods[0][0:2]
+    assert time_axis(bad_list,'20050101','20050228') == False 
 
 def test_get_range(periods, empty):
     assert get_range(periods[0]) == ('20060101', '21001231') 

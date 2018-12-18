@@ -16,7 +16,7 @@
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 from .exception import ClefException
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
 from itertools import groupby
@@ -212,9 +212,8 @@ def local_query(session, project='cmip5', **kwargs):
             gdict[c] = df[c].iloc[list(v)].unique()[0]
         gdict['periods'], dates = convert_periods(nranges, gdict['frequency'])
         gdict['fdate'], gdict['tdate'] = get_range(gdict['periods'])
-        gdict['time_complete'] = time_axis(dates,gdict['frequency'],gdict['fdate'],gdict['tdate'])
+        gdict['time_complete'] = time_axis(gdict['periods'],gdict['fdate'],gdict['tdate'])
         results.append(gdict)
-
     return results
 
 def get_range(periods):
@@ -256,7 +255,41 @@ def convert_periods(nranges,frequency):
                      freq=freq[frequency])) 
     return periods, dates 
 
-def time_axis(dates,frequency,fdate,tdate):
+def time_axis(periods,fdate,tdate):
+    """
+    Check that files constitute a contiguos time axis
+    input: periods a list of ('from_date', 'to_date') for each file
+    input: fdate, tdate from_date and to_date strings
+    return: True or False
+    """
+    sp = sorted(periods)
+    nextday = fdate
+    i = 0
+    contiguos = True 
+    while sp[i][0] == nextday:
+        t = datetime.strptime(sp[i][1],'%Y%m%d') + timedelta(days=1)
+        nextday = t.strftime('%Y%m%d')
+        i+=1
+        if i >= len(sp):
+            break
+    else:
+        contiguos = False 
+    return contiguos
+
+
+def get_keys(project):
+    """
+    Define valid arguments keys based on project
+    """
+    # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
+    # representing the corresponding facet for CMIP5 and CMIP6
+    # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
+    with open('clef/data/valid_keys.json', 'r') as f:
+         data = json.loads(f.read()) 
+    valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
+    return valid_keys
+
+def time_axis2(dates,frequency,fdate,tdate):
     """
     Check that files constitute a contiguos time axis
     input: dates a list of date_range for each file
