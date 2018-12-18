@@ -27,6 +27,7 @@ import os
 import json
 import pkg_resources
 import itertools
+from calendar import monthrange
 
 
 
@@ -206,29 +207,72 @@ def local_query(session, project='cmip5', **kwargs):
     for g,v in res.groups.items():
         gdict={}
         gdict['filenames'] = df['filename'].iloc[list(v)].tolist()
-        gdict['periods'] = df['period'].iloc[list(v)].tolist()
-        gdict['fdate'], gdict['tdate'] = convert_period(gdict['periods'])
+        nranges = df['period'].iloc[list(v)].tolist()
         for c in cols:
             gdict[c] = df[c].iloc[list(v)].unique()[0]
+        gdict['periods'], dates = convert_periods(nranges, gdict['frequency'])
+        gdict['fdate'], gdict['tdate'] = get_range(gdict['periods'])
+        gdict['time_complete'] = time_axis(dates,gdict['frequency'],gdict['fdate'],gdict['tdate'])
         results.append(gdict)
 
     return results
 
-def convert_period(nranges):
+def get_range(periods):
     """
     Convert a list of NumericRange period to a from-date,to-date separate values
+    input: periods list of tuples representing lower and upper end of temporal interval, values are strings 
+    return: from_date, to_date as strings
     """
     try:
-        lower, higher = nranges[0].lower, nranges[0].upper
-        for nr in nranges[1:]:
-            low, high = nr.lower, nr.upper
+        lower, higher = int(periods[0][0]), int(periods[0][1])
+        for nr in periods[1:]:
+            low, high = int(nr[0]), int(nr[1])
             lower = min(low,lower)
             higher = max(high, higher)
         # to keep into account the open interval
-        higher = higher -1
+        higher = higher
     except:
-        lower, higher = None, None
-    return lower, higher
+        return None, None
+    return str(lower), str(higher)
+
+def convert_periods(nranges,frequency):
+    """
+    Convert period Numeric ranges to dates intervals and build the time axis
+    input: nranges a list of each file period
+    input: frequency timestep frequency 
+    return: periods list of tuples representing lower and upper end of temporal interval, values are strings 
+    return: dates a list of pandas date_range for each interval
+    """
+    freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
+    dates = []
+    periods = []
+    for r in nranges:
+        lower, upper = str(r.lower), str(r.upper - 1)
+        if len(lower) == 6:
+            lower += '01'
+            upper += str(monthrange(int(upper[0:4]),int(upper[4:6]))[1])
+        periods.append((lower,upper))
+        dates.append(pandas.date_range(lower,upper,
+                     freq=freq[frequency])) 
+    return periods, dates 
+
+def time_axis(dates,frequency,fdate,tdate):
+    """
+    Check that files constitute a contiguos time axis
+    input: dates a list of date_range for each file
+    input: frequency timestep frequency 
+    input: fdate, tdate from_date and to_date strings
+    return: True or False
+    """
+    freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
+    ax1 = []
+    for d in dates:
+        ax1.extend(d.tolist())
+    ax2 = pandas.date_range(fdate, tdate, freq=freq[frequency]).tolist()
+    if set(ax1) == set(ax2):
+        return True 
+    else:
+        return False 
 
 
 def get_keys(project):
@@ -277,12 +321,6 @@ def check_values(vocabularies, project, args):
         if k in locals() and v not in locals()[k]:
             print(f'{v} is not a valid value for {k}')
             sys.exit()
- 
-    
-            
-    #for k,v in args.items():
-    #     if models: 
-    #    args[valid_key[ 
     return args
 
 
