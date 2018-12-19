@@ -15,18 +15,22 @@ presently two main commands:
 
  * :code:`clef cmip6` to execute searches on the CMIP6 dataset
 
-and four optional flags are available for each command to limit the output or submit a data request:
+ * :code:`clef ds` to execute searches on non-ESGF climate datasets 
 
- * :code:`clef --remote cmip5` returns all the ESGF CMIP5/CMIP6 datasets  matching the constraints 
+ESGF search
+===========
 
- * :code:`clef --local cmip5` finds local files on NCI's ESGF CMIP5/CMIP6  mirror
+Four optional flags are available for the **cmip5** and **cmip6** commands to change the output or submit a data request:
+
+ * :code:`clef --remote cmip5` returns all the ESGF CMIP5/CMIP6 datasets  matching the constraints, it is the equivalent of doing a search online on an ESGF node 
+
+ * :code:`clef --local cmip5` finds local files accessing directly the NCI's MAS database so it will also return older versions or datasets that might be temporarily offline.
 
  * :code:`clef --missing cmip6` finds files on ESGF that haven't been downloaded to NCI
 
  * :code:`clef --request cmip6` create and pass to NCI a request to download the missing files
-   (NB. this is not yet implemented!)
 
-If these flags are omitted then the tool will search on the ESGF datasets matching the constraints and return both the local and missing files lists
+If these flags are omitted then the tool will search on the ESGF datasets matching the constraints and return both the local and missing files lists, based on searching an ESGF node.
 
 The search works like the ESGF search website, e.g. https://esgf.nci.org.au/search/esgf_nci.
 Results can be filtered by using flags matching the ESGF search facets::
@@ -100,10 +104,10 @@ downloaded to NCI. It returns the path to the file on NCI's /g/data disk::
      /g/data1/ua6/unofficial-ESG-replica/tmp/tree/esgf-data1.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/historical/day/atmos/day/r1i1p1/v20140110/ta/
 
 
-NOTE: Presently the default behaviour is to check for the most recent (latest) version
+NOTE: Presently the default behaviour for all the ESGF-node based searches is to check for the most recent (latest) version
 on ESGF, and return only files with that version. This can be disabled with the :code:`--all-versions` flag.
-If a version has been unpublished by the ESGF but it is still available locally,
- even using the `--all-versions` flag this won't appear in the results. We are working on a solution for this.
+The --local option instead currently returns by default all available versions, including versions unpublished by the ESGF but that are still available locally,
+NB not all the available data on the older CMIP5 collection (ua6 project) has been yet replaced in the new one (al33).
 If you are sure a version should exists only for CMIP5 you could try using the ARCCSSive module https://github.com/coecms/arccssive to locate it.
 
 tips
@@ -111,5 +115,36 @@ tips
 
 If your search doesn't return any results try again at a later time. The tool is searching the ESGF website first 
 and sometimes one or more nodes can be disconnected and the returned results are incomplete.
-This shouldn't be anymore an issue once we implemented a search for files which are locally available but not published yet.
-As in that case for CMIP5 you can use the older ARCCSSive tool if in doubt.
+Try the --local flag to at least get what's available locally.
+For CMIP5 you can use the older ARCCSSive tool if in doubt.
+
+Climate collections search
+==========================
+
+The **ds** command is a new feature of clef and we are still defining its behaviour.
+clef ds 
+with no other argument will return a list of the local datasets available in the database.
+NB this is not an exhaustive list of the climate collections at NCI and not all the datasets alredy in the database have been completed.
+clef ds --help
+shows the available arguments, if you specify any of the variable options then the search will return a list of variables rather then datasets.
+Since variables can be named differently among datasets, using the standard_nameor cmor_name to identify them, if available, is the best option.
+
+Examples
+--------
+::
+ $ clef ds -f netcdf --standard-name air_temperature
+    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
+    tas: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_sfc/1.0/tas/tas_6hr_ERAI_historical_oper_an_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
+    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_ml/1.0/ta/ta_6hr_ERAI_historical_oper_an_ml_<YYYYMMDD>_<YYYYMMDD>.nc
+    mn2t: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/mn2t/mn2t_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
+    mx2t: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/mx2t/mx2t_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
+    tas: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/tas/tas_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
+
+This returns all the variable available as netcdf files and with air_temperature as standard_name.
+NB for each variable a path structure is returned.::
+
+ $ clef ds -f netcdf --cmor-name ta
+    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
+    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_ml/1.0/ta/ta_6hr_ERAI_historical_oper_an_ml_<YYYYMMDD>_<YYYYMMDD>.nc
+
+This returns a subset of the previous search using the cmor_name to clearly identify one kind of air_temperature.
