@@ -63,25 +63,10 @@ def test_fix_model(c5_kwargs):
     args = fix_model('cmip5', c5_kwargs) 
     assert args['model'] == 'inmcm4'
 
-def test_convert_periods(nranges, periods, dates, empty):
-    res1, res2 = convert_periods(nranges,'mon')
+def test_convert_periods(nranges, periods, empty):
+    res1 = convert_periods(nranges,'mon')
     assert res1 == periods[0]
-    assert len(res2) == len(dates[2]) 
-    #for dti in res2:
-    #    assert dti.all() in dates[2]
-    #assert convert_periods(nranges,'mon') == (periods[0], dates[2]) 
-    #assert convert_periods(empty,'mon') == (None, None) 
-
-def test_time_axis2(dates, empty):
-    #test contiguos axis monthly frequency 
-    assert time_axis2(dates[2],'mon','20060101','21001231') == True 
-    #test contiguos axis, 2 files, daily frequency 
-    assert time_axis2(dates[1],'day','20050101','20050228') == True 
-    #test contiguos axis, 1 file, daily frequency 
-    assert time_axis2(dates[0],'day','20050101','20050228') == True 
-    #test non-contiguos axis, monthly frequency 
-    assert time_axis2(dates[3],'mon','20060101','21001231') == False 
-    #assert time_axis(empty) == False 
+    assert convert_periods(empty,'mon') == ([]) 
 
 def test_time_axis(periods):
     #test contiguos axis monthly frequency 

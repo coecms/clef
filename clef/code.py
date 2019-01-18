@@ -29,128 +29,6 @@ import pkg_resources
 import itertools
 from calendar import monthrange
 
-
-
-def cmip5(debug=False, distrib=True, replica=False, latest=True, oformat='dataset',**kwargs):
-    """
-    Search local database for CMIP5 files
-
-    Constraints can be specified multiple times, in which case they are combined
-    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
-    The --latest flag will check ESGF for the latest version available, this is the default behaviour
-    """
-
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-        logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
-
-    user=None
-    connect(user=user)
-    s = Session()
-
-    project='CMIP5'
-
-    terms = {}
- 
-    valid_constraints = [
-        'ensemble',
-        'experiment',
-        'experiment_family',
-        'institute',
-        'model',
-        'realm',
-        'frequency',
-        'cmor_table',
-        'cf_standard_name',
-        'variable']
-
-    for key, value in kwargs.items():
-        if key not in valid_constraints:
-            print(f'Warning {key} is not a valid constraint it will be ignored')
-        elif len(value) > 0:
-           terms[key] = value
-
-    subq = match_query(s, query=None,
-            distrib= distrib,
-            replica=replica,
-            latest=(None if latest == 'all' else latest),
-            project=project,
-            **terms
-            )
-
-    # Make sure that if find_local_path does an all-version search using the
-    # filename, the resulting project is still CMIP5 (and not say a PMIP file
-    # with the same name)
-
-    ql = find_local_path(s, subq, oformat=oformat)
-    ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
-    results = kwargs 
-    results['path'] = []
-    for resp in ql:
-        results['path'].append(resp[0])
-
-    return results 
-
-def cmip6(debug=False, distrib=True, replica=False, latest=True, oformat='dataset',**kwargs):
-    """
-    Search local database for CMIP6 files
-
-    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
-    The --latest flag will check ESGF for the latest version available, this is the default behaviour
-    """
-
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-        logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
-
-    user=None
-    connect(user=user)
-    s = Session()
-
-    project='CMIP6'
-
-    valid_constraints = [
-        'member_id',
-        'activity_id',
-        'experiment_id',
-        'sub_experiment_id',
-        'institution_id',
-        'source_id',
-        'source_type',
-        'realm',
-        'frequency',
-        'table_id',
-        'variable_id',
-        'grid_label',
-        'cf_standard_name',
-        'nominal_resolution'] 
-
-    terms = {}
-
-    # Add filters
-    for key, value in dataset_constraints.items():
-        if len(value) > 0:
-            terms[key] = value
-
-    subq = match_query(s, query=None,
-            distrib=distrib,
-            replica=replica,
-            latest=(None if latest == 'all' else latest),
-            project=project,
-            **terms
-            )
-
-    # Make sure that if find_local_path does an all-version search using the
-    # filename, the resulting project is still CMIP5 (and not say a PMIP file
-    # with the same name)
-    ql = find_local_path(s, subq, oformat=oformat)
-    ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
-
-    results = kwargs 
-    results['path'] = []
-    for resp in ql:
-        results['path'].append(resp[0])
-    return results 
  
 def search(session, project='cmip5', **kwargs):
     """
@@ -177,7 +55,6 @@ def local_query(session, project='cmip5', **kwargs):
         var = kwargs.pop('variable')
     ctables={'cmip5': [C5Dataset, Path.c5dataset],
           'cmip6': [C6Dataset, Path.c6dataset] }
-    
         
     if 'var' in locals():
         r = (session.query(Path.path.label('path'),
@@ -210,7 +87,7 @@ def local_query(session, project='cmip5', **kwargs):
         nranges = df['period'].iloc[list(v)].tolist()
         for c in cols:
             gdict[c] = df[c].iloc[list(v)].unique()[0]
-        gdict['periods'], dates = convert_periods(nranges, gdict['frequency'])
+        gdict['periods'] = convert_periods(nranges, gdict['frequency'])
         gdict['fdate'], gdict['tdate'] = get_range(gdict['periods'])
         gdict['time_complete'] = time_axis(gdict['periods'],gdict['fdate'],gdict['tdate'])
         results.append(gdict)
@@ -240,20 +117,20 @@ def convert_periods(nranges,frequency):
     input: nranges a list of each file period
     input: frequency timestep frequency 
     return: periods list of tuples representing lower and upper end of temporal interval, values are strings 
-    return: dates a list of pandas date_range for each interval
     """
     freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
-    dates = []
     periods = []
+    if len(nranges) == 0:
+        return periods
     for r in nranges:
+        if r is None:
+            continue 
         lower, upper = str(r.lower), str(r.upper - 1)
         if len(lower) == 6:
             lower += '01'
             upper += str(monthrange(int(upper[0:4]),int(upper[4:6]))[1])
         periods.append((lower,upper))
-        dates.append(pandas.date_range(lower,upper,
-                     freq=freq[frequency])) 
-    return periods, dates 
+    return periods
 
 def time_axis(periods,fdate,tdate):
     """
@@ -262,21 +139,25 @@ def time_axis(periods,fdate,tdate):
     input: fdate, tdate from_date and to_date strings
     return: True or False
     """
+    if periods == []:
+        return None 
     sp = sorted(periods)
     nextday = fdate
     i = 0
     contiguos = True 
-    while sp[i][0] == nextday:
-        t = datetime.strptime(sp[i][1],'%Y%m%d') + timedelta(days=1)
-        nextday = t.strftime('%Y%m%d')
-        i+=1
-        if i >= len(sp):
-            break
-    else:
-        contiguos = False 
+    try:
+        while sp[i][0] == nextday:
+            t = datetime.strptime(sp[i][1],'%Y%m%d') + timedelta(days=1)
+            nextday = t.strftime('%Y%m%d')
+            i+=1
+            if i >= len(sp):
+                break
+        else:
+            contiguos = False 
+    except:
+        return None 
     return contiguos
 
-
 def get_keys(project):
     """
     Define valid arguments keys based on project
@@ -288,38 +169,6 @@ def get_keys(project):
          data = json.loads(f.read()) 
     valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
     return valid_keys
-
-def time_axis2(dates,frequency,fdate,tdate):
-    """
-    Check that files constitute a contiguos time axis
-    input: dates a list of date_range for each file
-    input: frequency timestep frequency 
-    input: fdate, tdate from_date and to_date strings
-    return: True or False
-    """
-    freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
-    ax1 = []
-    for d in dates:
-        ax1.extend(d.tolist())
-    ax2 = pandas.date_range(fdate, tdate, freq=freq[frequency]).tolist()
-    if set(ax1) == set(ax2):
-        return True 
-    else:
-        return False 
-
-
-def get_keys(project):
-    """
-    Define valid arguments keys based on project
-    """
-    # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
-    # representing the corresponding facet for CMIP5 and CMIP6
-    # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
-    with open('clef/data/valid_keys.json', 'r') as f:
-         data = json.loads(f.read()) 
-    valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
-    return valid_keys
-
 
 def check_keys(valid_keys, kwargs):
     """
@@ -355,7 +204,6 @@ def check_values(vocabularies, project, args):
             print(f'{v} is not a valid value for {k}')
             sys.exit()
     return args
-
 
 def load_vocabularies(project):
     ''' '''

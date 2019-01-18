@@ -21,17 +21,6 @@ def periods(request):
     period2 = [('20050201', '20050228'), ('20050101', '20050131')] 
     return period1, period2
 
-@pytest.fixture(scope="module")
-def dates(request):
-    dates1 = [date_range('20050101', '20050228', freq='D')]
-    dates2 = [date_range('20050101', '20050131', freq='D')]
-    dates2.append(date_range('20050201', '20050228', freq='D'))
-    dates3 = [date_range('20750101', '21001231', freq='M')]
-    dates3.append(date_range('20060101', '20401231', freq='M'))
-    dates3.append(date_range('20410101', '20741231', freq='M'))
-    dates4 = [date_range('20750101', '21001231', freq='M')]
-    dates4.append(date_range('20060101', '20401231', freq='M'))
-    return dates1, dates2, dates3, dates4
 
 @pytest.fixture(scope="module")
 def empty(request):
