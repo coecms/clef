@@ -34,7 +34,7 @@ import pkg_resources
 def clef_catch():
     try:
         clef()
-    except ClefException as e:
+    except Exception as e:
         click.echo('ERROR: %s'%e)
         sys.exit(1)
 
