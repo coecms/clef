@@ -83,8 +83,13 @@ def search_queue_csv(qm, project, varlist):
         table_read = csv.reader(csvfile)
      # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
         for row in table_read:
-            rows[(row[1],row[0])] = row[2]
-            dids.add(row[1])
+            if project == 'CMIP5':
+                rows[(row[1],row[0])] = row[2]
+                dids.add(row[1])
+            elif project == 'CMIP6':
+                rows[(row[0])] = row[1]
+                dids.add(row[0])
+            
     # retrieve from table the missing dataset_ids
     queued={}
     for q in qm:
