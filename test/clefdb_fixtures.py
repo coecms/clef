@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import pytest
-from clef import dataset
+from clef import collections 
 from clef.db_noesgf import Dataset, Variable
 from sqlalchemy.orm.exc import NoResultFound
 from datetime import date
@@ -61,7 +61,7 @@ def retrieve_item(db, klass, **kwargs):
 @pytest.fixture(scope="module")
 #def session(request, tmpdir_factory):
 def session(request):
-    session = dataset.connect('sqlite:///:memory:')
+    session = collections.connect('sqlite:///:memory:')
 
     #dira = tmpdir_factory.mktemp('a')
     #dirb = tmpdir_factory.mktemp('b')
