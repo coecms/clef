@@ -1,0 +1,41 @@
+Integrating the ESGF search in your code
+========================================
+
+The **code** sub-module contains functions which are used to run *--local* option and can be used to integrate this query in your own python scripts.:: 
+
+    from clef.code import *
+
+After importing them you need to open a connection with the NCI MAS database to be able to run your queries::
+
+    db = connect()
+    s = Session()
+
+The **search** function takes 3 inputs: the db session, the project (i.e. currently 'cmip5' or 'cmip6') and a dictionary containing the query constraints.::
+
+    results = search(s, project='cmip5', **constraints)
+
+The keys available to define your constraints depend on the project you are querying and the attributes stored by the database. You can use any of the *facets* used for ESGF but in future we will be adding other options based on extra fields which are stored as attributes.  
+
+Examples
+--------
+::
+    constraints = {'variable': 'tas', 'model': 'MIROC5', 'cmor_table': 'day', 'experiment': 'rcp85'}
+    results = search(s, project='cmip5', **constraints)
+    results[0]
+    {'filenames': ['tas_day_MIROC5_rcp85_r1i1p1_20060101-20091231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20500101-20591231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20200101-20291231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20800101-20891231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20600101-20691231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20100101-20191231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20900101-20991231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20700101-20791231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20400101-20491231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_20300101-20391231.nc', 'tas_day_MIROC5_rcp85_r1i1p1_21000101-21001231.nc'], 'project': 'CMIP5', 'institute': 'MIROC', 'model': 'MIROC5', 'experiment': 'rcp85', 'frequency': 'day', 'realm': 'atmos', 'r': '1', 'i': '1', 'p': '1', 'ensemble': 'r1i1p1', 'cmor_table': 'day', 'version': '20120710', 'variable': 'tas', 'pdir': '/g/data1b/al33/replicas/CMIP5/output1/MIROC/MIROC5/rcp85/day/atmos/day/r1i1p1/v20120710/tas', 'periods': [('20060101', '20091231'), ('20500101', '20591231'), ('20200101', '20291231'), ('20800101', '20891231'), ('20600101', '20691231'), ('20100101', '20191231'), ('20900101', '20991231'), ('20700101', '20791231'), ('20400101', '20491231'), ('20300101', '20391231'), ('21000101', '21001231')], 'fdate': '20060101', 'tdate': '21001231', 'time_complete': True}
+
+**search** returns a list of dictionary, one for each dataset.
+You can see from the first result the dictionary content, the last key *time_complete* is the result of a check run on the time axis beuilt by joining together the files periods. If the time axis is contiguos is true, otherwise is False.
+NB that this has been calculated only using the dates listed in the files, the actual timesteps haven't been checked.
+
+Both the keys and values of the constraints get checked before being passed to the query function. This means that if you passed a key or a avalue that doesn't exists for the chosen project, the function will print a list of valid values and then exit.
+Let's re-write the constraints dictionary to show an example.::
+
+    constraints = {'v': 'tas', 'm': 'MIROC5', 'table': 'day', 'e': 'rcp85', 'activity':'CMIP'}
+    results = search(s, project='cmip5', **constraints)
+    Warning activity is not a valid constraint name
+    Valid constraints are:
+    dict_values([['source_id', 'model', 'm'], ['realm'], ['time_frequency', 'frequency', 'f'], ['variable_id', 'variable', 'v'], ['experiment_id', 'experiment', 'e'], ['table_id', 'table', 'cmor_table', 't'], ['member_id', 'member', 'ensemble', 'en', 'mi'], ['institution_id', 'institution', 'institute'], ['experiment_family']])
+
+You can see that the function told us 'activity' is not a valid constraints for CMIP5, in fact that can be used only with CMIP6
+NB. that the search accepted all the other abbreviations, we allowed more than one term to be used for each key.

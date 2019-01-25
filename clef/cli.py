@@ -18,8 +18,9 @@ from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
 from .download import *
+from . import collections as colls 
 from .exception import ClefException
-from .code import load_vocabularies
+from .code import load_vocabularies, call_local_query
 import click
 import logging
 from datetime import datetime
@@ -28,8 +29,10 @@ from sqlalchemy.orm import aliased
 import sys
 import six
 import os
+import stat
 import json
 import pkg_resources
+import re
 
 def clef_catch():
     debug_logger = logging.getLogger('clex_debug')
@@ -86,8 +89,9 @@ def config_log():
     # the messagges will be appended to the same file
     # create a new log file every month
     month = datetime.now().strftime("%Y%m") 
-    logname = 'clef_log_' + month + '.txt' 
-    flog = logging.FileHandler('/g/data/ua8/Download/CMIP6/'+logname) 
+    logname = '/g/data/ua8/Download/CMIP6/clef_log_' + month + '.txt' 
+    flog = logging.FileHandler(logname) 
+    os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
     flog.setLevel(logging.INFO)
     flog.setFormatter(formatter)
     logger.addHandler(flog)
@@ -100,21 +104,20 @@ def warning(message):
 
 
 def cmip5_args(f):
-    models, realms, variables, frequencies, tables = load_vocabularies('CMIP5')
+    models, realms, variables, frequencies, tables, experiments, families = load_vocabularies('CMIP5')
     constraints = [
-        click.option('--experiment', '-e', multiple=True, help="CMIP5 experiment: piControl, rcp85, amip ..."),
-        click.option('--experiment_family',multiple=True, help="CMIP5 experiment family: Decadal, RCP ..."),
+        click.option('--experiment', '-e', multiple=True, type=click.Choice(experiments), metavar='x',
+                      help="CMIP5 experiment: piControl, rcp85, amip ..."),
+        click.option('--experiment_family',multiple=True, type=click.Choice(families),
+                      help="CMIP5 experiment family: Decadal, RCP ..."),
         click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x', 
                       help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
         click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(tables) ),
-                      #help="CMIP5 CMOR table: Amon, day, Omon ..."),
         click.option('--variable', '-v', multiple=True, type=click.Choice(variables), metavar='x',
                       help="Variable name as shown in filanames: tas, pr, sic ... "),
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
         click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ), 
-                     # help="Frequency"),
         click.option('--realm', multiple=True, type=click.Choice(realms) ),
-                     # help="CMIP5 realm"),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
     for c in reversed(constraints):
@@ -142,13 +145,12 @@ def common_args(f):
 
 def cmip6_args(f):
 # 
-    models, realms, variables, frequencies, tables, activities, stypes = load_vocabularies('CMIP6')
+    models, realms, variables, frequencies, tables, experiments, activities, stypes = load_vocabularies('CMIP6')
     constraints = [
         click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
-                     #help="CMIP6 MIP or project id"),
-        click.option('--experiment', '-e', 'experiment_id', multiple=True, help="CMIP6 experiment, list of available depends on activity"),
+        click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(experiments), metavar='x',
+                     help="CMIP6 experiment, list of available depends on activity"),
         click.option('--source_type',multiple=True, type=click.Choice(stypes) ),
-                     #help="Model configuration"),
         click.option('--table', '-t', 'table_id', multiple=True, type=click.Choice(tables), metavar='x',
                      help="CMIP6 CMOR table: Amon, SIday, Oday ..."),
         click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(models),  metavar='x',
@@ -171,6 +173,37 @@ def cmip6_args(f):
     return f
 
 
+def ds_args(f):
+    #st_names = dataset.standard_names()
+    #cm_names = dataset.cmor_names()
+    #variables = dataset.vars_names()
+    st_names = ['air_temperature','air_pressure','rainfall_rate']
+    cm_names = ['ps','pres','psl','tas','ta','pr','tos']
+    variables = ['T','U','V','Z']
+    constraints = [
+        click.option('--dataset', '-d', 'dname',  multiple=False, help="Dataset name"),
+        click.option('--version', '-v', multiple=False, help="Dataset version"),
+        click.option('--format', '-f', 'fileformat', multiple=False, type=click.Choice(['netcdf','grib','HDF5','binary']),
+                      help="Dataset file format as defined in clef.db Dataset table"),
+        click.option('--standard-name', '-sn', multiple=True, type=click.Choice(st_names),
+        #click.option('--standard-name', '-sn', multiple=False, type=click.Choice(st_names),
+                      help="Variable standard_name this is the most reliable way to look for a variable across datasets"),
+        click.option('--cmor-name', '-cn', multiple=True, type=click.Choice(cm_names),
+        #click.option('--cmor-name', '-cn', multiple=False, type=click.Choice(cm_names),
+                      help="Variable cmor_name useful to look for a variable across datasets"),
+        click.option('--variable', '-va', 'varname', multiple=True, type=click.Choice(variables), 
+                      help="Variable name as defined in files: tas, pr, sic, T ... "),
+        click.option('--frequency', 'frequency', multiple=True, type=click.Choice(['yr','mon','day','6hr','3hr','1hr']), 
+                      help="Time frequency on which variable is defined"),
+        click.option('--from-date', 'fdate', multiple=False, help="""To define a time range of availability of a variable, 
+                      can be used on its own or together with to-date. Format is YYYYMMDD"""),
+        click.option('--to-date', 'tdate', multiple=False, help="""To define a time range of availability of a variable, 
+                      can be used on its own or together with from-date. Format is YYYYMMDD""")
+    ]
+    for c in reversed(constraints):
+        f = c(f)
+    return f
+
 @clef.command()
 @cmip5_args
 @common_args
@@ -188,7 +221,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         variable
         ):
     """
-    Search local database for files matching the given constraints
+    Search ESGF and local database for CMIP5 files
 
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
@@ -261,6 +294,12 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
            terms[key] = value
 
+    if ctx.obj['flow'] == 'local':
+        paths = call_local_query(s, project, oformat, **terms) 
+        for p in paths:
+            print(p)
+        return 
+
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,
@@ -278,11 +317,12 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     ql = find_local_path(s, subq, oformat=oformat)
     #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
-        for result in ql:
-            print(result[0])
-    if ctx.obj['flow'] == 'local': 
-        return
-
+        # temporary fix to return only one combined path instead of 1 or 2 output ones
+        cpaths = set([re.sub(r'\/output[12]\/','/combined/',p[0]) for p in ql])
+        for p in cpaths:
+            print(p)
+        #for result in ql:
+        #    print(result[0])
     qm = find_missing_id(s, subq, oformat=oformat)
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
@@ -293,9 +333,10 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
             else:
                 varlist = []
             updated = search_queue_csv(qm, project, varlist)
-            print('\nAvailable on ESGF but not locally:')
-            for result in updated:
-                print(result)
+            if len(updated) > 0:
+                print('\nAvailable on ESGF but not locally:')
+                for result in updated:
+                    print(result)
         else:
             print('\nEverything available on ESGF is also available locally')
     except FileNotFoundError:
@@ -330,7 +371,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         nominal_resolution
         ):
     """
-    Search local database for files matching the given constraints
+    Search ESGF and local database for CMIP6 files
 
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
@@ -452,3 +493,23 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             write_request(project,updated)
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
+
+# should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
+# we should have two outputs option though one genric info and the other filepath! 
+@clef.command()
+@ds_args
+def ds(**kwargs):
+    """
+    Search local database for non-ESGF datasets 
+    """
+    # open noesgf connection
+    db = colls.connect()
+    clefdb = db.session
+    datasets, variables, varsearch = db.command_query(**kwargs)
+    for ds in datasets:
+        if not varsearch:
+            print(" ".join([ds.name,'v'+ds.version + ":",ds.drs]))
+        for v in variables:
+            if v.dataset_id == ds.id:
+                print(v.varname + ": " + v.path() ) 
+    return

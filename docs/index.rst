@@ -13,6 +13,9 @@ Contents:
 
    readme.rst 
    gettingstarted.rst
+   esgf.rst
+   ds.rst
+   code.rst
    architecture.rst
    api/api.rst
    autoapi/modules.rst
