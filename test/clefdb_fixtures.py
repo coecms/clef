@@ -103,7 +103,7 @@ def session(request):
     # define some variables
     var1_1 = insert_unique(db, Variable,
         dataset_id = ds1id,
-        name        = 'ta',
+        varname        = 'ta',
         long_name   = 'temperature ...',
         standard_name   = 'air_temperature',
         cmor_name  = 'ta',
@@ -116,7 +116,7 @@ def session(request):
         tdate  = '20180831')
     var1_2 = insert_unique(db, Variable,
         dataset_id = ds1id,
-        name        = 'p',
+        varname        = 'p',
         long_name   = 'precipitation ...',
         standard_name   = 'rainfall_rate',
         cmor_name  = 'pr',
@@ -129,7 +129,7 @@ def session(request):
         tdate  = '20180831')
     var2_1 = insert_unique(db, Variable,
         dataset_id = ds2id,
-        name        = 'T',
+        varname        = 'T',
         long_name   = 'temperature ...',
         standard_name   = 'air_temperature',
         cmor_name  = 'ta',
@@ -142,7 +142,7 @@ def session(request):
         tdate  = '20180831')
     var2_2 = insert_unique(db, Variable,
         dataset_id = ds2id,
-        name        = 'prec',
+        varname        = 'prec',
         long_name   = 'precipitation ...',
         standard_name   = 'rainfall_rate',
         cmor_name  = 'pr',
