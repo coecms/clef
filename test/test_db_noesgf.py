@@ -23,5 +23,10 @@ def test_datasets(session):
     assert session.dsets().sort() == ['DS1 v1.0 (netcdf)', 'DS1 v2.0 (netcdf)', 'DS2 v1.0 (netcdf)', 'DS2 v1.0 (HDF5)'].sort()
 
 def test_variables(session):
-    assert session.variables().sort() == ['air_temperature', 'rainfall_rate'].sort()
+    assert session.standard_names().sort() == ['air_temperature', 'rainfall_rate'].sort()
 
+def test_vars_names(session):
+    assert session.vars_names().sort() == ['ta', 'prec', 'T', 'p'].sort()
+
+def test_cmor_names(session):
+    assert session.cmor_names().sort() == ['ta', 'pr'].sort()
