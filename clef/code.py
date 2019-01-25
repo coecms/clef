@@ -28,6 +28,7 @@ import json
 import pkg_resources
 import itertools
 from calendar import monthrange
+import re
 
  
 def search(session, project='cmip5', **kwargs):
@@ -76,7 +77,8 @@ def local_query(session, project='cmip5', **kwargs):
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
-    df['pdir'] = df['path'].map(os.path.dirname)
+    # temporary(?) fix to substitute output1/2 with combined
+    df['pdir'] = df['path'].map(combined)
     df['filename'] = df['path'].map(os.path.basename)
     res = df.groupby(['pdir'])
     results=[]
@@ -255,3 +257,8 @@ def call_local_query(s, project, oformat, **kwargs):
         for d in datasets:
             paths.extend([d['pdir']+x for x in d['filenames']])
     return paths
+
+def combined(path):
+    ''' get path from table and converte output dirs to combined '''
+    pdir = os.path.dirname(path)
+    return re.sub(r'\/output[12]\/','/combined/',pdir)

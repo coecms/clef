@@ -32,6 +32,7 @@ import os
 import stat
 import json
 import pkg_resources
+import re
 
 def clef_catch():
     try:
@@ -307,8 +308,12 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     ql = find_local_path(s, subq, oformat=oformat)
     #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
-        for result in ql:
-            print(result[0])
+        # temporary fix to return only one combined path instead of 1 or 2 output ones
+        cpaths = set([re.sub(r'\/output[12]\/','/combined/',p[0]) for p in ql])
+        for p in cpaths:
+            print(p)
+        #for result in ql:
+        #    print(result[0])
     qm = find_missing_id(s, subq, oformat=oformat)
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
