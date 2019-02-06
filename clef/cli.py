@@ -82,7 +82,10 @@ def config_log():
     month = datetime.now().strftime("%Y%m") 
     logname = '/g/data/ua8/Download/CMIP6/clef_log_' + month + '.txt' 
     flog = logging.FileHandler(logname) 
-    os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
+    try:
+        os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
+    except:
+        pass 
     flog.setLevel(logging.INFO)
     flog.setFormatter(formatter)
     logger.addHandler(flog)

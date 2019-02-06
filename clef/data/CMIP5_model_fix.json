@@ -1,16 +1,9 @@
 {
     "ACCESS1.0": "ACCESS1-0", 
     "ACCESS1.3": "ACCESS1-3", 
-    "CESM1(BGC)": "CESM1-BGC", 
-    "CESM1(CAM5)": "CESM1-CAM5", 
-    "CESM1(CAM5.1,FV2)": "CESM1-CAM5-1-FV2", 
-    "CESM1(FASTCHEM)": "CESM1-FASTCHEM", 
-    "CESM1(WACCM)": "CESM1-WACCM", 
+    "CESM1(CAM5.1,FV2)": "CESM1-CAM5.1-FV2",
+    "CESM1(FASTCHEM)": "CESM1-FASTCHEM",
     "CSIRO-Mk3.6.0": "CSIRO-Mk3-6-0", 
     "GFDL-CM2.1": "GFDL-CM2p1", 
-    "MRI-AGCM3.2H": "MRI-AGCM3-2H", 
-    "MRI-AGCM3.2S": "MRI-AGCM3-2S", 
-    "BCC-CSM1.1": "bcc-csm1-1", 
-    "BCC-CSM1.1(m)": "bcc-csm1-1-m", 
     "INM-CM4": "inmcm4"
 }
