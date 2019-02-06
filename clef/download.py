@@ -34,7 +34,7 @@ def write_request(project, missing):
     variables=set()
     for m in missing:
         if project == 'CMIP5':
-            did,var = m.split("  ")
+            did,var = m.split(" ")
             variables.add(var)
         else:
             did = m
