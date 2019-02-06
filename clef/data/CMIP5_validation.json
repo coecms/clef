@@ -22,6 +22,7 @@
 "CanCM4",
 "CanESM2",
 "EC-EARTH",
+"EC-EARTH-2-2",
 "FGOALS-g2",
 "FGOALS-gl",
 "FGOALS-s2",
@@ -59,7 +60,9 @@
 "MRI-ESM1",
 "NICAM-09",
 "NorESM1-M",
-"NorESM1-ME"
+"NorESM1-ME",
+"COSMOS-ASO",
+"KCM1-2-2"
 ],
 "variables": [
 "abs550aer",
@@ -314,7 +317,9 @@
 "hfrainds",
 "hfrunoffds",
 "hfsifrazil",
+"hfsifrazil2d",
 "hfsithermds",
+"hfsithermds2d",
 "hfsnthermds",
 "hfss",
 "hfssClim",

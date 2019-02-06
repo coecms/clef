@@ -259,6 +259,6 @@ def call_local_query(s, project, oformat, **kwargs):
     return paths
 
 def combined(path):
-    ''' get path from table and converte output dirs to combined '''
+    ''' get path from table and convert output dirs to combined '''
     pdir = os.path.dirname(path)
-    return re.sub(r'\/output[12]\/','/combined/',pdir)
+    return re.sub(r'\/output[12]?\/','/combined/',pdir)
