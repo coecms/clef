@@ -216,7 +216,7 @@ GRANT SELECT ON c6_metadata_dataset_link TO PUBLIC;
 
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS cmip5_dataset AS
-    SELECT DISTINCT
+    SELECT DISTINCT ON (dataset_id)
         dataset_id,
         project,
         product,
@@ -247,7 +247,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS cmip5_dataset_dataset_id ON cmip5_dataset(data
 GRANT SELECT ON cmip5_dataset TO PUBLIC;
     
 CREATE MATERIALIZED VIEW IF NOT EXISTS cmip6_dataset AS
-    SELECT DISTINCT
+    SELECT DISTINCT ON (dataset_id)
         dataset_id,
         project,
         activity_id,  /** .e.CMIP for DECK etc **/ 
