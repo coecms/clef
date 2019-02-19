@@ -167,7 +167,8 @@ def get_keys(project):
     # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
     # representing the corresponding facet for CMIP5 and CMIP6
     # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
-    with open('clef/data/valid_keys.json', 'r') as f:
+    fkeys = pkg_resources.resource_filename(__name__, 'data/valid_keys.json')
+    with open(fkeys, 'r') as f:
          data = json.loads(f.read()) 
     valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
     return valid_keys
