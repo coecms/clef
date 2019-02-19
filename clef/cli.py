@@ -342,6 +342,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
                     print(result)
         else:
             print('\nEverything available on ESGF is also available locally')
+            return
     except FileNotFoundError:
         pass
 
