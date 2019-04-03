@@ -293,7 +293,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         return 
     # if not local query ESGF first and then MAS based on checksums
     # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
-    if terms['model']:
+    if 'model' in terms.keys():
         terms['model'] = fix_model(project, terms['model'], False)
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
