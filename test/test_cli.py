@@ -104,7 +104,11 @@ def test_variable(runner, mock_query):
 def test_model(runner, mock_query):
     cli_run(runner, cmip5, ['--model=ACCESS1.3'])
     assert mock_query.called
-    assert mock_query.call_args[1]['model'] == ('ACCESS1.3',)
+    assert mock_query.call_args[1]['model'] == ['ACCESS1.3']
+
+    cli_run(runner, cmip5, ['--model=CESM1-BGC'])
+    assert mock_query.called
+    assert mock_query.call_args[1]['model'] == ['CESM1(BGC)']
 
     cli_run(runner, cmip6, ['--model=CNRM-CM6-1'])
     assert mock_query.called

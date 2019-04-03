@@ -300,6 +300,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         for p in paths:
             print(p)
         return 
+    if 'model' in terms:
+        terms['model'] = fix_model(project, terms['model'])
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,
