@@ -59,9 +59,9 @@ def test_check_keys(c5_kwargs,c5_keys):
     with pytest.raises(SystemExit):
         args = check_keys(c5_keys, bad_arg)
 
-def test_fix_model(c5_kwargs):
-    args = fix_model('cmip5', c5_kwargs) 
-    assert args['model'] == 'inmcm4'
+#def test_fix_model(c5_kwargs):
+#    args = fix_model('cmip5', c5_kwargs) 
+#    assert args['model'] == 'inmcm4'
 
 def test_convert_periods(nranges, periods, empty):
     res1 = convert_periods(nranges,'mon')
