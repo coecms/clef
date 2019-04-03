@@ -120,7 +120,7 @@ def connect(path = None):
     """Connect to the not-ESGF datasets catalog
     :return: A new :py:class:`Session`
     Example::
-    >>> from clef import dataset 
+    >>> from clef import collections
     >>> clefdb   = collections.connect() # doctest: +SKIP
     >>> outputs = clefdb.query() # doctest: +SKIP
     """

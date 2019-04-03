@@ -216,7 +216,7 @@ GRANT SELECT ON c6_metadata_dataset_link TO PUBLIC;
 
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS cmip5_dataset AS
-    SELECT DISTINCT
+    SELECT DISTINCT ON (dataset_id)
         dataset_id,
         project,
         product,
@@ -250,7 +250,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS cmip5_dataset_dataset_id ON cmip5_dataset(data
 GRANT SELECT ON cmip5_dataset TO PUBLIC;
     
 CREATE MATERIALIZED VIEW IF NOT EXISTS cmip6_dataset AS
-    SELECT DISTINCT
+    SELECT DISTINCT ON (dataset_id)
         dataset_id,
         project,
         activity_id,  /** .e.CMIP for DECK etc **/ 
@@ -267,7 +267,10 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS cmip6_dataset AS
         p,
         f,
         'r'||r||'i'||i||'p'||p||'f'||f AS variant_label,
-        sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f AS member_id,
+        CASE when sub_experiment_id != 'none'
+            THEN sub_experiment_id||'-'||'r'||r||'i'||i||'p'||p||'f'||f
+            ELSE 'r'||r||'i'||i||'p'||p||'f'||f
+        END AS member_id,
         variable_id,
         grid_label,
         nominal_resolution,
@@ -359,3 +362,21 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS extended_metadata AS
     NATURAL LEFT JOIN extended_metadata_manual AS m;
 GRANT SELECT ON extended_metadata TO PUBLIC;
 CREATE UNIQUE INDEX IF NOT EXISTS extended_metadata_file_id ON extended_metadata(file_id);
+
+/*
+ * Information-only attributes that are useful to know but won't be searched on
+ */
+CREATE OR REPLACE VIEW info_attributes AS
+    SELECT
+    md_hash as file_id,
+    md_json->'attributes'->>'variant_info' as variant_info,
+    md_json->'attributes'->>'source' as source,
+    md_json->'attributes'->>'parent_experiment_id' as parent_experiment_id,
+    md_json->'attributes'->>'further_info_url' as further_info_url,
+    md_json->'attributes'->>'contact' as contact,
+    md_json->'attributes'->>'title' as title,
+    md_json->'attributes'->>'description' as description,
+    md_json->'attributes'->>'license' as license,
+    md_json->'attributes'->>'tracking_id' as tracking_id
+    FROM metadata
+    WHERE md_type = 'netcdf';

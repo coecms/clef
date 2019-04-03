@@ -35,10 +35,13 @@ import pkg_resources
 import re
 
 def clef_catch():
+    debug_logger = logging.getLogger('clex_debug')
+    debug_logger.setLevel(logging.CRITICAL)
     try:
         clef()
-    except ClefException as e:
+    except Exception as e:
         click.echo('ERROR: %s'%e)
+        debug_logger.exception(e)
         sys.exit(1)
 
 
@@ -52,13 +55,19 @@ def clef_catch():
                help="returns only missing files matching ESGF search")
 @click.option('--request', 'flow', is_flag=True, default=False, flag_value='request',
                help="send NCI request to download missing files matching ESGF search")
+@click.option('--debug', is_flag=True, default=False,
+               help="Show debug info")
 @click.pass_context
-def clef(ctx, flow):
+def clef(ctx, flow, debug):
     ctx.obj={}
     # set up a default value for flow if none selected for logging
     if flow is None: flow = 'default'
     ctx.obj['flow'] = flow
     ctx.obj['log'] = config_log()
+
+    if debug:
+        debug_logger = logging.getLogger('clex_debug')
+        debug_logger.setLevel(logging.DEBUG)
     
 
 def config_log():
@@ -293,8 +302,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         return 
     # if not local query ESGF first and then MAS based on checksums
     # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
-    if 'model' in terms.keys():
-        terms['model'] = fix_model(project, terms['model'], False)
+    if 'model' in terms:
+        terms['model'] = fix_model(project, terms['model'])
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,
