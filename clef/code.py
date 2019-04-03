@@ -40,7 +40,7 @@ def search(session, project='cmip5', **kwargs):
     args = check_keys(valid_keys, kwargs)
     vocabularies = load_vocabularies(project)
     check_values(vocabularies, project, args)
-    args = fix_model(project, args)
+    args['model'] = fix_model(project, args['model'], False)
     return local_query(session, project, **args)
 
 
@@ -230,7 +230,7 @@ def load_vocabularies(project):
     
     return models, realms, variables, frequencies, tables, experiments, families 
 
-def fix_model(project, args):
+def fix_model(project, models, inv):
     """
     Fix model name where file attribute is different from values accepted by facets
     """
@@ -238,18 +238,22 @@ def fix_model(project, args):
     if project  == 'CMIP5':
         mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
         with open(mfile, 'r') as f:
-            mfix = json.loads( f.read() )
-        if args['model'] in mfix.keys():
-            args['model'] = mfix[args['model']]
-    return args
+            mdict = json.loads( f.read() )
+        if inv:
+            mfix = {v: k for k, v in mdict.items()}
+        else:
+            mfix = mdict
+    return [ mfix[m] if m in mfix.keys() else m for m in models]
+
 
 def call_local_query(s, project, oformat, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
+    if kwargs['model']:
+        kwargs['model'] = fix_model(project, kwargs['model'], False)
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
-        c = fix_model(project, c)
         datasets.extend( local_query(s,project=project,**c) ) 
     if oformat == 'dataset':
         for d in datasets:
