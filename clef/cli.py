@@ -20,7 +20,7 @@ from .esgf import match_query, find_local_path, find_missing_id, find_checksum_i
 from .download import *
 from . import collections as colls 
 from .exception import ClefException
-from .code import load_vocabularies, call_local_query
+from .code import load_vocabularies, call_local_query, fix_model
 import click
 import logging
 from datetime import datetime
@@ -250,10 +250,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
     clef_log.info('  ;  '.join([user_name,'CMIP5',ctx.obj['flow'],args_str]))
-    #if ctx.obj['flow'] == 'request':
-    #    print('Sorry! This option is not yet implemented')
-    #    return
 
+    # remote option will only check ESGF
     if ctx.obj['flow'] == 'remote':
         q = find_checksum_id(' '.join(query),
             distrib=distrib,
@@ -281,19 +279,22 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
                 print(did)
               
         return
-
+    # if not remote then query MAS database
     terms = {}
 
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
            terms[key] = value
-
+    # if local query mAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         paths = call_local_query(s, project, oformat, **terms) 
         for p in paths:
             print(p)
         return 
-
+    # if not local query ESGF first and then MAS based on checksums
+    # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
+    if terms['model']:
+        terms['model'] = fix_model(project, terms['model'], False)
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,

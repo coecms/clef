@@ -229,8 +229,11 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS cmip5_dataset AS
             WHEN model = 'MRI-AGCM3-2S' THEN 'MRI-AGCM3.2S'
             WHEN model = 'bcc-csm1-1-m' THEN 'BCC-CSM1.1(m)'
             WHEN model = 'bcc-csm1-1' THEN 'BCC-CSM1.1'
+            WHEN model = 'inmcm4' THEN 'INM-CM4'
             WHEN model = 'CESM1-CAM5' THEN 'CESM1(CAM5)'
             WHEN model = 'CESM1-BGC' THEN 'CESM1(BGC)'
+            WHEN model = 'CESM1-CAM5-1-FV2' THEN 'CESM1(CAM5.1,FV2)'
+            WHEN model = 'CESM1-FASTCHEM' THEN 'CESM1(FASTCHEM)'
             ELSE model END
             AS model,
         experiment,
