@@ -40,7 +40,8 @@ def search(session, project='cmip5', **kwargs):
     args = check_keys(valid_keys, kwargs)
     vocabularies = load_vocabularies(project)
     check_values(vocabularies, project, args)
-    args['model'] = fix_model(project, args['model'], False)
+    if 'model' in args.keys():
+        fix_model(project, args['model'])
     return local_query(session, project, **args)
 
 
@@ -261,8 +262,8 @@ def call_local_query(s, project, oformat, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
-    if kwargs['model']:
-        kwargs['model'] = fix_model(project, kwargs['model'], False)
+    if 'model' in kwargs.keys():
+        kwargs['model'] = fix_model(project, kwargs['model'])
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
         datasets.extend( local_query(s,project=project,**c) ) 
