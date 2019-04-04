@@ -40,7 +40,7 @@ from .exception import ClefException
 Session = sessionmaker()
 
 
-def connect(url='postgresql://130.56.244.107:5432/postgres', user=None, debug=False):
+def connect(url='postgresql://clef.nci.org.au:5432/postgres', user=None, debug=False):
     """Connect to the MAS database and sets up the session
 
     Args:
