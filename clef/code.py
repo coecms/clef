@@ -230,16 +230,27 @@ def load_vocabularies(project):
     
     return models, realms, variables, frequencies, tables, experiments, families 
 
-def fix_model(project, models, inv):
+def fix_model(project, models, invert=False):
     """
     Fix model name where file attribute is different from values accepted by facets
+
+    >>> fix_model('CMIP5', ['CESM1(BGC)', 'CESM1-BGC'])
+    ['CESM1(BGC)', 'CESM1(BGC)']
+
+    >>> fix_model('CMIP5', ['CESM1(BGC)', 'CESM1-BGC'], invert=True)
+    ['CESM1-BGC', 'CESM1-BGC']
+
+    Args:
+        project: Either 'CMIP5' or 'CMIP6'
+        models: List of models to convert
+        invert: Invert the conversion (so go from ``CESM1(BGC)`` to ``CESM1-BGC``)
     """
     project = project.upper()
     if project  == 'CMIP5':
         mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
         with open(mfile, 'r') as f:
             mdict = json.loads( f.read() )
-        if inv:
+        if invert:
             mfix = {v: k for k, v in mdict.items()}
         else:
             mfix = mdict
