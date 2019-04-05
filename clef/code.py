@@ -40,7 +40,8 @@ def search(session, project='cmip5', **kwargs):
     args = check_keys(valid_keys, kwargs)
     vocabularies = load_vocabularies(project)
     check_values(vocabularies, project, args)
-    args['model'] = fix_model(project, args['model'], False)
+    if 'model' in args.keys():
+        fix_model(project, args['model'])
     return local_query(session, project, **args)
 
 
@@ -230,16 +231,27 @@ def load_vocabularies(project):
     
     return models, realms, variables, frequencies, tables, experiments, families 
 
-def fix_model(project, models, inv):
+def fix_model(project, models, invert=False):
     """
     Fix model name where file attribute is different from values accepted by facets
+
+    >>> fix_model('CMIP5', ['CESM1(BGC)', 'CESM1-BGC'])
+    ['CESM1(BGC)', 'CESM1(BGC)']
+
+    >>> fix_model('CMIP5', ['CESM1(BGC)', 'CESM1-BGC'], invert=True)
+    ['CESM1-BGC', 'CESM1-BGC']
+
+    Args:
+        project: Either 'CMIP5' or 'CMIP6'
+        models: List of models to convert
+        invert: Invert the conversion (so go from ``CESM1(BGC)`` to ``CESM1-BGC``)
     """
     project = project.upper()
     if project  == 'CMIP5':
         mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
         with open(mfile, 'r') as f:
             mdict = json.loads( f.read() )
-        if inv:
+        if invert:
             mfix = {v: k for k, v in mdict.items()}
         else:
             mfix = mdict
@@ -250,8 +262,8 @@ def call_local_query(s, project, oformat, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
-    if kwargs['model']:
-        kwargs['model'] = fix_model(project, kwargs['model'], False)
+    if 'model' in kwargs.keys():
+        kwargs['model'] = fix_model(project, kwargs['model'])
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
         datasets.extend( local_query(s,project=project,**c) ) 
@@ -264,6 +276,6 @@ def call_local_query(s, project, oformat, **kwargs):
     return paths
 
 def combined(path):
-    ''' get path from table and convert output dirs to combined '''
+    ''' get path from table and convert al33 output dirs to combined '''
     pdir = os.path.dirname(path)
-    return re.sub(r'\/output[12]?\/','/combined/',pdir)
+    return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas\/CMIP5/combined/',pdir)

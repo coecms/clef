@@ -302,8 +302,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         return 
     # if not local query ESGF first and then MAS based on checksums
     # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
-    if terms['model']:
-        terms['model'] = fix_model(project, terms['model'], False)
+    if 'model' in terms:
+        terms['model'] = fix_model(project, terms['model'])
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,
@@ -322,7 +322,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
         # temporary fix to return only one combined path instead of 1 or 2 output ones
-        cpaths = set([re.sub(r'\/output[12]\/','/combined/',p[0]) for p in ql])
+        cpaths = set([re.sub(r'replicas\/CMIP5\/output[12]\/','replicas\/CMIP5\/combined/',p[0]) for p in ql])
         for p in cpaths:
             print(p)
         #for result in ql:
