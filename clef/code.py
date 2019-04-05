@@ -276,6 +276,6 @@ def call_local_query(s, project, oformat, **kwargs):
     return paths
 
 def combined(path):
-    ''' get path from table and convert output dirs to combined '''
+    ''' get path from table and convert al33 output dirs to combined '''
     pdir = os.path.dirname(path)
-    return re.sub(r'\/output[12]?\/','/combined/',pdir)
+    return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas\/CMIP5/combined/',pdir)
