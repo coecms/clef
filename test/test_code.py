@@ -59,9 +59,12 @@ def test_check_keys(c5_kwargs,c5_keys):
     with pytest.raises(SystemExit):
         args = check_keys(c5_keys, bad_arg)
 
-#def test_fix_model(c5_kwargs):
-#    args = fix_model('cmip5', c5_kwargs) 
-#    assert args['model'] == 'inmcm4'
+def test_fix_model():
+    models = fix_model('cmip5', ['INM-CM4'], invert=True) 
+    assert models == ['inmcm4']
+    arg_model = ['CESM1-BGC', 'ACCESS1-0']
+    models = fix_model('cmip5', arg_model) 
+    assert models == ['CESM1(BGC)', 'ACCESS1.0']
 
 def test_convert_periods(nranges, periods, empty):
     res1 = convert_periods(nranges,'mon')
@@ -78,3 +81,14 @@ def test_time_axis(periods):
 def test_get_range(periods, empty):
     assert get_range(periods[0]) == ('20060101', '21001231') 
     assert get_range(empty) == (None, None) 
+
+def test_fix_path():
+    # test output1 and output2 are chnaged to combined for al33 path and not rr3 ones
+    # test /files/<var>_<version> paths in rr3 are changed to /latest/<var>
+    dout1 = '/g/data1b/al33/replicas/CMIP5/output1/MIROC/MIROC5/historical/3hr/file.nc'
+    dout2 = '/g/data1b/al33/replicas/CMIP5/output2/MIROC/MIROC5/historical/3hr/file.nc'
+    dfiles  = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/amip/mon/atmos/Amon/r1i1p1/files/tas_20120115/tas.nc'
+    assert fix_path(dout1) == '/g/data1b/al33/replicas/CMIP5/combined/MIROC/MIROC5/historical/3hr'
+    assert fix_path(dout2) == '/g/data1b/al33/replicas/CMIP5/combined/MIROC/MIROC5/historical/3hr'
+    assert fix_path(dfiles) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/amip/mon/atmos/Amon/r1i1p1/latest/tas' 
+
