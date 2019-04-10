@@ -19,6 +19,7 @@ from clef.code import local_query
 import clef.db
 import pytest
 import os
+import sqlalchemy as sa
 
 raijin_only = pytest.mark.skipif(not os.environ.get('HOSTNAME', '').startswith('raijin'),
         reason="Test only available on Raijin")
@@ -29,7 +30,7 @@ def prod_session():
     # Session connected to the production db
     url = clef.db.default_url
     engine = sa.create_engine(url)
-    Session = sa.orm.sessionmaker(engine=engine)
+    Session = sa.orm.sessionmaker(bind=engine)
 
     # Ensure read-only
     @sa.event.listens_for(Session, 'before_flush')
@@ -44,7 +45,7 @@ def prod_session():
 @raijin_only
 def test_local_access1_model(prod_session):
     # Check we have ACCESS model results
-    q = local_query(clef_session, project='cmip5',
+    q = local_query(prod_session, project='cmip5',
             model='ACCESS1.0',
             experiment='historical',
             ensemble='r1i1p1',
@@ -57,7 +58,7 @@ def test_local_access1_model(prod_session):
 @raijin_only
 def test_local_hadgem_model(prod_session):
     # Check we have HadGEM model results
-    q = local_query(clef_session, project='cmip5',
+    q = local_query(prod_session, project='cmip5',
             model='HadGEM2',
             experiment='historical',
             ensemble='r1i1p1',
