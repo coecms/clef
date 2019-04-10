@@ -78,8 +78,6 @@ def local_query(session, project='cmip5', **kwargs):
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
-    print(kwargs)
-    print(df)
     # temporary(?) fix to return combined instead of output1/2 in al33 paths
     # and latest instead of files in rr3 
     df['pdir'] = df['path'].map(fix_path)
