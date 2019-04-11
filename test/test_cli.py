@@ -113,3 +113,4 @@ def test_model(runner, mock_query):
     cli_run(runner, cmip6, ['--model=CNRM-CM6-1'])
     assert mock_query.called
     assert mock_query.call_args[1]['source_id'] == ('CNRM-CM6-1',)
+
