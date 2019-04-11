@@ -78,8 +78,9 @@ def local_query(session, project='cmip5', **kwargs):
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
-    # temporary(?) fix to substitute output1/2 with combined
-    df['pdir'] = df['path'].map(combined)
+    # temporary(?) fix to return combined instead of output1/2 in al33 paths
+    # and latest instead of files in rr3 
+    df['pdir'] = df['path'].map(fix_path)
     df['filename'] = df['path'].map(os.path.basename)
     res = df.groupby(['pdir'])
     results=[]
@@ -275,7 +276,16 @@ def call_local_query(s, project, oformat, **kwargs):
             paths.extend([d['pdir']+x for x in d['filenames']])
     return paths
 
-def combined(path):
-    ''' get path from table and convert al33 output dirs to combined '''
+def fix_path(path):
+    ''' get path from table and convert al33 output dirs to combined 
+        and rr3 /files/ path to /latest/'''
     pdir = os.path.dirname(path)
-    return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas\/CMIP5/combined/',pdir)
+    if '/al33/replicas/CMIP5/' in pdir:
+        return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',pdir)
+    elif '/rr3/publications/CMIP5/' in pdir:
+        dirs=pdir.split("/")
+        var = dirs[-1].split("_")[0]
+        return "/".join(dirs[0:-2]+['latest',var])
+    else:
+        return pdir
+
