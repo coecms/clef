@@ -48,7 +48,7 @@ def write_request(project, missing):
         helpdesk(user, current_dir, fname, project)
     else:
         print(f'Your request has been saved in \n {current_dir}/{fname}')
-        print('You can always use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
+        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
 
@@ -69,9 +69,12 @@ def helpdesk(user, rootdir, fname, project):
     try:
        smtpObj = smtplib.SMTP('localhost')
        smtpObj.sendmail(msg['From'],msg['To'],msg.as_string())        
-       print( "Successfully sent email")
+       print( "Your request was successfully sent to the NCI helpdesk")
+       print(f'A copy of your request has been saved in \n {current_dir}/{fname}')
     except SMTPException:
        print("Error: unable to send email")
+       print(f'Your request has been saved in \n {current_dir}/{fname}')
+        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
 def search_queue_csv(qm, project, varlist):

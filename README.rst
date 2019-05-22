@@ -35,8 +35,7 @@ Install
 Clef is pre-installed into a Conda environment at NCI. Load it with::
 
     module use /g/data3/hh5/public/modules
-    module load conda
-    source activate clef-test
+    module load conda/analysis3-unstable
 
 You can install it to your own environment with::
 
@@ -81,6 +80,7 @@ You can use the flags ``--local`` and ``--missing`` to return respectively only 
     clef --local cmip5 --model MPI-ESM-LR --variable tas --table day
     clef --missing cmip5 --model MPI-ESM-LR --variable tas --table day
 
+NB these flags come immediately after the command "clef" and before the sub-command "cmip5" or "cmip6". They are also clearly mutually exclusive.
 You can repeat arguments more than once:: 
 
     clef --missing cmip5 --model MPI-ESM-LR -v tas -v tasmax -t day -t Amon
