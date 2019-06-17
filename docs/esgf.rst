@@ -23,7 +23,6 @@ Results can be filtered by using flags matching the ESGF search facets::
                --variable va
 
 If the same flag is used multiple times both terms will be searched for.
-{ NOT IMPLEMENTED YET! You can also use :code:`%` as a wildcard, e.g. :code:`--model ACCESS%` to return ACCESS1.0 and ACCESS1.3 data}
 
 Please note that CMIP5 and CMIP6 have different names and number of flags, 
 we tried to use the same names wherever possible.
@@ -47,7 +46,7 @@ In particular CMIP6 has some new flags available::
              Note that resolution is always composed of two separate words and will need to be passed as a string enclosed in quotes "". 
 
 When querying the ESGF website, the total amount of results is limited to
-1,000. If `clef` finds more results it will ask you to refine your query.
+5,000 files. If `clef` finds more results it will ask you to refine your query.
 You can follow the link to see the query `clef` used on the ESGF
 website::
 
@@ -85,17 +84,16 @@ downloaded to NCI. It returns the path to the file on NCI's /g/data disk::
      /g/data1/ua6/unofficial-ESG-replica/tmp/tree/esgf-data1.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/historical/day/atmos/day/r1i1p1/v20140110/ta/
 
 
-NOTE: Presently the default behaviour for all the ESGF-node based searches is to check for the most recent (latest) version
-on ESGF, and return only files with that version. This can be disabled with the :code:`--all-versions` flag.
+NOTE: Presently the default behaviour for all the ESGF-node based searches is to check for the most recent (latest) version on ESGF, and return only files with that version. This can be disabled with the :code:`--all-versions` flag.
 The --local option instead currently returns by default all available versions, including versions unpublished by the ESGF but that are still available locally,
-NB not all the available data on the older CMIP5 collection (ua6 project) has been yet replaced in the new one (al33).
-If you are sure a version should exists only for CMIP5 you could try using the ARCCSSive module https://github.com/coecms/arccssive to locate it.
+Most of the older CMIP5 collection (ua6 project) has been replaced by the new one (al33i project), this does not include older or superceded versions.
+If you are looking for one of these versions you could try using the ARCCSSive module https://github.com/coecms/arccssive to locate it or ask the helpdesk.
 
 tips
 --------
 
-If your search doesn't return any results try again at a later time. The tool is searching the ESGF website first 
+If your search does not return any results try again at a later time. The tool is searching the ESGF website first 
 and sometimes one or more nodes can be disconnected and the returned results are incomplete.
-Try the --local flag to at least get what's available locally.
+Try the --local flag to at least get what is available locally.
 For CMIP5 you can use the older ARCCSSive tool if in doubt.
 

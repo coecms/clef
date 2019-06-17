@@ -1,7 +1,7 @@
 Integrating the ESGF search in your code
 ========================================
 
-The **code** sub-module contains functions which are used to run *--local* option and can be used to integrate this query in your own python scripts.:: 
+The **code** sub-module contains functions which are used to run *--local* option and can be used to integrate this query in your own python scripts:: 
 
     from clef.code import *
 
@@ -26,9 +26,9 @@ Examples
 
 **search** returns a list of dictionary, one for each dataset.
 You can see from the first result the dictionary content, the last key *time_complete* is the result of a check run on the time axis beuilt by joining together the files periods. If the time axis is contiguos is true, otherwise is False.
-NB that this has been calculated only using the dates listed in the files, the actual timesteps haven't been checked.
+NB that this has been calculated only using the dates listed in the files, the actual timesteps have not been checked.
 
-Both the keys and values of the constraints get checked before being passed to the query function. This means that if you passed a key or a avalue that doesn't exists for the chosen project, the function will print a list of valid values and then exit.
+Both the keys and values of the constraints get checked before being passed to the query function. This means that if you passed a key or a value that does not exist for the chosen project, the function will print a list of valid values and then exit.
 Let's re-write the constraints dictionary to show an example.::
 
     constraints = {'v': 'tas', 'm': 'MIROC5', 'table': 'day', 'e': 'rcp85', 'activity':'CMIP'}
@@ -38,4 +38,5 @@ Let's re-write the constraints dictionary to show an example.::
     dict_values([['source_id', 'model', 'm'], ['realm'], ['time_frequency', 'frequency', 'f'], ['variable_id', 'variable', 'v'], ['experiment_id', 'experiment', 'e'], ['table_id', 'table', 'cmor_table', 't'], ['member_id', 'member', 'ensemble', 'en', 'mi'], ['institution_id', 'institution', 'institute'], ['experiment_family']])
 
 You can see that the function told us 'activity' is not a valid constraints for CMIP5, in fact that can be used only with CMIP6
-NB. that the search accepted all the other abbreviations, we allowed more than one term to be used for each key.
+NB. that the search accepted all the other abbreviations, we allowed more than one term to be used for each key. The full list is available from the github repository:
+https://github.com/coecms/clef/blob/master/clef/data/valid_keys.json

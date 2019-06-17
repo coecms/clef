@@ -5,8 +5,7 @@ CleF is presently installed in an anaconda environment, which must be
 loaded before use (on either VDI or Raijin)::
 
     $ module use /g/data3/hh5/public/modules
-    $ module load conda
-    $ source activate clef-test
+    $ module load conda/analysis3-unstable
 
 clef is accessed through the command-line `clef` program. There are
 presently two main commands:
