@@ -79,7 +79,8 @@ def local_query(session, project='cmip5', **kwargs):
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
     # temporary(?) fix to substitute output1/2 with combined
-    df['pdir'] = df['path'].map(fix_path)
+    fix_paths = df['path'].map(fix_path)
+    df['pdir'] = fix_paths.map(os.path.dirname)
     df['filename'] = df['path'].map(os.path.basename)
     res = df.groupby(['pdir'])
     results=[]
@@ -186,7 +187,10 @@ def check_keys(valid_keys, kwargs):
         if facet==[]:
             print(f"Warning {key} is not a valid constraint name")
             print(f"Valid constraints are:\n{valid_keys.values()}")
-            sys.exit()
+            if "JPY_PARENT_PID" in os.environ:
+                exit()
+            else:
+                sys.exit()
         else:
             args[facet[0]] = value
     return args
@@ -202,11 +206,17 @@ def check_values(vocabularies, project, args):
         source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
     else:
         print(f'Search for {project} not yet implemented')
-        sys.exit()
+        if "JPY_PARENT_PID" in os.environ:
+            exit()
+        else:
+            sys.exit()
     for k,v in args.items():
         if k in locals() and v not in locals()[k]:
             print(f'{v} is not a valid value for {k}')
-            sys.exit()
+            if "JPY_PARENT_PID" in os.environ:
+                exit()
+            else:
+                sys.exit()
     return args
 
 def load_vocabularies(project):
@@ -272,19 +282,21 @@ def call_local_query(s, project, oformat, **kwargs):
             paths.append(d['pdir'])
     elif oformat == 'file':
         for d in datasets:
-            paths.extend([d['pdir']+x for x in d['filenames']])
+            paths.extend([d['pdir']+"/" + x for x in d['filenames']])
     return paths
 
 
 def fix_path(path):
     ''' get path from table and convert al33 output dirs to combined 
         and rr3 /files/ path to /latest/'''
-    pdir = os.path.dirname(path)
-    if '/al33/replicas/CMIP5/' in pdir:
-        return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',pdir)
-    elif '/rr3/publications/CMIP5/' in pdir:
-        dirs=pdir.split("/")
-        var = dirs[-1].split("_")[0]
-        return "/".join(dirs[0:-2]+['latest',var])
+    if '/al33/replicas/CMIP5/output' in path:
+        return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',path)
+    elif '/al33/replicas/CMIP5/unsolicited' in path:
+        return path.replace('unsolicited','combined')
+    elif '/rr3/publications/CMIP5/output1/CSIRO-BOM' in path:
+        dirs=path.split("/")
+        var = dirs[-2].split("_")[0]
+        return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
     else:
-        return pdir
+        return path
+

@@ -78,3 +78,17 @@ def test_time_axis(periods):
 def test_get_range(periods, empty):
     assert get_range(periods[0]) == ('20060101', '21001231') 
     assert get_range(empty) == (None, None) 
+
+def test_fix_path():
+    dir1 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/tas_20120115/'
+    dir2 = '/g/data/rr3/pubblications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
+    dir3 = '/g/data/al33/replicas/CMIP5/output1/more/v20120316/tas/'
+    dir4 =  dir3.replace('output1', 'unsolicited')
+    fname = 'name.nc'
+    assert fix_path(dir1) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/'
+    assert fix_path(dir1+fname) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/name.nc'
+    assert fix_path(dir2) == '/g/data/rr3/pubblications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
+    assert fix_path(dir3) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
+    assert fix_path(dir3+fname) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/name.nc'
+    assert fix_path(dir4) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
+

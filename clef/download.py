@@ -64,7 +64,7 @@ def helpdesk(user, rootdir, fname, project):
     f = open(rootdir + fname)
     attachment=MIMEText(f.read())
     f.close()
-    attachment.add_header('Content-Disposition','attachement', filename=fname)
+    attachment.add_header('Content-Disposition','attachment', filename=fname)
     msg.attach(attachment)
     try:
        smtpObj = smtplib.SMTP('localhost')
@@ -74,7 +74,7 @@ def helpdesk(user, rootdir, fname, project):
     except SMTPException:
        print("Error: unable to send email")
        print(f'Your request has been saved in \n {current_dir}/{fname}')
-        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
+       print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
 def search_queue_csv(qm, project, varlist):

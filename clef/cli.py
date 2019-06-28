@@ -20,7 +20,7 @@ from .esgf import match_query, find_local_path, find_missing_id, find_checksum_i
 from .download import *
 from . import collections as colls 
 from .exception import ClefException
-from .code import load_vocabularies, call_local_query, fix_model
+from .code import fix_path, load_vocabularies, call_local_query, fix_model
 import click
 import logging
 from datetime import datetime
