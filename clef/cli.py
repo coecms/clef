@@ -32,7 +32,6 @@ import os
 import stat
 import json
 import pkg_resources
-import re
 
 def clef_catch():
     debug_logger = logging.getLogger('clex_debug')

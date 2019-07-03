@@ -287,8 +287,10 @@ def call_local_query(s, project, oformat, **kwargs):
 
 
 def fix_path(path):
-    ''' get path from table and convert al33 output dirs to combined 
-        and rr3 /files/ path to /latest/'''
+    '''Get path from query results and replace al33 output1/2 dirs to combined 
+        and rr3 ACCESS "/files/" path to "/latest/"
+    '''
+
     if '/al33/replicas/CMIP5/output' in path:
         return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',path)
     elif '/al33/replicas/CMIP5/unsolicited' in path:
