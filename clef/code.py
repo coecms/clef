@@ -287,8 +287,9 @@ def call_local_query(s, project, oformat, **kwargs):
 
 
 def fix_path(path):
-    ''' get path from table and convert al33 output dirs to combined 
-        and rr3 /files/ path to /latest/'''
+    '''Get path from query results and replace al33 output1/2 dirs to combined 
+        and rr3 ACCESS "/files/" path to "/latest/"
+    '''
     if '/al33/replicas/CMIP5/output' in path:
         return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',path)
     elif '/al33/replicas/CMIP5/unsolicited' in path:
@@ -299,4 +300,59 @@ def fix_path(path):
         return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
     else:
         return path
+
+def and_filter(cols, fixed, **kwargs):
+    ''' Filter query results to find all the simulations that have 
+        all the different values passed for the attributes listed in cols.
+        A simulation is defined by the attributes passed in the list fixed.
+        :input: cols (list) the attributes for which we want all values to be present
+        :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
+        :input: kwargs (dictionary) are the query constraints
+        :return: query results and a list of dictionaries each representing a 'simulation'
+                 that has all the requested values for "cols"
+    '''
+    tab = pandas.DataFrame(results)
+    # if you want to select all the values for two or more columns
+    # create a new column with their values paired to use for the aggregation
+    if len(cols) >= 1 :
+        tab['comb'] = list(zip(*[tab[c] for c in cols]))
+    # list all combinations of cols attributes
+        comb = list(itertools.product(*[kwargs[c] for c in cols]))
+    # define the aggregation dictionary first
+    agg_dict = {k: set for k in ['comb','pdir','version']+cols}
+    # group table data by the columns listed in fix_col i.e. model and ensemble
+    # and aggregate rows with matching values creating a set for each including path and version
+    # reset the table indexes
+    d = (tab.groupby(fixed)
+       .agg(agg_dict)
+       .reset_index())
+    # create a filter to select the rows where the lenght of the simulation combinations is
+    # is equal to the number of "cols" combinations
+    allvalues = (d['comb'].map(len) == len(comb) )
+    # apply filter to table and return results as a dictionary
+    selection=d[allvalues].to_dict('r')
+    return results, selection
+
+
+def matching(session, project, cols, fixed, **kwargs):
+    ''' Call and_filter after executing local or remote query of passed constraints 
+        :session: database session
+        :project: ESGF project to search (cmip5/cmip6)
+        :input: cols (list) the attributes for which we want all values to be present
+        :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
+        :input: kwargs (dictionary) are the query constraints
+        :return: output of and_filter: query results and a filter selection lists 
+    '''
+
+    # perform the query for each variable separately and concatenate the results
+    results = []
+    combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+    for c in combs:
+        results.extend( search(session,project=project.lower(),**c) )
+    # if nothing turned by query print warning and return
+    if len(results) == 0:
+        print(f'There are no simulations stored locally for ${kwargs}')
+        return
+    return and_filter(results, cols, fixed, **kwargs) 
+
 

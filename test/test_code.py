@@ -92,3 +92,6 @@ def test_fix_path():
     assert fix_path(dir3+fname) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/name.nc'
     assert fix_path(dir4) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
 
+def test_matching():
+    results, selection = matching(session,'cmip5',['variable','experiment'],['model','ensemble'])
+    assert selection[0]['comb'] == ('tas', 'rcp26'), ('mrsos', 'rcp85'), ('mrsos', 'rcp60'), ('tas', 'rcp60'), ('tas', 'rcp85'), ('mrsos', 'rcp26') 
