@@ -46,52 +46,97 @@ def c5_keys(request):
 @pytest.fixture(scope="module")
 def local_results():
     """
-    A successful local query returning something that is in the DB
+    A successful local CMIP5 MAS query returning a list of dictionaries  
     """
     results =  [
 # mod1 has both pr and tas for r1 but not for r2 version is always v1 
-# mod1 is in rr3
-    {'filenames': ['tas.nc'], 'project': 'CMIP5', 'institute': 'I1', 'model': 'mod1', 'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos', 'r': '1', 'i': '1', 'p': '1', 'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas', 'pdir': '/g/data1/rr3/publications/CMIP5/output1/I1/mod1/exp1/mon/atmos/Amon/r1i1p1/latest/tas', 'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231', 'time_complete': True}
-    {'filenames': ['pr.nc'], 'project': 'CMIP5', 'institute': 'I1', 'model': 'mod1', 'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos', 'r': '1', 'i': '1', 'p': '1', 'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr', 'pdir': '/g/data1/rr3/publications/CMIP5/output1/I1/mod1/exp1/mon/atmos/Amon/r1i1p1/latest/pr', 'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231', 'time_complete': True}
-    {'filenames': ['pr.nc'], 'project': 'CMIP5', 'institute': 'I1', 'model': 'mod1', 'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos', 'r': '2', 'i': '1', 'p': '1', 'ensemble': 'r2i1p1', 'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr', 'pdir': '/g/data1/rr3/publications/CMIP5/output1/I1/mod1/exp1/mon/atmos/Amon/r2i1p1/latest/pr', 'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231', 'time_complete': True}
+# I'm putting here only the fields that are relevant to the matching function
+    {'filenames': ['tas.nc'], 'model': 'mod1', 'experiment': 'exp1',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
+     'pdir': '/rootdir/mod1/exp1/r1i1p1/tas'},
+    {'filenames': ['pr.nc'], 'model': 'mod1', 'experiment': 'exp1',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr',
+     'pdir': '/rootdir/mod1/exp1/r1i1p1/pr'},
+    {'filenames': ['pr.nc'], 'model': 'mod1', 'experiment': 'exp1',
+     'frequency': 'mon', 'ensemble': 'r2i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr',
+     'pdir': '/rootdir/mod1/exp1/r2i1p1/pr'},
 # mod2 has both pr and tas for r1 and for exp1 and exp2 but tas is v1 and pr is v2 
-    {'filenames': ['pr.nc'], 'project': 'CMIP5', 'institute': 'I2', 'model': 'mod2',
-     'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos', 'r': '1', 'i': '1', 'p': '1',
-      'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
-      'pdir': '/g/data1/al33/replicas/CMIP5/output1/I2/mod2/exp1/mon/atmos/Amon/r1i1p1/v2/pr',
-     'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231',
-     'time_complete': True},
-   {'filenames': ['tas.nc'], 'project': 'CMIP5', 'institute': 'I2', 
-    'model': 'mod2', 'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos',
-    'r': '1', 'i': '1', 'p': '1', 'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 
-    'version': 'v1', 'variable': 'tas', 
-    'pdir': '/g/data1/al33/replicas/CMIP5/output1/I2/mod2/exp1/mon/atmos/Amon/r1i1p1/v1/tas', 
-    'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231',
-    'time_complete': True},
-    {'filenames': ['tas.nc'], 'project': 'CMIP5', 'institute': 'I2', 'model': 'mod2',
-     'experiment': 'exp2', 'frequency': 'mon', 'realm': 'atmos', 'r': '1', 'i': '1', 'p': '1',
-     'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
-     'pdir': '/g/data1/al33/replicas/CMIP5/output1/I2/mod2/exp2/mon/atmos/Amon/r1i1p1/v1/tas',
-     'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231',
-     'time_complete': True},
-    {'filenames': ['pr.nc'], 'project': 'CMIP5', 'institute': 'I2', 'model': 'mod2',
-     'experiment': 'exp2', 'frequency': 'mon', 'realm': 'atmos', 'r': '2', 'i': '1', 'p': '1',
-     'ensemble': 'r2i1p1', 'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
-     'pdir': '/g/data1/al33/replicas/CMIP5/output1/I2/mod2/exp2/mon/atmos/Amon/r2i1p1/v2/pr',
-     'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231',
-     'time_complete': True},
+    {'filenames': ['pr.nc'], 'model': 'mod2', 'experiment': 'exp1',
+      'frequency': 'mon', 'ensemble': 'r1i1p1',
+      'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
+      'pdir': '/rootdir/mod2/exp1/mon/atmos/Amon/r1i1p1/v2/pr'},
+   {'filenames': ['tas.nc'],'model': 'mod2', 'experiment': 'exp1',
+    'frequency': 'mon', 'ensemble': 'r1i1p1',
+    'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas', 
+    'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/tas'}, 
+    {'filenames': ['tas.nc'], 'model': 'mod2','experiment': 'exp2',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
+     'pdir': '/rootdir/mod2/exp2/r1i1p1/v1/tas'},
+    {'filenames': ['pr.nc'], 'model': 'mod2', 'experiment': 'exp2',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
+     'pdir': '/rootdir/mod2/exp2/r1i1p1/v2/pr'},
 # mod3 has both pr and tas but for different ensembles, same version
-    {'filenames': ['tas.nc'], 'project': 'CMIP5', 'institute': 'I3', 'model': 'mod3',
-     'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos', 'r': '1', 'i': '1', 'p': '1',
-     'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
-     'pdir': '/g/data1/al33/replicas/CMIP5/output1/I2/mod2/exp1/mon/atmos/Amon/r1i1p1/v1/tas',
-     'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231',
-     'time_complete': True},
-    {'filenames': ['pr.nc'], 'project': 'CMIP5', 'institute': 'I3', 'model': 'mod3',i
-     'experiment': 'exp1', 'frequency': 'mon', 'realm': 'atmos', 'r': '2', 'i': '1', 'p': '1',
-     'ensemble': 'r1i1p1', 'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
-     'pdir': '/g/data1/al33/replicas/CMIP5/output1/I2/mod2/exp1/mon/atmos/Amon/r1i1p1/v1/tas',
-     'periods': [('18500101', '20051231')], 'fdate': '18500101', 'tdate': '20051231',
-     'time_complete': True},
+    {'filenames': ['tas.nc'], 'model': 'mod3', 'experiment': 'exp1',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
+     'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/tas'},
+    {'filenames': ['pr.nc'], 'model': 'mod3', 'experiment': 'exp1',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'tas',
+     'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/tas'}
             ]
-     return results
+    return results
+
+@pytest.fixture(scope="module")
+def remote_results():
+    """
+    A successful remote CMIP6 ESGF query reorganised as a list of dictionaries  
+    """
+    results =  [
+# mod1 has both pr and tas for r1 but not for r2 version is always v1 
+# I'm putting here only the fields that are relevant to the matching function
+    {'filenames': ['tas.nc'], 'source_id': 'mod1', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'tas',
+     'dataset_id': 'mod1.exp1.Amon.r1i1p1f1.tas.v1'},
+    {'filenames': ['pr.nc'], 'source_id': 'mod1', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'pr',
+     'dataset_id': 'mod1.exp1.Amon.r1i1p1f1.pr.v1'},
+    {'filenames': ['pr.nc'], 'source_id': 'mod1', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r2i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'pr',
+     'dataset_id': 'mod1.exp1.Amon.r2i1p1f1.pr.v1'},
+# mod2 has both pr and tas for r1 and for exp1 and exp2 but tas is v1 and pr is v2 
+    {'filenames': ['pr.nc'], 'source_id': 'mod2', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v2', 'variable_id': 'pr',
+     'dataset_id': 'mod2.exp1.Amon.r1i1p1f1.pr.v2'},
+    {'filenames': ['tas.nc'], 'source_id': 'mod2', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'tas',
+     'dataset_id': 'mod2.exp1.Amon.r1i1p1f1.tas.v1'},
+    {'filenames': ['tas.nc'], 'source_id': 'mod2', 'experiment_id': 'exp2',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'tas',
+     'dataset_id': 'mod2.exp2.Amon.r1i1p1f1.tas.v1'},
+    {'filenames': ['pr.nc'], 'source_id': 'mod2', 'experiment_id': 'exp2',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v2', 'variable_id': 'pr',
+     'dataset_id': 'mod2.exp2.Amon.r1i1p1f1.pr.v2'},
+# mod3 has both pr and tas but for different ensembles, same version
+    {'filenames': ['tas.nc'], 'source_id': 'mod3', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'tas',
+     'dataset_id': 'mod3.exp1.Amon.r1i1p1f1.tas,v1'},
+    {'filenames': ['pr.nc'], 'source_id': 'mod3', 'experiment_id': 'exp1',
+     'frequency': 'mon', 'member_id': 'r1i1p1if1',
+     'table_id': 'Amon', 'version': 'v1', 'variable_id': 'pr',
+     'dataset_id': 'mod3.exp1.Amon.r1i1p1f1.pr.v1'},
+            ]
+    return results

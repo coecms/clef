@@ -92,6 +92,40 @@ def test_fix_path():
     assert fix_path(dir3+fname) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/name.nc'
     assert fix_path(dir4) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
 
-def test_matching():
-    results, selection = matching(session,'cmip5',['variable','experiment'],['model','ensemble'])
-    assert selection[0]['comb'] == ('tas', 'rcp26'), ('mrsos', 'rcp85'), ('mrsos', 'rcp60'), ('tas', 'rcp60'), ('tas', 'rcp85'), ('mrsos', 'rcp26') 
+def test_and_filter(local_results, remote_results):
+    kwargs = {'experiment': ['exp1','exp2'], 'variable': ['tas','pr'],
+              'cmor_table': ['Amon'], 'ensemble': ['r1i1p1','r2i1p1']}
+    # first selection should return mod1/exp1/r1i1p1
+    # mod2/exp1/r1i1p1 
+    # mod2/exp2/r1i1p1 
+    selection = and_filter(local_results, ['variable'],['model','ensemble','experiment'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
+    assert len(selection) == 3
+    selection = and_filter(local_results, ['variable','experiment'],
+                ['model','ensemble'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', 'exp1'), ('pr', 'exp1'),
+                                     ('tas', 'exp2'), ('pr', 'exp2')} 
+    assert len(selection) == 1 
+    # testing remote CMIP6 query results
+    kwargs = {'experiment_id': ['exp1','exp2'], 'variable_id': ['tas','pr'],
+              'table_id': ['Amon'], 'member_id': ['r1i1p1f1','r2i1p1f1']}
+    selection = and_filter(remote_results, ['variable_id'],
+                ['source_id','member_id','experiment_id'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
+    assert len(selection) == 4 
+    dids=[]
+    for s in selection: 
+        dids.extend(s['dataset_id']) 
+    print(dids)
+    assert 'mod1.exp1.Amon.r2i1p1f1.pr.v1' not in dids
+    assert 'mod1.exp1.Amon.r1i1p1f1.pr.v1' in dids
+    selection = and_filter(remote_results, ['variable_id','experiment_id'],
+                           ['source_id','member_id'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', 'exp1'), ('pr', 'exp1'),
+                                     ('tas', 'exp2'), ('pr', 'exp2')} 
+    assert len(selection) == 1 
+    selection = and_filter(remote_results, ['variable_id'],
+                ['source_id','member_id','experiment_id','version'], **kwargs)
+    models = [s['source_id'] for s in selection] 
+    assert 'mod2' not in models
+    assert len(selection) == 2 
