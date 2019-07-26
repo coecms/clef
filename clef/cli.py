@@ -322,12 +322,9 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
         # temporary fix to return only one combined path instead of 1 or 2 output ones
-        #cpaths = set([re.sub(r'replicas\/CMIP5\/output[12]\/','replicas/CMIP5/combined/',p[0]) for p in ql])
         cpaths = set(map(fix_path, [p[0] for p in ql]))
         for p in cpaths:
             print(p)
-        #for result in ql:
-        #    print(result[0])
     qm = find_missing_id(s, subq, oformat=oformat)
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
@@ -417,9 +414,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
     clef_log.info('  ;  '.join([user_name,'CMIP6',ctx.obj['flow'],args_str]))
-    #if ctx.obj['flow'] == 'request':
-    #    print('Sorry! This option is not yet implemented')
-        #return
 
     if ctx.obj['flow'] == 'remote':
         q = find_checksum_id(' '.join(query),

@@ -83,12 +83,52 @@ def test_get_range(periods, empty):
     assert get_range(empty) == (None, None) 
 
 def test_fix_path():
-    # test output1 and output2 are chnaged to combined for al33 path and not rr3 ones
-    # test /files/<var>_<version> paths in rr3 are changed to /latest/<var>
-    dout1 = '/g/data1b/al33/replicas/CMIP5/output1/MIROC/MIROC5/historical/3hr/file.nc'
-    dout2 = '/g/data1b/al33/replicas/CMIP5/output2/MIROC/MIROC5/historical/3hr/file.nc'
-    dfiles  = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/amip/mon/atmos/Amon/r1i1p1/files/tas_20120115/tas.nc'
-    assert fix_path(dout1) == '/g/data1b/al33/replicas/CMIP5/combined/MIROC/MIROC5/historical/3hr'
-    assert fix_path(dout2) == '/g/data1b/al33/replicas/CMIP5/combined/MIROC/MIROC5/historical/3hr'
-    assert fix_path(dfiles) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/amip/mon/atmos/Amon/r1i1p1/latest/tas' 
+    dir1 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/tas_20120115/'
+    dir2 = '/g/data/rr3/pubblications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
+    dir3 = '/g/data/al33/replicas/CMIP5/output1/more/v20120316/tas/'
+    dir4 =  dir3.replace('output1', 'unsolicited')
+    fname = 'name.nc'
+    assert fix_path(dir1) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/'
+    assert fix_path(dir1+fname) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/name.nc'
+    assert fix_path(dir2) == '/g/data/rr3/pubblications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
+    assert fix_path(dir3) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
+    assert fix_path(dir3+fname) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/name.nc'
+    assert fix_path(dir4) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
 
+def test_and_filter(local_results, remote_results):
+    kwargs = {'experiment': ['exp1','exp2'], 'variable': ['tas','pr'],
+              'cmor_table': ['Amon'], 'ensemble': ['r1i1p1','r2i1p1']}
+    # first selection should return mod1/exp1/r1i1p1
+    # mod2/exp1/r1i1p1 
+    # mod2/exp2/r1i1p1 
+    selection = and_filter(local_results, ['variable'],['model','ensemble','experiment'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
+    assert len(selection) == 3
+    selection = and_filter(local_results, ['variable','experiment'],
+                ['model','ensemble'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', 'exp1'), ('pr', 'exp1'),
+                                     ('tas', 'exp2'), ('pr', 'exp2')} 
+    assert len(selection) == 1 
+    # testing remote CMIP6 query results
+    kwargs = {'experiment_id': ['exp1','exp2'], 'variable_id': ['tas','pr'],
+              'table_id': ['Amon'], 'member_id': ['r1i1p1f1','r2i1p1f1']}
+    selection = and_filter(remote_results, ['variable_id'],
+                ['source_id','member_id','experiment_id'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
+    assert len(selection) == 4 
+    dids=[]
+    for s in selection: 
+        dids.extend(s['dataset_id']) 
+    print(dids)
+    assert 'mod1.exp1.Amon.r2i1p1f1.pr.v1' not in dids
+    assert 'mod1.exp1.Amon.r1i1p1f1.pr.v1' in dids
+    selection = and_filter(remote_results, ['variable_id','experiment_id'],
+                           ['source_id','member_id'], **kwargs)
+    assert selection[0]['comb'] == { ('tas', 'exp1'), ('pr', 'exp1'),
+                                     ('tas', 'exp2'), ('pr', 'exp2')} 
+    assert len(selection) == 1 
+    selection = and_filter(remote_results, ['variable_id'],
+                ['source_id','member_id','experiment_id','version'], **kwargs)
+    models = [s['source_id'] for s in selection] 
+    assert 'mod2' not in models
+    assert len(selection) == 2 

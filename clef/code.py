@@ -16,6 +16,7 @@
 from .db import connect, Session
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 from .exception import ClefException
+from .esgf import esgf_query
 from datetime import datetime, timedelta
 from sqlalchemy import any_, or_
 from sqlalchemy.orm import aliased
@@ -78,9 +79,9 @@ def local_query(session, project='cmip5', **kwargs):
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
-    # temporary(?) fix to return combined instead of output1/2 in al33 paths
-    # and latest instead of files in rr3 
-    df['pdir'] = df['path'].map(fix_path)
+    # temporary(?) fix to substitute output1/2 with combined
+    fix_paths = df['path'].map(fix_path)
+    df['pdir'] = fix_paths.map(os.path.dirname)
     df['filename'] = df['path'].map(os.path.basename)
     res = df.groupby(['pdir'])
     results=[]
@@ -187,7 +188,10 @@ def check_keys(valid_keys, kwargs):
         if facet==[]:
             print(f"Warning {key} is not a valid constraint name")
             print(f"Valid constraints are:\n{valid_keys.values()}")
-            sys.exit()
+            if "JPY_PARENT_PID" in os.environ:
+                exit()
+            else:
+                sys.exit()
         else:
             args[facet[0]] = value
     return args
@@ -203,11 +207,17 @@ def check_values(vocabularies, project, args):
         source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
     else:
         print(f'Search for {project} not yet implemented')
-        sys.exit()
+        if "JPY_PARENT_PID" in os.environ:
+            exit()
+        else:
+            sys.exit()
     for k,v in args.items():
         if k in locals() and v not in locals()[k]:
             print(f'{v} is not a valid value for {k}')
-            sys.exit()
+            if "JPY_PARENT_PID" in os.environ:
+                exit()
+            else:
+                sys.exit()
     return args
 
 def load_vocabularies(project):
@@ -273,19 +283,100 @@ def call_local_query(s, project, oformat, **kwargs):
             paths.append(d['pdir'])
     elif oformat == 'file':
         for d in datasets:
-            paths.extend([d['pdir']+x for x in d['filenames']])
+            paths.extend([d['pdir']+"/" + x for x in d['filenames']])
     return paths
 
+
 def fix_path(path):
-    ''' get path from table and convert al33 output dirs to combined 
-        and rr3 /files/ path to /latest/'''
-    pdir = os.path.dirname(path)
-    if '/al33/replicas/CMIP5/' in pdir:
-        return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',pdir)
-    elif '/rr3/publications/CMIP5/' in pdir:
-        dirs=pdir.split("/")
-        var = dirs[-1].split("_")[0]
-        return "/".join(dirs[0:-2]+['latest',var])
+    '''Get path from query results and replace al33 output1/2 dirs to combined 
+        and rr3 ACCESS "/files/" path to "/latest/"
+    '''
+    if '/al33/replicas/CMIP5/output' in path:
+        return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',path)
+    elif '/al33/replicas/CMIP5/unsolicited' in path:
+        return path.replace('unsolicited','combined')
+    elif '/rr3/publications/CMIP5/output1/CSIRO-BOM' in path:
+        dirs=path.split("/")
+        var = dirs[-2].split("_")[0]
+        return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
     else:
-        return pdir
+        return path
+
+def and_filter(results, cols, fixed, **kwargs):
+    ''' Filter query results to find all the simulations that have 
+        all the different values passed for the attributes listed in cols.
+        A simulation is defined by the attributes passed in the list fixed.
+        :input: cols (list) the attributes for which we want all values to be present
+        :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
+        :input: kwargs (dictionary) are the query constraints
+        :return: query results and a list of dictionaries each representing a 'simulation'
+                 that has all the requested values for "cols"
+    '''
+    tab = pandas.DataFrame(results)
+    # if you want to select all the values for two or more columns
+    # create a new column with their values paired to use for the aggregation
+    if len(cols) >= 1 :
+        tab['comb'] = list(zip(*[tab[c] for c in cols]))
+    # list all combinations of cols attributes
+        comb = list(itertools.product(*[kwargs[c] for c in cols]))
+    # define the aggregation dictionary first
+    # useful is a list of fields to retain in the table, the values
+    # get added to final fields list only if in results.keys 
+    useful =  set(['version', 'source_id', 'model', 'pdir','dataset_id',
+              'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
+    fields = ['comb'] + [f for f in useful if f in results[0].keys()]
+    agg_dict = {k: set for k in fields}
+    # group table data by the columns listed in fix_col i.e. model and ensemble
+    # and aggregate rows with matching values creating a set for each including path and version
+    # reset the table indexes
+    d = (tab.groupby(fixed)
+       .agg(agg_dict)
+       .reset_index())
+    # create a filter to select the rows where the lenght of the simulation combinations is
+    # is equal to the number of "cols" combinations
+    allvalues = (d['comb'].map(len) == len(comb) )
+    # apply filter to table and return results as a dictionary
+    selection=d[allvalues].to_dict('r')
+    return selection
+
+
+def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
+    ''' Call and_filter after executing local or remote query of passed constraints 
+        :session: database session
+        :project: ESGF project to search (cmip5/cmip6)
+        :input: cols (list) the attributes for which we want all values to be present
+        :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
+        :input: kwargs (dictionary) are the query constraints
+        :return: output of and_filter: query results and a filter selection lists 
+    '''
+
+    results = []
+    # use local search
+    if local:
+        msg = "There are no simulations stored locally"
+        # perform the query for each variable separately and concatenate the results
+        combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+        for c in combs:
+            results.extend( search(session,project=project.lower(),**c) )
+    # use ESGF search
+    else:
+        msg = "There are no simulations currently available on the ESGF nodes"
+        kwquery = {k:tuple(v) for k,v in kwargs.items()}
+        kwquery['project']=project.upper()
+        if project == 'CMIP5':
+            fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
+        else:
+            fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
+                               'activity_id','table_id','version','grid_label','source_type',
+                               'frequency','member_id','sub_experiment_id'])
+        query=None
+        response = esgf_query(query, fields, **kwquery)
+        for row in response['response']['docs']:
+            results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+
+    # if nothing turned by query print warning and return
+    if len(results) == 0:
+        print(f'${msg} for ${kwargs}')
+        return
+    return results, and_filter(results, cols, fixed, **kwargs) 
 
