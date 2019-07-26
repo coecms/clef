@@ -188,10 +188,7 @@ def check_keys(valid_keys, kwargs):
         if facet==[]:
             print(f"Warning {key} is not a valid constraint name")
             print(f"Valid constraints are:\n{valid_keys.values()}")
-            if "JPY_PARENT_PID" in os.environ:
-                exit()
-            else:
-                sys.exit()
+            sys.exit()
         else:
             args[facet[0]] = value
     return args
@@ -207,17 +204,11 @@ def check_values(vocabularies, project, args):
         source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
     else:
         print(f'Search for {project} not yet implemented')
-        if "JPY_PARENT_PID" in os.environ:
-            exit()
-        else:
-            sys.exit()
+        sys.exit()
     for k,v in args.items():
         if k in locals() and v not in locals()[k]:
             print(f'{v} is not a valid value for {k}')
-            if "JPY_PARENT_PID" in os.environ:
-                exit()
-            else:
-                sys.exit()
+            sys.exit()
     return args
 
 def load_vocabularies(project):
