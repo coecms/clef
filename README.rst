@@ -35,6 +35,10 @@ Install
 Clef is pre-installed into a Conda environment at NCI. Load it with::
 
     module use /g/data3/hh5/public/modules
+    module load conda/analysis3-unstable
+
+We are constantly adding new features, the development version is available in a separate environment::
+    module use /g/data3/hh5/public/modules
     module load conda
     source activate clef-test
 

@@ -74,11 +74,11 @@ CREATE OR REPLACE VIEW esgf_filter AS
         pa_path AS path
     FROM rr3.paths
     WHERE
-        pa_type IN ('file', 'link')
+        pa_type in ('file', 'link')
     AND pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
-    AND split_part(pa_path, '/', 6) != 'CMIP5RT'
-    AND split_part(pa_path, '/', 15) != 'files'
-    AND split_part(pa_path, '/', 17) != 'files'
+    --AND split_part(pa_path, '/', 6) != 'CMIP5RT'        
+    --AND split_part(pa_path, '/', 15) != 'files'       
+    --AND split_part(pa_path, '/', 17) != 'files'
     AND pa_path LIKE '%.nc'
     UNION ALL
     SELECT
@@ -87,7 +87,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
         pa_path AS path
     FROM oi10.paths
     WHERE
-        pa_type IN ('file', 'link')
+        pa_type in ('file', 'link')
     AND pa_parents[4] = md5('/g/data1b/oi10/replicas')::uuid
     AND pa_path LIKE '%.nc'
     UNION ALL
@@ -97,7 +97,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
         pa_path AS path
     FROM al33.paths
     WHERE
-        pa_type IN ('file', 'link')
+        pa_type in ('file', 'link')
     AND pa_parents[4] = md5('/g/data1b/al33/replicas')::uuid
     -- AND split_part(pa_path, '/', 7) = 'combined'
     AND pa_path LIKE '%.nc';
