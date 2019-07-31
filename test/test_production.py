@@ -42,10 +42,10 @@ def prod_session():
     session.rollback()
 
 
-@raijin_only
-def test_local_access1_model(prod_session):
+#@raijin_only
+def test_local_access1_model(session):
     # Check we have ACCESS model results
-    q = local_query(prod_session, project='cmip5',
+    q = local_query(session, project='cmip5',
             model='ACCESS1.0',
             experiment='historical',
             ensemble='r1i1p1',
@@ -55,11 +55,11 @@ def test_local_access1_model(prod_session):
     assert len(q) > 0
 
 
-@raijin_only
-def test_local_hadgem_model(prod_session):
+#@raijin_only
+def test_local_hadgem_model(session):
     # Check we have HadGEM model results
-    q = local_query(prod_session, project='cmip5',
-            model='HadGEM2',
+    q = local_query(session, project='cmip5',
+            model='HadGEM2-AO',
             experiment='historical',
             ensemble='r1i1p1',
             cmor_table='Amon',

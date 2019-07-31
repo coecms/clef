@@ -30,6 +30,7 @@ from __future__ import print_function
 import requests
 import json
 import sys
+import sqlalchemy as sa
 from sqlalchemy.sql import column, label
 from sqlalchemy.orm import aliased
 from sqlalchemy import String, Float, Integer, or_, func
@@ -254,12 +255,14 @@ def find_local_path(session, subq, oformat='file'):
         return (session
                 .query('esgf_paths.path')
                 .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id != None))
+                .filter(subq.c.esgf_paths_file_id != None)
+                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))))
     elif oformat == 'dataset':
         return (session
                 .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None)
+                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%')))
                 .distinct())
     else:
         raise NotImplementedError
