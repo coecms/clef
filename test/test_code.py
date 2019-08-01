@@ -46,7 +46,7 @@ def test_check_values(c5_kwargs, c5_vocab):
     assert args == c5_kwargs 
     bad_arg=c5_kwargs.copy()
     bad_arg['experiment'] = 'dummy'
-    with pytest.raises(SystemExit):
+    with pytest.raises(ClefException):
         args = check_values(c5_vocab, 'cmip5', bad_arg)
 
 def test_check_keys(c5_kwargs,c5_keys):
@@ -56,7 +56,7 @@ def test_check_keys(c5_kwargs,c5_keys):
                     'experiment_family': 'RCP', 'ensemble': 'r1i1p1'}
     bad_arg=c5_kwargs.copy()
     bad_arg['activity_id'] = 'dummy'
-    with pytest.raises(SystemExit):
+    with pytest.raises(ClefException):
         args = check_keys(c5_keys, bad_arg)
 
 def test_fix_model():
@@ -132,3 +132,19 @@ def test_and_filter(local_results, remote_results):
     models = [s['source_id'] for s in selection] 
     assert 'mod2' not in models
     assert len(selection) == 2 
+
+
+def test_search(session):
+    with pytest.raises(ClefException):
+        search(session, project='cmip5', model='bad')
+    with pytest.raises(ClefException):
+        search(session, project='cmip5', foo='blarg')
+
+    r0 = search(session, project='cmip5', model='ACCESS1.0', experiment='historical', cmor_table='Amon', ensemble='r1i1p1', variable='tas')
+    assert len(r0) == 1, "Only one result"
+    assert r0[0]['model'] == 'ACCESS1.0', "Model matches input"
+
+    r1 = search(session, project='cmip5', model='ACCESS1-0', experiment='historical', cmor_table='Amon', ensemble='r1i1p1', variable='tas')
+    assert len(r1) == len(r0), "Same result with filtered name"
+    assert r1[0]['model'] == 'ACCESS1.0', "Model is cleaned"
+

@@ -31,7 +31,7 @@ import itertools
 from calendar import monthrange
 import re
 
- 
+
 def search(session, project='cmip5', **kwargs):
     """
     This call the local query when integrated in python script before running query checks
@@ -186,9 +186,9 @@ def check_keys(valid_keys, kwargs):
     for key,value in kwargs.items():
         facet = [k for k,v in valid_keys.items() if key in v]
         if facet==[]:
-            print(f"Warning {key} is not a valid constraint name")
-            print(f"Valid constraints are:\n{valid_keys.values()}")
-            sys.exit()
+            raise ClefException(
+                f"Warning {key} is not a valid constraint name"
+                f"Valid constraints are:\n{valid_keys.values()}")
         else:
             args[facet[0]] = value
     return args
@@ -203,12 +203,10 @@ def check_values(vocabularies, project, args):
     elif project == 'cmip6':
         source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
     else:
-        print(f'Search for {project} not yet implemented')
-        sys.exit()
+        raise NotImplementedError(f'Search for {project} not yet implemented')
     for k,v in args.items():
         if k in locals() and v not in locals()[k]:
-            print(f'{v} is not a valid value for {k}')
-            sys.exit()
+            raise ClefException(f'"{v}" is not a valid value for the facet "{k}" in project {project}')
     return args
 
 def load_vocabularies(project):
