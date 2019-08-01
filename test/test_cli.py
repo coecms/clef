@@ -32,7 +32,7 @@ except ImportError:
 def runner():
     return CliRunner()
 
-@pytest.mark.parametrize('command', [cmip5, cmip6])
+@pytest.mark.parametrize('command', [clef, cmip5, cmip6])
 def test_cmip(command, runner):
     result = runner.invoke(command, ['--help'])
     assert result.exit_code == 0
@@ -114,3 +114,16 @@ def test_model(runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['source_id'] == ('CNRM-CM6-1',)
 
+@pytest.mark.production
+def test_cmip5_missing(runner, session):
+    with mock.patch('clef.cli.connect', side_effect=dummy_connect):
+        with mock.patch('clef.cli.Session', side_effect = lambda: session):
+            r = cli_run(runner, cmip5, ['--model=MPI-ESM-P','--experiment=past1000',
+                '--frequency=day', '--realm=atmos', '--variable=tas'])
+            assert r.output == ("\nAvailable on ESGF but not locally:\n" + 
+                "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028 tas\n")
+            
+            r = cli_run(runner, cmip5, ['--model=MPI-ESM-P','--experiment=past1000',
+                '--frequency=day', '--realm=atmos'])
+            assert r.output == ("\nAvailable on ESGF but not locally:\n" + 
+                "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028\n")

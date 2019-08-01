@@ -82,16 +82,20 @@ def search_queue_csv(qm, project, varlist):
     rows={}
     dids=set()
     # open csv file and read data in dictionary with dataset_id as key 
-    with open("/g/data/ua8/Download/CMIP6/" + project + "_clef_table.csv","r") as csvfile:
-        table_read = csv.reader(csvfile)
-     # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
-        for row in table_read:
-            if project == 'CMIP5':
-                rows[(row[1],row[0])] = row[2]
-                dids.add(row[1])
-            elif project == 'CMIP6':
-                rows[(row[0])] = row[1]
-                dids.add(row[0])
+    try:
+        with open("/g/data/ua8/Download/CMIP6/" + project + "_clef_table.csv","r") as csvfile:
+            table_read = csv.reader(csvfile)
+         # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
+            for row in table_read:
+                if project == 'CMIP5':
+                    rows[(row[1],row[0])] = row[2]
+                    dids.add(row[1])
+                elif project == 'CMIP6':
+                    rows[(row[0])] = row[1]
+                    dids.add(row[0])
+    except FileNotFoundError:
+        # Queue not available
+        pass
             
     # retrieve from table the missing dataset_ids
     queued={}
