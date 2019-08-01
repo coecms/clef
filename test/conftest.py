@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import pytest
-import clef.db
-import os
 import sqlalchemy as sa
 from urllib.parse import urlparse
 
@@ -15,7 +13,7 @@ def pytest_configure(config):
             )
 
 def pytest_runtest_setup(item):
-    for mark in item.iter_markers(name='production'):
+    for _ in item.iter_markers(name='production'):
         db = item.config.getoption('db')
         url = urlparse(db)
         if url.hostname != 'clef.nci.org.au':

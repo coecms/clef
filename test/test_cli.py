@@ -68,7 +68,7 @@ def test_versions(command, runner, mock_query):
 
     cli_run(runner, command, ['--all-versions'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == None
+    assert mock_query.call_args[1]['latest'] is None
 
     cli_run(runner, command, ['--latest'])
     assert mock_query.called
@@ -122,8 +122,8 @@ def test_cmip5_missing(runner, session):
                 '--frequency=day', '--realm=atmos', '--variable=tas'])
             assert r.output == ("\nAvailable on ESGF but not locally:\n" + 
                 "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028 tas\n")
-            
+
             r = cli_run(runner, cmip5, ['--model=MPI-ESM-P','--experiment=past1000',
                 '--frequency=day', '--realm=atmos'])
-            assert r.output == ("\nAvailable on ESGF but not locally:\n" + 
+            assert r.output == ("\nAvailable on ESGF but not locally:\n" +
                 "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028\n")

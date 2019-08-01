@@ -17,6 +17,7 @@
 from clef.code import *
 #from code_fixtures import session
 from code_fixtures import * 
+import pytest
 
 # Tests for the basic list queries
 
