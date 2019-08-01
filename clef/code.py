@@ -42,7 +42,7 @@ def search(session, project='cmip5', **kwargs):
     vocabularies = load_vocabularies(project)
     check_values(vocabularies, project, args)
     if 'model' in args.keys():
-        fix_model(project, args['model'])
+        args['model'] = fix_model(project, [args['model']])[0]
     return local_query(session, project, **args)
 
 

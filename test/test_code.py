@@ -49,6 +49,17 @@ def test_check_values(c5_kwargs, c5_vocab):
     with pytest.raises(ClefException):
         args = check_values(c5_vocab, 'cmip5', bad_arg)
 
+def test_check_vocab():
+    project = 'cmip5'
+    vocab = load_vocabularies(project)
+    args = check_values(vocab, project, {'variable':'tas'})
+    assert args['variable'] == 'tas'
+
+    project = 'cmip6'
+    vocab = load_vocabularies(project)
+    args = check_values(vocab, project, {'variable_id':'tas'})
+    assert args['variable_id'] == 'tas'
+
 def test_check_keys(c5_kwargs,c5_keys):
     args = check_keys(c5_keys, c5_kwargs)
     assert args == {'model': 'INM-CM4', 'experiment': 'rcp85', 'variable': 'tas', 
@@ -70,6 +81,11 @@ def test_convert_periods(nranges, periods, empty):
     res1 = convert_periods(nranges,'mon')
     assert res1 == periods[0]
     assert convert_periods(empty,'mon') == ([]) 
+
+    nranges2 = nranges.copy()
+    nranges2.append(None)
+    res2 = convert_periods(nranges2, 'mon')
+    assert res2 == res1
 
 def test_time_axis(periods):
     #test contiguos axis monthly frequency 
@@ -140,11 +156,26 @@ def test_search(session):
     with pytest.raises(ClefException):
         search(session, project='cmip5', foo='blarg')
 
-    r0 = search(session, project='cmip5', model='ACCESS1.0', experiment='historical', cmor_table='Amon', ensemble='r1i1p1', variable='tas')
+    facets = {
+        'experiment':'historical',
+        'cmor_table':'Amon',
+        'ensemble':'r1i1p1',
+        'variable':'tas'
+    }
+
+    r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
     assert len(r0) == 1, "Only one result"
     assert r0[0]['model'] == 'ACCESS1.0', "Model matches input"
 
-    r1 = search(session, project='cmip5', model='ACCESS1-0', experiment='historical', cmor_table='Amon', ensemble='r1i1p1', variable='tas')
+    r1 = search(session, project='cmip5', model='ACCESS1-0', **facets)
     assert len(r1) == len(r0), "Same result with filtered name"
     assert r1[0]['model'] == 'ACCESS1.0', "Model is cleaned"
 
+    # No variable constraint
+    facets.pop('variable')
+    r2 = search(session, project='cmip5', model='ACCESS1-0', **facets)
+    assert len(r2) == 48
+
+    r3 = search(session, project='cmip6', model='AWI-CM-1-1-MR',
+                experiment='historical', variable='uas', cmor_table='3hr')
+    assert r3[0]['pdir'] == '/g/data1b/oi10/replicas/CMIP6/CMIP/AWI/AWI-CM-1-1-MR/historical/r1i1p1f1/3hr/uas/gn/v20181218'
