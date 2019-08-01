@@ -150,12 +150,24 @@ def test_and_filter(local_results, remote_results):
     assert len(selection) == 2 
 
 
+@pytest.mark.production
 def test_search(session):
     with pytest.raises(ClefException):
         search(session, project='cmip5', model='bad')
     with pytest.raises(ClefException):
         search(session, project='cmip5', foo='blarg')
 
+    facets = {
+        'experiment':'historical',
+        'cmor_table':'Amon',
+        'ensemble':'r1i1p1',
+        'variable':'tas'
+    }
+
+    r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
+
+@pytest.mark.production
+def test_search_results(session):
     facets = {
         'experiment':'historical',
         'cmor_table':'Amon',

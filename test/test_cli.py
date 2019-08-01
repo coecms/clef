@@ -68,7 +68,7 @@ def test_versions(command, runner, mock_query):
 
     cli_run(runner, command, ['--all-versions'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == False
+    assert mock_query.call_args[1]['latest'] == None
 
     cli_run(runner, command, ['--latest'])
     assert mock_query.called

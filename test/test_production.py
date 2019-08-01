@@ -42,7 +42,7 @@ def prod_session():
     session.rollback()
 
 
-#@raijin_only
+@pytest.mark.production
 def test_local_access1_model(session):
     # Check we have ACCESS model results
     q = local_query(session, project='cmip5',
@@ -55,7 +55,7 @@ def test_local_access1_model(session):
     assert len(q) > 0
 
 
-#@raijin_only
+@pytest.mark.production
 def test_local_hadgem_model(session):
     # Check we have HadGEM model results
     q = local_query(session, project='cmip5',
