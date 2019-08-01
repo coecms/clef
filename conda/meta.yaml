@@ -36,7 +36,6 @@ requirements:
 test:
     source_files:
         - setup.cfg
-        - conftest.py
         - test
     requires:
         - pytest
