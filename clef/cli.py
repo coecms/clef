@@ -328,22 +328,19 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     qm = find_missing_id(s, subq, oformat=oformat)
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
-    try:
-        if qm.count() > 0:
-            if 'variable' in terms.keys():
-                varlist = terms['variable']
-            else:
-                varlist = []
-            updated = search_queue_csv(qm, project, varlist)
-            if len(updated) > 0:
-                print('\nAvailable on ESGF but not locally:')
-                for result in updated:
-                    print(result)
+    if qm.count() > 0:
+        if 'variable' in terms.keys():
+            varlist = terms['variable']
         else:
-            print('\nEverything available on ESGF is also available locally')
-            return
-    except FileNotFoundError:
-        pass
+            varlist = []
+        updated = search_queue_csv(qm, project, varlist)
+        if len(updated) > 0:
+            print('\nAvailable on ESGF but not locally:')
+            for result in updated:
+                print(result)
+    else:
+        print('\nEverything available on ESGF is also available locally')
+        return
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
@@ -477,16 +474,13 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     qm = find_missing_id(s, subq, oformat=oformat)
     
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
-    try:
-        if qm.count() > 0:
-            updated = search_queue_csv(qm, project, [])
-            print('\nAvailable on ESGF but not locally:')
-            for result in updated:
-                print(result)
-        else:
-            print('\nEverything available on ESGF is also available locally')
-    except FileNotFoundError:
-        pass
+    if qm.count() > 0:
+        updated = search_queue_csv(qm, project, [])
+        print('\nAvailable on ESGF but not locally:')
+        for result in updated:
+            print(result)
+    else:
+        print('\nEverything available on ESGF is also available locally')
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
