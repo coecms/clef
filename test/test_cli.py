@@ -114,16 +114,69 @@ def test_model(runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['source_id'] == ('CNRM-CM6-1',)
 
-@pytest.mark.production
-def test_cmip5_missing(runner, session):
+@pytest.fixture
+def prod_cli(runner, session):
     with mock.patch('clef.cli.connect', side_effect=dummy_connect):
         with mock.patch('clef.cli.Session', side_effect = lambda: session):
-            r = cli_run(runner, cmip5, ['--model=MPI-ESM-P','--experiment=past1000',
-                '--frequency=day', '--realm=atmos', '--variable=tas'])
-            assert r.output == ("\nAvailable on ESGF but not locally:\n" + 
-                "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028 tas\n")
+            with mock.patch('clef.cli.config_log', side_effect = lambda: logging.getLogger()):
+                def cli(argv):
+                    return runner.invoke(clef, argv, catch_exceptions=False)
 
-            r = cli_run(runner, cmip5, ['--model=MPI-ESM-P','--experiment=past1000',
-                '--frequency=day', '--realm=atmos'])
-            assert r.output == ("\nAvailable on ESGF but not locally:\n" +
-                "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028\n")
+                yield cli
+
+
+@pytest.mark.production
+def test_cmip5_missing(prod_cli):
+    facets = ['--model=MPI-ESM-P','--experiment=past1000',
+        '--frequency=day', '--realm=atmos']
+
+    r = prod_cli(['cmip5', *facets, '--variable=tas'])
+    assert r.output == ("\nAvailable on ESGF but not locally:\n" +
+        "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028 tas\n")
+
+    r = prod_cli(['cmip5', *facets])
+    assert r.output == ("\nAvailable on ESGF but not locally:\n" +
+        "cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028\n")
+
+    r = prod_cli(['cmip5', *facets, '--format=file'])
+    assert 'cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028.tasmin_day_MPI-ESM-P_past1000_r1i1p1_18400101-18491231.nc' in r.output
+
+    r = prod_cli(['--local', 'cmip5', *facets])
+    assert r.output == ''
+
+    r = prod_cli(['--remote', 'cmip5', *facets])
+    assert r.output == 'cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028\n'
+
+    r = prod_cli(['--remote', 'cmip5', *facets, '--variable=tas', '--format=file'])
+    assert 'cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028.tasmin_day_MPI-ESM-P_past1000_r1i1p1_18400101-18491231.nc' not in r.output
+    assert 'cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028.tas_day_MPI-ESM-P_past1000_r1i1p1_18400101-18491231.nc' in r.output
+
+    with mock.patch('clef.cli.write_request') as write_request:
+        r = prod_cli(['--request', 'cmip5', *facets, '--variable=tas'])
+        write_request.assert_called_with('CMIP5', ['cmip5.output1.MPI-M.MPI-ESM-P.past1000.day.atmos.day.r1i1p1.v20111028 tas'])
+
+    with pytest.raises(ClefException):
+        r = prod_cli(['--request', 'cmip5', *facets])
+
+@pytest.mark.production
+def test_cmip5_present(prod_cli):
+    facets = ['--model=ACCESS1.0','--experiment=historical',
+            '--frequency=mon', '--realm=atmos', '--variable=tas', '--ensemble=r1i1p1']
+
+    r = prod_cli(['cmip5', *facets])
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
+        "Everything available on ESGF is also available locally\n")
+
+    r = prod_cli(['cmip5', *facets, '--format=file'])
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/tas_Amon_ACCESS1-0_historical_r1i1p1_185001-200512.nc\n\n" +
+            "Everything available on ESGF is also available locally\n")
+
+    r = prod_cli(['--local', 'cmip5', *facets])
+    assert r.output == "/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas\n"
+
+    r = prod_cli(['--remote', 'cmip5', *facets])
+    assert r.output == "cmip5.output1.CSIRO-BOM.ACCESS1-0.historical.mon.atmos.Amon.r1i1p1.v20120727\n"
+
+    r = prod_cli(['--request', 'cmip5', *facets])
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
+            "Everything available on ESGF is also available locally\n")

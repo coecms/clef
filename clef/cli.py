@@ -343,6 +343,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         return
 
     if ctx.obj['flow'] == 'request':
+        if len(varlist) == 0:
+            raise ClefException("Please specify at least one variable to request")
         if len(updated) >0:
             write_request('CMIP5',updated)
         else:
