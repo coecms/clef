@@ -378,20 +378,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-        logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
-
-    clef_log = ctx.obj['log']
-    user_name=os.environ.get('USER','unknown')
-    user=None
-    connect(user=user)
-    s = Session()
 
     project='CMIP6'
-
-    #ensemble_terms = None
-    #model_terms = None
 
     dataset_constraints = {
         'activity_id': activity_id,
@@ -410,8 +398,22 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'variant_label': variant_label,
         }
 
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints)
+
+
+def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints):
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
+
+    clef_log = ctx.obj['log']
+    user_name=os.environ.get('USER','unknown')
+    user=None
+    connect(user=user)
+    s = Session()
+
     # keep track of query arguments in clef_log file
-    args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
+    args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
     clef_log.info('  ;  '.join([user_name,'CMIP6',ctx.obj['flow'],args_str]))
 
     if ctx.obj['flow'] == 'remote':
@@ -421,7 +423,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             latest=latest,
             cf_standard_name=cf_standard_name,
             project=project,
-            **dataset_constraints,
+            **constraints,
             )
 
         if oformat == 'file':
@@ -436,7 +438,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     terms = {}
 
     # Add filters
-    for key, value in six.iteritems(dataset_constraints):
+    for key, value in six.iteritems(constraints):
         if len(value) > 0:
             terms[key] = value
     if ctx.obj['flow'] == 'local':
@@ -458,7 +460,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     # filename, the resulting project is still CMIP5 (and not say a PMIP file
     # with the same name)
     ql = find_local_path(s, subq, oformat=oformat)
-    #ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
 
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
@@ -483,10 +484,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             write_request(project,updated)
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
-
-
-def common_esgf_cli(ctx, project, cf_standard_name, oformat, latest, replica, distrib, debug, constraints):
-    pass
 
 # should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
 # we should have two outputs option though one genric info and the other filepath! 
