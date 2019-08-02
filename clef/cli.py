@@ -378,7 +378,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
-
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
@@ -395,19 +394,19 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     #model_terms = None
 
     dataset_constraints = {
-        'member_id': member_id,
         'activity_id': activity_id,
         'experiment_id': experiment_id,
-        'sub_experiment_id': sub_experiment_id,
+        'frequency': frequency,
+        'grid_label': grid_label,
         'institution_id': institution_id,
+        'member_id': member_id,
+        'nominal_resolution': nominal_resolution,
+        'realm': realm,
         'source_id': source_id,
         'source_type': source_type,
-        'realm': realm,
-        'frequency': frequency,
+        'sub_experiment_id': sub_experiment_id,
         'table_id': table_id,
         'variable_id': variable_id,
-        'grid_label': grid_label,
-        'nominal_resolution': nominal_resolution,
         'variant_label': variant_label,
         }
 
@@ -421,20 +420,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             replica=replica,
             latest=latest,
             cf_standard_name=cf_standard_name,
-            variant_label=variant_label,
-            member_id=member_id,
-            experiment_id=experiment_id,
-            source_type=source_type,
-            institution_id=institution_id,
-            table_id=table_id,
-            source_id=source_id,
             project=project,
-            realm=realm,
-            frequency=frequency,
-            variable_id=variable_id,
-            activity_id=activity_id,
-            grid_label=grid_label,
-            nominal_resolution=nominal_resolution
+            **dataset_constraints,
             )
 
         if oformat == 'file':
@@ -496,6 +483,10 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             write_request(project,updated)
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
+
+
+def common_esgf_cli(ctx, project, cf_standard_name, oformat, latest, replica, distrib, debug, constraints):
+    pass
 
 # should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
 # we should have two outputs option though one genric info and the other filepath! 
