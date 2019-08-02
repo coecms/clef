@@ -402,7 +402,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'table_id': table_id,
         'variable_id': variable_id,
         'grid_label': grid_label,
-        'nominal_resolution': nominal_resolution
+        'nominal_resolution': nominal_resolution,
+        'variant_label': variant_label,
         }
 
     # keep track of query arguments in clef_log file
@@ -446,6 +447,11 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
             terms[key] = value
+    if ctx.obj['flow'] == 'local':
+        paths = call_local_query(s, project, oformat, **terms) 
+        for p in paths:
+            print(p)
+        return 
 
     # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
@@ -483,6 +489,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             print(result)
     else:
         print('\nEverything available on ESGF is also available locally')
+        return
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
