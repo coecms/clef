@@ -407,7 +407,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'table_id': table_id,
         'variable_id': variable_id,
         'grid_label': grid_label,
-        'nominal_resolution': nominal_resolution
+        'nominal_resolution': nominal_resolution,
+        'variant_label': variant_label,
         }
 
     # keep track of query arguments in clef_log file
@@ -483,6 +484,7 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             print(result)
     else:
         print('\nEverything available on ESGF is also available locally')
+        return
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:
