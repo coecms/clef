@@ -242,9 +242,6 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
 
     project='CMIP5'
 
-    #ensemble_terms = None
-    #model_terms = None
-
     dataset_constraints = {
         'ensemble': ensemble,
         'experiment': experiment,
@@ -290,17 +287,18 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         return
     # if not remote then query MAS database
     terms = {}
-
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
            terms[key] = value
-    # if local query mAS based on attributes not checksums
+
+    # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         paths = call_local_query(s, project, oformat, **terms) 
         for p in paths:
             print(p)
         return 
-    # if not local query ESGF first and then MAS based on checksums
+
+    # if not local, query ESGF first and then MAS based on checksums
     # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
     if 'model' in terms:
         terms['model'] = fix_model(project, terms['model'])
@@ -319,15 +317,15 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     # with the same name)
 
     ql = find_local_path(s, subq, oformat=oformat)
-    #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
-        # temporary fix to return only one combined path instead of 1 or 2 output ones
+        # return only 'combined' path for al33 and 1 path for rr3
         cpaths = set(map(fix_path, [p[0] for p in ql]))
         for p in cpaths:
             print(p)
     qm = find_missing_id(s, subq, oformat=oformat)
 
-    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue
+    #  update list and print result 
     if qm.count() > 0:
         if 'variable' in terms.keys():
             varlist = terms['variable']
@@ -391,9 +389,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
 
     project='CMIP6'
 
-    #ensemble_terms = None
-    #model_terms = None
-
     dataset_constraints = {
         'member_id': member_id,
         'activity_id': activity_id,
@@ -452,6 +447,14 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
             terms[key] = value
 
+    # if local query MAS based on attributes not checksums
+    if ctx.obj['flow'] == 'local':
+        paths = call_local_query(s, project, oformat, **terms) 
+        for p in paths:
+            print(p)
+        return 
+
+    # if not local, query ESGF first and then MAS based on checksums
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -462,20 +465,17 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
             )
 
     # Make sure that if find_local_path does an all-version search using the
-    # filename, the resulting project is still CMIP5 (and not say a PMIP file
+    # filename, the resulting project is still CMIP6 (and not say a PMIP file
     # with the same name)
     ql = find_local_path(s, subq, oformat=oformat)
-    #ql = ql.join(Path.c6dataset).filter(C6Dataset.project==project)
-
     if not ctx.obj['flow'] == 'missing':
         for result in ql:
             print(result[0])
-    if ctx.obj['flow'] == 'local': 
-        return
 
     qm = find_missing_id(s, subq, oformat=oformat)
     
-    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue,
+    #  update list and print result 
     if qm.count() > 0:
         updated = search_queue_csv(qm, project, [])
         print('\nAvailable on ESGF but not locally:')
@@ -490,8 +490,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
 
-# should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
-# we should have two outputs option though one genric info and the other filepath! 
 @clef.command()
 @ds_args
 def ds(**kwargs):
