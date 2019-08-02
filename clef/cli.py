@@ -283,7 +283,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
             for result in s.query(q):
                 print(result.id)
         else:
-            ids=set(x.dataset_id for x in s.query(q))
+            ids=sorted(set(x.dataset_id for x in s.query(q)))
             for did in ids:
                 print(did)
               
@@ -322,7 +322,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
     if not ctx.obj['flow'] == 'missing':
         # temporary fix to return only one combined path instead of 1 or 2 output ones
-        cpaths = set(map(fix_path, [p[0] for p in ql]))
+        cpaths = sorted(set(map(fix_path, [p[0] for p in ql])))
         for p in cpaths:
             print(p)
     qm = find_missing_id(s, subq, oformat=oformat)
@@ -414,7 +414,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
 
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
-    clef_log.info('  ;  '.join([user_name,'CMIP6',ctx.obj['flow'],args_str]))
+    clef_log.info('  ;  '.join([user_name,project,ctx.obj['flow'],args_str]))
 
     if ctx.obj['flow'] == 'remote':
         q = find_checksum_id(' '.join(query),

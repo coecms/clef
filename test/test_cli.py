@@ -182,6 +182,24 @@ def test_cmip5_present(prod_cli):
             "Everything available on ESGF is also available locally\n")
 
 @pytest.mark.production
+def test_cmip5_experiment_family(prod_cli):
+    r = prod_cli(['--remote', 'cmip5','--model=ACCESS1.0','--experiment_family=RCP',
+        '--frequency=mon','--variable=tas'])
+    assert r.output == """
+cmip5.output1.CSIRO-BOM.ACCESS1-0.rcp45.mon.atmos.Amon.r1i1p1.v20120727
+cmip5.output1.CSIRO-BOM.ACCESS1-0.rcp85.mon.atmos.Amon.r1i1p1.v20120727
+""".lstrip()
+
+    r = prod_cli(['cmip5','--model=ACCESS1.0','--experiment_family=RCP',
+        '--frequency=mon','--variable=tas'])
+    assert r.output == """
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas/
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp85/mon/atmos/Amon/r1i1p1/latest/tas/
+
+Everything available on ESGF is also available locally
+""".lstrip()
+
+@pytest.mark.production
 def test_cmip6_present(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tas','--variant_label=r1i1p1f2']
 

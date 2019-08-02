@@ -256,13 +256,20 @@ def find_local_path(session, subq, oformat='file'):
                 .query('esgf_paths.path')
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None)
-                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))))
+                .filter(sa.not_(sa.and_(
+                    subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
+                    sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
+                )))
+                )
     elif oformat == 'dataset':
         return (session
                 .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None)
-                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%')))
+                .filter(sa.not_(sa.and_(
+                    subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
+                    sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
+                )))
                 .distinct())
     else:
         raise NotImplementedError
