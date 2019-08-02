@@ -195,7 +195,7 @@ def test_cmip6_present(prod_cli):
             "Everything available on ESGF is also available locally\n")
 
     r = prod_cli(['--local', 'cmip6', *facets])
-    assert r.output == "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/\n"
+    assert r.output == "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406\n"
 
     r = prod_cli(['--remote', 'cmip6', *facets])
     assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406\n"

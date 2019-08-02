@@ -452,6 +452,11 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
             terms[key] = value
+    if ctx.obj['flow'] == 'local':
+        paths = call_local_query(s, project, oformat, **terms) 
+        for p in paths:
+            print(p)
+        return 
 
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
