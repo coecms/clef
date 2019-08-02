@@ -229,17 +229,6 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
-
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-        logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
-
-    clef_log = ctx.obj['log']
-    user_name=os.environ.get('USER','unknown')
-    user=None
-    connect(user=user)
-    s = Session()
-
     project='CMIP5'
 
     #ensemble_terms = None
@@ -253,102 +242,11 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'realm': realm,
         'time_frequency': time_frequency,
         'cmor_table': cmor_table,
-        'variable': variable
+        'variable': variable,
+        'experiment_family': experiment_family,
         }
-    
-    # keep track of query arguments in clef_log file
-    args_str = ' '.join('{}={}'.format(k,v) for k,v in dataset_constraints.items())
-    clef_log.info('  ;  '.join([user_name,'CMIP5',ctx.obj['flow'],args_str]))
 
-    # remote option will only check ESGF
-    if ctx.obj['flow'] == 'remote':
-        q = find_checksum_id(' '.join(query),
-            distrib=distrib,
-            replica=replica,
-            latest=latest,
-            cf_standard_name=cf_standard_name,
-            ensemble=ensemble,
-            experiment=experiment,
-            experiment_family=experiment_family,
-            institute=institute,
-            cmor_table=cmor_table,
-            model=model,
-            project=project,
-            realm=realm,
-            time_frequency=time_frequency,
-            variable=variable
-            )
-
-        if oformat == 'file':
-            for result in s.query(q):
-                print(result.id)
-        else:
-            ids=sorted(set(x.dataset_id for x in s.query(q)))
-            for did in ids:
-                print(did)
-              
-        return
-    # if not remote then query MAS database
-    terms = {}
-
-    for key, value in six.iteritems(dataset_constraints):
-        if len(value) > 0:
-           terms[key] = value
-    # if local query mAS based on attributes not checksums
-    if ctx.obj['flow'] == 'local':
-        paths = call_local_query(s, project, oformat, **terms) 
-        for p in paths:
-            print(p)
-        return 
-    # if not local query ESGF first and then MAS based on checksums
-    # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
-    if 'model' in terms:
-        terms['model'] = fix_model(project, terms['model'])
-    subq = match_query(s, query=' '.join(query),
-            distrib= distrib,
-            replica=replica,
-            latest=(latest if latest else None),
-            cf_standard_name=cf_standard_name,
-            experiment_family=experiment_family,
-            project=project,
-            **terms
-            )
-
-    # Make sure that if find_local_path does an all-version search using the
-    # filename, the resulting project is still CMIP5 (and not say a PMIP file
-    # with the same name)
-
-    ql = find_local_path(s, subq, oformat=oformat)
-    #ql = ql.join(Path.c5dataset).filter(C5Dataset.project==project)
-    if not ctx.obj['flow'] == 'missing':
-        # temporary fix to return only one combined path instead of 1 or 2 output ones
-        cpaths = sorted(set(map(fix_path, [p[0] for p in ql])))
-        for p in cpaths:
-            print(p)
-    qm = find_missing_id(s, subq, oformat=oformat)
-
-    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
-    if qm.count() > 0:
-        if 'variable' in terms.keys():
-            varlist = terms['variable']
-        else:
-            varlist = []
-        updated = search_queue_csv(qm, project, varlist)
-        if len(updated) > 0:
-            print('\nAvailable on ESGF but not locally:')
-            for result in updated:
-                print(result)
-    else:
-        print('\nEverything available on ESGF is also available locally')
-        return
-
-    if ctx.obj['flow'] == 'request':
-        if len(varlist) == 0:
-            raise ClefException("Please specify at least one variable to request")
-        if len(updated) >0:
-            write_request('CMIP5',updated)
-        else:
-            print("\nAll the published data is already available locally, or has been requested, nothing to request")
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints)
 
 
 @clef.command()
@@ -430,7 +328,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
             for result in s.query(q):
                 print(result.id)
         else:
-            ids=set(x.dataset_id for x in s.query(q))
+            ids=sorted(set(x.dataset_id for x in s.query(q)))
             for did in ids:
                 print(did)
         return
@@ -447,6 +345,9 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
             print(p)
         return 
 
+    if project == 'CMIP5' and 'model' in terms:
+        terms['model'] = fix_model(project, terms['model'])
+
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -462,8 +363,14 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     ql = find_local_path(s, subq, oformat=oformat)
 
     if not ctx.obj['flow'] == 'missing':
-        for result in ql:
-            print(result[0])
+        if project == 'CMIP5':
+            # temporary fix to return only one combined path instead of 1 or 2 output ones
+            cpaths = sorted(set(map(fix_path, [p[0] for p in ql])))
+            for p in cpaths:
+                print(p)
+        else:
+            for result in ql:
+                print(result[0])
     if ctx.obj['flow'] == 'local': 
         return
 
@@ -471,7 +378,10 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
     if qm.count() > 0:
-        updated = search_queue_csv(qm, project, [])
+        varlist = []
+        if project == 'CMIP5' and 'variable' in terms:
+            varlist = terms['variable']
+        updated = search_queue_csv(qm, project, varlist)
         print('\nAvailable on ESGF but not locally:')
         for result in updated:
             print(result)
@@ -480,6 +390,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
         return
 
     if ctx.obj['flow'] == 'request':
+        if project == 'CMIP5' and len(varlist) == 0:
+            raise ClefException("Please specify at least one variable to request")
         if len(updated) >0:
             write_request(project,updated)
         else:
