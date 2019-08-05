@@ -291,7 +291,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         if len(value) > 0:
            terms[key] = value
 
-    # if local query MAS based on attributes not checksums
+    # if local, query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         paths = call_local_query(s, project, oformat, **terms) 
         for p in paths:
@@ -447,11 +447,6 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
             terms[key] = value
-    if ctx.obj['flow'] == 'local':
-        paths = call_local_query(s, project, oformat, **terms) 
-        for p in paths:
-            print(p)
-        return 
 
     # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
