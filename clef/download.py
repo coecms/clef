@@ -27,7 +27,7 @@ import platform
 def write_request(project, missing):
     ''' write missing dataset_ids to file to create download request for synda '''
     current_dir = os.getcwd()
-    user = os.environ['USER']
+    user = os.environ.get('USER', 'unknown')
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
     f = open(os.path.join(current_dir,fname), 'w')
