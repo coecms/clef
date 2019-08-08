@@ -18,11 +18,35 @@
 
 from clef.download import write_request, helpdesk
 from unittest.mock import patch
+from smtplib import SMTPException
+import builtins
 
 def test_helpdesk(tmp_path):
     request = tmp_path / 'request'
     request.write_text("Dummy Request")
 
-    with patch('clef.download.smtplib.SMTP'):
+    with patch('clef.download.smtplib.SMTP') as smtp:
         helpdesk('dummy_user', tmp_path, 'request', 'dummy_project')
+        smtp.assert_called_once()
+        smtp.reset_mock()
+
+        inst = smtp.return_value
+        inst.sendmail.side_effect = SMTPException
+        helpdesk('dummy_user', tmp_path, 'request', 'dummy_project')
+        smtp.assert_called_once()
+        inst.sendmail.assert_called_once()
+
+
+def test_write_request(tmp_path):
+    with patch('clef.download.os.getcwd', return_value= tmp_path):
+        with patch('clef.download.helpdesk') as helpdesk_:
+            with patch('clef.download.platform.node', return_value='vdi'):
+                with patch.object(builtins, 'input', return_value='y'):
+                    write_request('dummy_project', ['a','b'])
+                    helpdesk_.assert_called_once()
+
+                helpdesk_.reset_mock()
+                with patch.object(builtins, 'input', return_value='n'):
+                    write_request('dummy_project', ['a','b'])
+                    helpdesk_.assert_not_called()
 
