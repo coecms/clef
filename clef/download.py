@@ -26,7 +26,7 @@ import platform
 
 def write_request(project, missing):
     ''' write missing dataset_ids to file to create download request for synda '''
-    current_dir = os.getcwd() 
+    current_dir = os.getcwd()
     user = os.environ.get('USER', 'unknown')
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
@@ -70,7 +70,7 @@ def helpdesk(user, rootdir, fname, project):
        smtpObj.sendmail(msg['From'],msg['To'],msg.as_string())        
        print( "Your request was successfully sent to the NCI helpdesk")
        print(f'A copy of your request has been saved in \n {f.name}')
-    except SMTPException:
+    except smtplib.SMTPException:
        print("Error: unable to send email")
        print(f'Your request has been saved in \n {f.name}')
        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
