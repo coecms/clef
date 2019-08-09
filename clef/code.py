@@ -340,32 +340,37 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
     '''
 
     results = []
-    # use local search
-    if local:
-        msg = "There are no simulations stored locally"
-        # perform the query for each variable separately and concatenate the results
-        combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
-        for c in combs:
-            results.extend( search(session,project=project.lower(),**c) )
-    # use ESGF search
-    else:
-        msg = "There are no simulations currently available on the ESGF nodes"
-        kwquery = {k:tuple(v) for k,v in kwargs.items()}
-        kwquery['project']=project.upper()
-        if project == 'CMIP5':
-            fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
+    try:
+        # use local search
+        if local:
+            msg = "There are no simulations stored locally"
+            # perform the query for each variable separately and concatenate the results
+            combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+            for c in combs:
+                results.extend( search(session,project=project.lower(),**c) )
+        # use ESGF search
         else:
-            fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
-                               'activity_id','table_id','version','grid_label','source_type',
-                               'frequency','member_id','sub_experiment_id'])
-        query=None
-        response = esgf_query(query, fields, **kwquery)
-        for row in response['response']['docs']:
-            results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+            msg = "There are no simulations currently available on the ESGF nodes"
+            kwquery = {k:tuple(v) for k,v in kwargs.items()}
+            kwquery['project']=project.upper()
+            if project == 'CMIP5':
+                fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
+            else:
+                fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
+                                   'activity_id','table_id','version','grid_label','source_type',
+                                   'frequency','member_id','sub_experiment_id'])
+            query=None
+            response = esgf_query(query, fields, **kwquery)
+            for row in response['response']['docs']:
+                results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+
+    except Exception as e:
+        print('ERROR',str(e))
+        return None
 
     # if nothing turned by query print warning and return
     if len(results) == 0:
-        print(f'${msg} for ${kwargs}')
+        print(f'{msg} for {kwargs}')
         return
     return results, and_filter(results, cols, fixed, **kwargs) 
 

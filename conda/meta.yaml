@@ -15,7 +15,7 @@ build:
         - LC_ALL # For click tests
         - CLEF_DB
     entry_points:
-        - clef = clef.cli:clef
+        - clef = clef.cli:clef_catch
 
 requirements:
     host:

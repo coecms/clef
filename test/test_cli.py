@@ -180,3 +180,57 @@ def test_cmip5_present(prod_cli):
     r = prod_cli(['--request', 'cmip5', *facets])
     assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
             "Everything available on ESGF is also available locally\n")
+
+@pytest.mark.production
+def test_cmip6_present(prod_cli):
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tas','--variant_label=r1i1p1f2']
+
+    r = prod_cli(['cmip6', *facets])
+    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/\n\n" +
+        "Everything available on ESGF is also available locally\n")
+
+    r = prod_cli(['cmip6', *facets, '--format=file'])
+    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_185001-194912.nc\n" +
+            "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_195001-201412.nc\n\n" +
+            "Everything available on ESGF is also available locally\n")
+
+    r = prod_cli(['--local', 'cmip6', *facets])
+    assert r.output == "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406\n"
+
+    r = prod_cli(['--remote', 'cmip6', *facets])
+    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406\n"
+
+    r = prod_cli(['--remote', 'cmip6', *facets, '--format=file'])
+    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406.tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_185001-194912.nc\n" +
+    "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406.tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_195001-201412.nc\n")
+
+    r = prod_cli(['--request', 'cmip6', *facets])
+    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/\n\n" +
+            "Everything available on ESGF is also available locally\n")
+
+@pytest.mark.production
+def test_cmip6_missing(prod_cli):
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tas','--variant_label=r2i1p1f2']
+
+    r = prod_cli(['cmip6', *facets])
+    assert r.output == ("\nAvailable on ESGF but not locally:\n"+
+        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502\n")
+
+    r = prod_cli(['cmip6', *facets, '--format=file'])
+    assert r.output == ("\nAvailable on ESGF but not locally:\n"+
+            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_185001-194912.nc\n" +
+            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_195001-201412.nc\n")
+
+    r = prod_cli(['--local', 'cmip6', *facets])
+    assert r.output == ""
+
+    r = prod_cli(['--remote', 'cmip6', *facets])
+    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502\n"
+
+    r = prod_cli(['--remote', 'cmip6', *facets, '--format=file'])
+    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_185001-194912.nc\n" +
+            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_195001-201412.nc\n")
+
+    with mock.patch('clef.cli.write_request') as write_request:
+        r = prod_cli(['--request', 'cmip6', *facets])
+        write_request.assert_called_with('CMIP6', ['CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502'])
