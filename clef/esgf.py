@@ -45,7 +45,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query, fields, limit=5000, offset=0, distrib=True, replica=False, latest=None, **kwargs):
+def esgf_query(query, fields, otype='File', limit=5000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
@@ -81,17 +81,16 @@ def esgf_query(query, fields, limit=5000, offset=0, distrib=True, replica=False,
           'distrib': distrib,
           'replica': replica,
           'latest': latest, 
-          'type': 'File',
+          'type': otype,
           'format': 'application/solr+json',
           } 
     params.update(kwargs)
+    if otype == 'Dataset': params.pop('type')
     #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
     #                 params = params )
     r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
-
     r.raise_for_status()
-
     return r.json()
 
 
@@ -118,6 +117,7 @@ def link_to_esgf(query, **kwargs):
             'fields': kwargs.get('fields',None),
             'offset': kwargs.get('offset',None),
             'limit': kwargs.get('limit',None),
+            'type': kwargs.get('otype','File'),
             'distrib': 'on' if kwargs.get('distrib',True) else None,
             'replica': 'on' if kwargs.get('replica',False) else None,
             'latest': 'on' if kwargs.get('latest',None) else None
@@ -253,16 +253,18 @@ def find_local_path(session, subq, oformat='file'):
 
     if oformat == 'file':
         return (session
-                .query('esgf_paths.path')
-                .select_from(subq)
+                 .query('esgf_paths.path')
+                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None)
-                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))))
+                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/latest/%')))
+                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/v20%/%'))))
     elif oformat == 'dataset':
         return (session
                 .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
                 .select_from(subq)
                 .filter(subq.c.esgf_paths_file_id != None)
-                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%')))
+                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/latest/%')))
+                .filter(sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/v20%/%')))
                 .distinct())
     else:
         raise NotImplementedError

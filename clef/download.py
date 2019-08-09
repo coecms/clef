@@ -26,11 +26,11 @@ import platform
 
 def write_request(project, missing):
     ''' write missing dataset_ids to file to create download request for synda '''
-    current_dir = os.getcwd() + '/'
-    user = os.environ['USER']
+    current_dir = os.getcwd() 
+    user = os.environ.get('USER', 'unknown')
     tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
     fname = "_".join([project,user,tstamp])+".txt" 
-    f = open(current_dir+fname, 'w')
+    f = open(os.path.join(current_dir,fname), 'w')
     variables=set()
     for m in missing:
         if project == 'CMIP5':
@@ -56,12 +56,11 @@ def helpdesk(user, rootdir, fname, project):
     ''' Send e-mail and synda request to helpdesk '''
     msg = MIMEMultipart()
     msg['From'] = user+'@nci.org.au'
-    #msg['To'] = 'help@nf.nci.org.au'
-    msg['To'] = 'paolap@utas.edu.au'
+    msg['To'] = 'help@nf.nci.org.au'
     msg['Subject'] = 'Synda request: ' + fname
     message = project + " synda download requested from user: " + user
     msg.attach(MIMEText(message, 'plain'))
-    f = open(rootdir + fname)
+    f = open(os.path.join(rootdir, fname))
     attachment=MIMEText(f.read())
     f.close()
     attachment.add_header('Content-Disposition','attachment', filename=fname)
@@ -70,10 +69,10 @@ def helpdesk(user, rootdir, fname, project):
        smtpObj = smtplib.SMTP('localhost')
        smtpObj.sendmail(msg['From'],msg['To'],msg.as_string())        
        print( "Your request was successfully sent to the NCI helpdesk")
-       print(f'A copy of your request has been saved in \n {current_dir}/{fname}')
+       print(f'A copy of your request has been saved in \n {f.name}')
     except SMTPException:
        print("Error: unable to send email")
-       print(f'Your request has been saved in \n {current_dir}/{fname}')
+       print(f'Your request has been saved in \n {f.name}')
        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
