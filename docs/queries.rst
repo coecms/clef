@@ -47,3 +47,15 @@ In particular for CMIP6, for which data is still getting published, you might wa
     results, selection = matching(s, allvalues, fixed, project='CMIP6', local=False, **constraints)
 
 NB currently using the abbreviated version for the constraints keys won't work, you will have to use the attributes full names. 
+
+You can now call this function also from the command line::
+   clef --local cmip6 -v tasmin -v tasmax  -t Amon -e piControl -mi r1i1p1f1  --and variable_id --and experiment_id
+   AWI-CM-1-1-MR r1i1p1f1 {'v20181218'}
+   BCC-CSM2-MR r1i1p1f1 {'v20181016'}
+   ...
+   MIROC6 r1i1p1f1 {'v20181212'}
+   MRI-ESM2-0 r1i1p1f1 {'v20190222'}
+   SAM0-UNICON r1i1p1f1 {'v20190323'}
+
+You use the *--and* option to pass the *fixed* arguments, it assumes that *model* and *ensemble* define a simulation.
+
