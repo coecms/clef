@@ -31,7 +31,7 @@ import itertools
 from calendar import monthrange
 import re
 
- 
+
 def search(session, project='cmip5', **kwargs):
     """
     This call the local query when integrated in python script before running query checks
@@ -42,7 +42,7 @@ def search(session, project='cmip5', **kwargs):
     vocabularies = load_vocabularies(project)
     check_values(vocabularies, project, args)
     if 'model' in args.keys():
-        fix_model(project, args['model'])
+        args['model'] = fix_model(project, [args['model']])[0]
     return local_query(session, project, **args)
 
 
@@ -186,9 +186,9 @@ def check_keys(valid_keys, kwargs):
     for key,value in kwargs.items():
         facet = [k for k,v in valid_keys.items() if key in v]
         if facet==[]:
-            print(f"Warning {key} is not a valid constraint name")
-            print(f"Valid constraints are:\n{valid_keys.values()}")
-            sys.exit()
+            raise ClefException(
+                f"Warning {key} is not a valid constraint name"
+                f"Valid constraints are:\n{valid_keys.values()}")
         else:
             args[facet[0]] = value
     return args
@@ -203,12 +203,10 @@ def check_values(vocabularies, project, args):
     elif project == 'cmip6':
         source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
     else:
-        print(f'Search for {project} not yet implemented')
-        sys.exit()
+        raise NotImplementedError(f'Search for {project} not yet implemented')
     for k,v in args.items():
         if k in locals() and v not in locals()[k]:
-            print(f'{v} is not a valid value for {k}')
-            sys.exit()
+            raise ClefException(f'"{v}" is not a valid value for the facet "{k}" in project {project}')
     return args
 
 def load_vocabularies(project):
@@ -342,32 +340,37 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
     '''
 
     results = []
-    # use local search
-    if local:
-        msg = "There are no simulations stored locally"
-        # perform the query for each variable separately and concatenate the results
-        combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
-        for c in combs:
-            results.extend( search(session,project=project.lower(),**c) )
-    # use ESGF search
-    else:
-        msg = "There are no simulations currently available on the ESGF nodes"
-        kwquery = {k:tuple(v) for k,v in kwargs.items()}
-        kwquery['project']=project.upper()
-        if project == 'CMIP5':
-            fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
+    try:
+        # use local search
+        if local:
+            msg = "There are no simulations stored locally"
+            # perform the query for each variable separately and concatenate the results
+            combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+            for c in combs:
+                results.extend( search(session,project=project.lower(),**c) )
+        # use ESGF search
         else:
-            fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
-                               'activity_id','table_id','version','grid_label','source_type',
-                               'frequency','member_id','sub_experiment_id'])
-        query=None
-        response = esgf_query(query, fields, **kwquery)
-        for row in response['response']['docs']:
-            results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+            msg = "There are no simulations currently available on the ESGF nodes"
+            kwquery = {k:tuple(v) for k,v in kwargs.items()}
+            kwquery['project']=project.upper()
+            if project == 'CMIP5':
+                fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
+            else:
+                fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
+                                   'activity_id','table_id','version','grid_label','source_type',
+                                   'frequency','member_id','sub_experiment_id'])
+            query=None
+            response = esgf_query(query, fields, **kwquery)
+            for row in response['response']['docs']:
+                results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+
+    except Exception as e:
+        print('ERROR',str(e))
+        return None
 
     # if nothing turned by query print warning and return
     if len(results) == 0:
-        print(f'${msg} for ${kwargs}')
+        print(f'{msg} for {kwargs}')
         return
     return results, and_filter(results, cols, fixed, **kwargs) 
 

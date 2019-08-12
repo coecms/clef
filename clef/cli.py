@@ -307,7 +307,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     subq = match_query(s, query=' '.join(query),
             distrib= distrib,
             replica=replica,
-            latest=(None if latest == 'all' else latest),
+            latest=(latest if latest else None),
             cf_standard_name=cf_standard_name,
             experiment_family=experiment_family,
             project=project,
@@ -328,24 +328,23 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     qm = find_missing_id(s, subq, oformat=oformat)
 
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
-    try:
-        if qm.count() > 0:
-            if 'variable' in terms.keys():
-                varlist = terms['variable']
-            else:
-                varlist = []
-            updated = search_queue_csv(qm, project, varlist)
-            if len(updated) > 0:
-                print('\nAvailable on ESGF but not locally:')
-                for result in updated:
-                    print(result)
+    if qm.count() > 0:
+        if 'variable' in terms.keys():
+            varlist = terms['variable']
         else:
-            print('\nEverything available on ESGF is also available locally')
-            return
-    except FileNotFoundError:
-        pass
+            varlist = []
+        updated = search_queue_csv(qm, project, varlist)
+        if len(updated) > 0:
+            print('\nAvailable on ESGF but not locally:')
+            for result in updated:
+                print(result)
+    else:
+        print('\nEverything available on ESGF is also available locally')
+        return
 
     if ctx.obj['flow'] == 'request':
+        if len(varlist) == 0:
+            raise ClefException("Please specify at least one variable to request")
         if len(updated) >0:
             write_request('CMIP5',updated)
         else:
@@ -408,7 +407,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'table_id': table_id,
         'variable_id': variable_id,
         'grid_label': grid_label,
-        'nominal_resolution': nominal_resolution
+        'nominal_resolution': nominal_resolution,
+        'variant_label': variant_label,
         }
 
     # keep track of query arguments in clef_log file
@@ -452,11 +452,16 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     for key, value in six.iteritems(dataset_constraints):
         if len(value) > 0:
             terms[key] = value
+    if ctx.obj['flow'] == 'local':
+        paths = call_local_query(s, project, oformat, **terms) 
+        for p in paths:
+            print(p)
+        return 
 
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
             replica=replica,
-            latest=(None if latest == 'all' else latest),
+            latest=(latest if latest else None),
             cf_standard_name=cf_standard_name,
             project=project,
             **terms
@@ -477,16 +482,14 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     qm = find_missing_id(s, subq, oformat=oformat)
     
     # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
-    try:
-        if qm.count() > 0:
-            updated = search_queue_csv(qm, project, [])
-            print('\nAvailable on ESGF but not locally:')
-            for result in updated:
-                print(result)
-        else:
-            print('\nEverything available on ESGF is also available locally')
-    except FileNotFoundError:
-        pass
+    if qm.count() > 0:
+        updated = search_queue_csv(qm, project, [])
+        print('\nAvailable on ESGF but not locally:')
+        for result in updated:
+            print(result)
+    else:
+        print('\nEverything available on ESGF is also available locally')
+        return
 
     if ctx.obj['flow'] == 'request':
         if len(updated) >0:

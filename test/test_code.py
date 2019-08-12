@@ -17,6 +17,7 @@
 from clef.code import *
 #from code_fixtures import session
 from code_fixtures import * 
+import pytest
 
 # Tests for the basic list queries
 
@@ -46,8 +47,19 @@ def test_check_values(c5_kwargs, c5_vocab):
     assert args == c5_kwargs 
     bad_arg=c5_kwargs.copy()
     bad_arg['experiment'] = 'dummy'
-    with pytest.raises(SystemExit):
+    with pytest.raises(ClefException):
         args = check_values(c5_vocab, 'cmip5', bad_arg)
+
+def test_check_vocab():
+    project = 'cmip5'
+    vocab = load_vocabularies(project)
+    args = check_values(vocab, project, {'variable':'tas'})
+    assert args['variable'] == 'tas'
+
+    project = 'cmip6'
+    vocab = load_vocabularies(project)
+    args = check_values(vocab, project, {'variable_id':'tas'})
+    assert args['variable_id'] == 'tas'
 
 def test_check_keys(c5_kwargs,c5_keys):
     args = check_keys(c5_keys, c5_kwargs)
@@ -56,7 +68,7 @@ def test_check_keys(c5_kwargs,c5_keys):
                     'experiment_family': 'RCP', 'ensemble': 'r1i1p1'}
     bad_arg=c5_kwargs.copy()
     bad_arg['activity_id'] = 'dummy'
-    with pytest.raises(SystemExit):
+    with pytest.raises(ClefException):
         args = check_keys(c5_keys, bad_arg)
 
 def test_fix_model():
@@ -70,6 +82,11 @@ def test_convert_periods(nranges, periods, empty):
     res1 = convert_periods(nranges,'mon')
     assert res1 == periods[0]
     assert convert_periods(empty,'mon') == ([]) 
+
+    nranges2 = nranges.copy()
+    nranges2.append(None)
+    res2 = convert_periods(nranges2, 'mon')
+    assert res2 == res1
 
 def test_time_axis(periods):
     #test contiguos axis monthly frequency 
@@ -132,3 +149,57 @@ def test_and_filter(local_results, remote_results):
     models = [s['source_id'] for s in selection] 
     assert 'mod2' not in models
     assert len(selection) == 2 
+
+
+@pytest.mark.production
+def test_search(session):
+    with pytest.raises(ClefException):
+        search(session, project='cmip5', model='bad')
+    with pytest.raises(ClefException):
+        search(session, project='cmip5', foo='blarg')
+
+    facets = {
+        'experiment':'historical',
+        'cmor_table':'Amon',
+        'ensemble':'r1i1p1',
+        'variable':'tas'
+    }
+
+    r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
+
+@pytest.mark.production
+def test_search_results(session):
+    facets = {
+        'experiment':'historical',
+        'cmor_table':'Amon',
+        'ensemble':'r1i1p1',
+        'variable':'tas'
+    }
+
+    r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
+    assert len(r0) == 1, "Only one result"
+    assert r0[0]['model'] == 'ACCESS1.0', "Model matches input"
+
+    r1 = search(session, project='cmip5', model='ACCESS1-0', **facets)
+    assert len(r1) == len(r0), "Same result with filtered name"
+    assert r1[0]['model'] == 'ACCESS1.0', "Model is cleaned"
+
+    # No variable constraint
+    facets.pop('variable')
+    r2 = search(session, project='cmip5', model='ACCESS1-0', **facets)
+    assert len(r2) == 48
+
+    r3 = search(session, project='cmip6', model='AWI-CM-1-1-MR',
+                experiment='historical', variable='uas', cmor_table='3hr')
+    assert r3[0]['pdir'] == '/g/data1b/oi10/replicas/CMIP6/CMIP/AWI/AWI-CM-1-1-MR/historical/r1i1p1f1/3hr/uas/gn/v20181218'
+
+def test_matching(session):
+    facets = {
+        'experiment':['historical'],
+        'cmor_table':'Amon',
+        'ensemble':'r1i1p1',
+        'variable': ['x'],
+    }
+    # Errors should print a message and return 'None'
+    r = matching(session, ['variable','experiment'],['model','ensemble'], **facets)
+    assert r is None
