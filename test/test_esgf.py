@@ -160,7 +160,6 @@ def test_find_local_path_present(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         subq = match_query(session, '')
         results = find_local_path(session, subq)
-        print(results.all())
         assert results.count() == 1
 
 def test_find_missing_id_missing(session):
@@ -231,7 +230,7 @@ def test_find_local_path_dataset(session):
         subq = match_query(session, '')
         results = find_local_path(session, subq, oformat='dataset')
         assert results.count() == 1
-        assert results[0][0] == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/v20121011/clt/'
+        assert results[0][0] == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/files/clt_20121011/'
 
 def test_find_partial_dataset(session):
     """
