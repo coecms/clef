@@ -24,7 +24,7 @@ def pytest_runtest_setup(item):
 @pytest.fixture(scope='session')
 def session(pytestconfig):
     url = pytestconfig.getoption('db')
-    engine = sa.create_engine(url)
+    engine = sa.create_engine(url, echo=True)
     Session = sa.orm.sessionmaker(bind=engine)
 
     # Ensure read-only
