@@ -251,7 +251,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'experiment_family': experiment_family,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints)
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
@@ -302,10 +302,10 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'variant_label': variant_label,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints)
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints):
+def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints, and_attr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
@@ -323,7 +323,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     terms = {}
     # Add filters
     for key, value in six.iteritems(constraints):
-        if len(value) > 0:
+        if value is not None and len(value) > 0:
             terms[key] = value
 
     if ctx.obj['flow'] == 'remote':
@@ -338,27 +338,15 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
                 replica=replica,
                 latest=latest,
                 cf_standard_name=cf_standard_name,
-                variant_label=variant_label,
-                member_id=member_id,
-                experiment_id=experiment_id,
-                source_type=source_type,
-                institution_id=institution_id,
-                table_id=table_id,
-                source_id=source_id,
                 project=project,
-                realm=realm,
-                frequency=frequency,
-                variable_id=variable_id,
-                activity_id=activity_id,
-                grid_label=grid_label,
-                nominal_resolution=nominal_resolution
+                **constraints,
                 )
 
             if oformat == 'file':
                 for result in s.query(q):
                     print(result.id)
             else:
-                ids=set(x.dataset_id for x in s.query(q))
+                ids=sorted(set(x.dataset_id for x in s.query(q)))
                 for did in ids:
                     print(did)
             return
