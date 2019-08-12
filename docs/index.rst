@@ -16,6 +16,7 @@ Contents:
    esgf.rst
    ds.rst
    code.rst
+   queries.rst
    architecture.rst
    api/api.rst
    autoapi/modules.rst
