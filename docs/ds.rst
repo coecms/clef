@@ -43,7 +43,7 @@ Since variables can be named differently among datasets, using the standard_name
 
 Examples
 --------
-::
+Looking for all datasets which have air temperature data and netcdf as file format::
     $ clef ds -f netcdf --standard-name air_temperature
       ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
       tas: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_sfc/1.0/tas/tas_6hr_ERAI_historical_oper_an_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
@@ -52,11 +52,10 @@ Examples
       mx2t: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/mx2t/mx2t_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
       tas: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/tas/tas_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
 
-This returns all the variable available as netcdf files and with air_temperature as standard_name.
-NB for each variable a path structure is returned.::
+NB for each variable a path structure is returned.
+This returns a subset of the previous search using the cmor_name to clearly identify one kind of air_temperature::
 
     $ clef ds -f netcdf --cmor-name ta
       ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
       ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_ml/1.0/ta/ta_6hr_ERAI_historical_oper_an_ml_<YYYYMMDD>_<YYYYMMDD>.nc
 
-This returns a subset of the previous search using the cmor_name to clearly identify one kind of air_temperature.
