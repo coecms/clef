@@ -252,3 +252,12 @@ def test_cmip6_missing(prod_cli):
     with mock.patch('clef.cli.write_request') as write_request:
         r = prod_cli(['--request', 'cmip6', *facets])
         write_request.assert_called_with('CMIP6', ['CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502'])
+
+@pytest.mark.production
+def test_cmip6_and(prod_cli):
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmin','--variable=tasmax','--variant_label=r1i1p1f2']
+    r = prod_cli(['--local', 'cmip6', *facets, '--and=variable_id'])
+    assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"
+
+    r = prod_cli(['--remote', 'cmip6', *facets, '--and=variable_id'])
+    assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"

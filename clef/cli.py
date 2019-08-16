@@ -363,9 +363,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
                 print(p)
         return 
 
-    if project == 'CMIP5' and 'model' in terms:
-        terms['model'] = fix_model(project, terms['model'])
-
     # if not local, query ESGF first and then MAS based on checksums
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
