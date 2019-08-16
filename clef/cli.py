@@ -20,7 +20,7 @@ from .esgf import match_query, find_local_path, find_missing_id, find_checksum_i
 from .download import *
 from . import collections as colls 
 from .exception import ClefException
-from .code import load_vocabularies, call_local_query, fix_model, fix_path
+from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching
 import click
 import logging
 from datetime import datetime
@@ -107,11 +107,11 @@ def warning(message):
 
 
 def cmip5_args(f):
-    models, realms, variables, frequencies, tables, experiments, families = load_vocabularies('CMIP5')
+    models, realms, variables, frequencies, tables, experiments, families, attributes = load_vocabularies('CMIP5')
     constraints = [
         click.option('--experiment', '-e', multiple=True, type=click.Choice(experiments), metavar='x',
                       help="CMIP5 experiment: piControl, rcp85, amip ..."),
-        click.option('--experiment_family',multiple=True, type=click.Choice(families),
+        click.option('--experiment_family',multiple=False, type=click.Choice(families),
                       help="CMIP5 experiment family: Decadal, RCP ..."),
         click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x', 
                       help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
@@ -121,6 +121,8 @@ def cmip5_args(f):
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
         click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ), 
         click.option('--realm', multiple=True, type=click.Choice(realms) ),
+        click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
+                      help="Attributes for which we want to add AND filter, i.e. -v tasmin -v tasmax --and variable will return only model/ensemble that have both"),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
     for c in reversed(constraints):
@@ -148,7 +150,7 @@ def common_args(f):
 
 def cmip6_args(f):
 # 
-    models, realms, variables, frequencies, tables, experiments, activities, stypes = load_vocabularies('CMIP6')
+    models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes = load_vocabularies('CMIP6')
     constraints = [
         click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
         click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(experiments), metavar='x',
@@ -169,7 +171,9 @@ def cmip6_args(f):
                      # help="CMIP6 realm"),
         click.option('--sub_experiment_id', '-se', multiple=True, help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
-        click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ..."),
+        click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
+                      help="Attributes for which we want to add AND filter, i.e. -v tasmin -v tasmax --and variable_id will return only model/ensemble that have both"),
+        click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
     for c in reversed(constraints):
         f = c(f)
@@ -221,7 +225,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         model,
         realm,
         time_frequency,
-        variable
+        variable,
+        and_attr
         ):
     """
     Search ESGF and local database for CMIP5 files
@@ -231,9 +236,9 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
     """
     project='CMIP5'
 
-    #ensemble_terms = None
-    #model_terms = None
-
+    # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
+    if len(model) > 0: 
+        model = fix_model(project, model)
     dataset_constraints = {
         'ensemble': ensemble,
         'experiment': experiment,
@@ -246,7 +251,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'experiment_family': experiment_family,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints)
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
@@ -268,7 +273,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         variable_id,
         activity_id,
         grid_label,
-        nominal_resolution
+        nominal_resolution,
+        and_attr
         ):
     """
     Search ESGF and local database for CMIP6 files
@@ -296,10 +302,10 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'variant_label': variant_label,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints)
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints):
+def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints, and_attr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
@@ -314,40 +320,50 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
     clef_log.info('  ;  '.join([user_name,project,ctx.obj['flow'],args_str]))
 
-    if ctx.obj['flow'] == 'remote':
-        q = find_checksum_id(' '.join(query),
-            distrib=distrib,
-            replica=replica,
-            latest=latest,
-            cf_standard_name=cf_standard_name,
-            project=project,
-            **constraints,
-            )
-
-        if oformat == 'file':
-            for result in s.query(q):
-                print(result.id)
-        else:
-            ids=sorted(set(x.dataset_id for x in s.query(q)))
-            for did in ids:
-                print(did)
-        return
-
     terms = {}
-
     # Add filters
     for key, value in six.iteritems(constraints):
-        if len(value) > 0:
+        if value is not None and len(value) > 0:
             terms[key] = value
+
+    if ctx.obj['flow'] == 'remote':
+        if len(and_attr) > 0:
+            results, selection = matching(s, and_attr, ['source_id', 'member_id'], project=project, local=False, **terms)
+            for row in selection:
+                print(row['source_id'],row['member_id'], row['version'])
+            return
+        else:
+            q = find_checksum_id(' '.join(query),
+                distrib=distrib,
+                replica=replica,
+                latest=latest,
+                cf_standard_name=cf_standard_name,
+                project=project,
+                **constraints,
+                )
+
+            if oformat == 'file':
+                for result in s.query(q):
+                    print(result.id)
+            else:
+                ids=sorted(set(x.dataset_id for x in s.query(q)))
+                for did in ids:
+                    print(did)
+            return
+
+    # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
-        paths = call_local_query(s, project, oformat, **terms) 
-        for p in paths:
-            print(p)
+        if len(and_attr) > 0:
+            results, selection = matching(s, and_attr, ['source_id','member_id'], project='CMIP6', local=True, **terms)
+            for row in selection:
+                print(row['source_id'],row['member_id'], row['version'])
+        else:
+            paths = call_local_query(s, project, oformat, **terms) 
+            for p in paths:
+                print(p)
         return 
 
-    if project == 'CMIP5' and 'model' in terms:
-        terms['model'] = fix_model(project, terms['model'])
-
+    # if not local, query ESGF first and then MAS based on checksums
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -358,7 +374,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
             )
 
     # Make sure that if find_local_path does an all-version search using the
-    # filename, the resulting project is still CMIP5 (and not say a PMIP file
+    # filename, the resulting project is still CMIP6 (and not say a PMIP file
     # with the same name)
     ql = find_local_path(s, subq, oformat=oformat)
 
@@ -376,7 +392,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
 
     qm = find_missing_id(s, subq, oformat=oformat)
     
-    # if there are missing datasets, search for dataset_id in synda queue, update list and print result 
+    # if there are missing datasets, search for dataset_id in synda queue,
+    #  update list and print result 
     if qm.count() > 0:
         varlist = []
         if project == 'CMIP5' and 'variable' in terms:
@@ -397,8 +414,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
         else:
             print("\nAll the published data is already available locally, or has been requested, nothing to request")
 
-# should we add a qtype: dataset or variable? Or if any of the variables keys are passed then pass variables list otherwise datsets only
-# we should have two outputs option though one genric info and the other filepath! 
 @clef.command()
 @ds_args
 def ds(**kwargs):

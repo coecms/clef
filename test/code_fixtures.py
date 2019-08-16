@@ -35,7 +35,7 @@ def c5_kwargs(request):
 @pytest.fixture(scope="module")
 def c5_vocab(request):
     return ([ 'INM-CM4'], ['atmos'], ['tas'], ['mon'],
-           [ 'Amon'], ['rcp85'], ['RCP'])
+           [ 'Amon'], ['rcp85'], ['variable'], ['RCP'])
 
 @pytest.fixture(scope="module")
 def c5_keys(request):

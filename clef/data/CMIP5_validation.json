@@ -919,6 +919,15 @@
  "sstClimSulfate",
  "volcIn2010"
 ],
+"attributes": [
+ "variable",
+ "experiment",
+ "cmor_table",
+ "realm",
+ "time_frequency",
+ "model",
+ "ensemble"
+],
 "families":  [
  "Atmos-only",
  "Control",
