@@ -56,8 +56,7 @@ def helpdesk(user, rootdir, fname, project):
     ''' Send e-mail and synda request to helpdesk '''
     msg = MIMEMultipart()
     msg['From'] = user+'@nci.org.au'
-    #msg['To'] = 'help@nf.nci.org.au'
-    msg['To'] = 'paolap@utas.edu.au'
+    msg['To'] = 'help@nf.nci.org.au'
     msg['Subject'] = 'Synda request: ' + fname
     message = project + " synda download requested from user: " + user
     msg.attach(MIMEText(message, 'plain'))

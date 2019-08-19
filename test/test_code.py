@@ -43,20 +43,20 @@ def present_query(*args, **kwags):
     return response
 
 def test_check_values(c5_kwargs, c5_vocab):
-    args = check_values(c5_vocab, 'cmip5', c5_kwargs)
+    args = check_values(c5_vocab, 'CMIP5', c5_kwargs)
     assert args == c5_kwargs 
     bad_arg=c5_kwargs.copy()
     bad_arg['experiment'] = 'dummy'
     with pytest.raises(ClefException):
-        args = check_values(c5_vocab, 'cmip5', bad_arg)
+        args = check_values(c5_vocab, 'CMIP5', bad_arg)
 
-def test_check_vocab():
-    project = 'cmip5'
+def test_check_load_vocabularies():
+    project = 'CMIP5'
     vocab = load_vocabularies(project)
     args = check_values(vocab, project, {'variable':'tas'})
     assert args['variable'] == 'tas'
 
-    project = 'cmip6'
+    project = 'CMIP6'
     vocab = load_vocabularies(project)
     args = check_values(vocab, project, {'variable_id':'tas'})
     assert args['variable_id'] == 'tas'
@@ -71,11 +71,15 @@ def test_check_keys(c5_kwargs,c5_keys):
     with pytest.raises(ClefException):
         args = check_keys(c5_keys, bad_arg)
 
+def test_get_keys():
+    with pytest.raises(ClefException):
+        keys = get_keys('dummy')
+
 def test_fix_model():
     models = fix_model('cmip5', ['INM-CM4'], invert=True) 
     assert models == ['inmcm4']
     arg_model = ['CESM1-BGC', 'ACCESS1-0']
-    models = fix_model('cmip5', arg_model) 
+    models = fix_model('CMIP5', arg_model) 
     assert models == ['CESM1(BGC)', 'ACCESS1.0']
 
 def test_convert_periods(nranges, periods, empty):
@@ -101,13 +105,13 @@ def test_get_range(periods, empty):
 
 def test_fix_path():
     dir1 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/tas_20120115/'
-    dir2 = '/g/data/rr3/pubblications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
+    dir2 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
     dir3 = '/g/data/al33/replicas/CMIP5/output1/more/v20120316/tas/'
     dir4 =  dir3.replace('output1', 'unsolicited')
     fname = 'name.nc'
     assert fix_path(dir1) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/'
     assert fix_path(dir1+fname) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/name.nc'
-    assert fix_path(dir2) == '/g/data/rr3/pubblications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
+    assert fix_path(dir2) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
     assert fix_path(dir3) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
     assert fix_path(dir3+fname) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/name.nc'
     assert fix_path(dir4) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
@@ -156,7 +160,7 @@ def test_search(session):
     with pytest.raises(ClefException):
         search(session, project='cmip5', model='bad')
     with pytest.raises(ClefException):
-        search(session, project='cmip5', foo='blarg')
+        search(session, project='CMIP5', foo='blarg')
 
     facets = {
         'experiment':'historical',
@@ -203,3 +207,9 @@ def test_matching(session):
     # Errors should print a message and return 'None'
     r = matching(session, ['variable','experiment'],['model','ensemble'], **facets)
     assert r is None
+
+def test_get_version():
+    assert get_version('/g/data/inst/model/var/v20130405') == 'v20130405'
+    assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
+    assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
+

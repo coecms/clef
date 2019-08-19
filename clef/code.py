@@ -32,11 +32,12 @@ from calendar import monthrange
 import re
 
 
-def search(session, project='cmip5', **kwargs):
+def search(session, project='CMIP5', **kwargs):
     """
     This call the local query when integrated in python script before running query checks
     that the arguments names and values are correct and change model name where necessary
     """
+    project=project.upper()
     valid_keys = get_keys(project)
     args = check_keys(valid_keys, kwargs)
     vocabularies = load_vocabularies(project)
@@ -46,36 +47,40 @@ def search(session, project='cmip5', **kwargs):
     return local_query(session, project, **args)
 
 
-def local_query(session, project='cmip5', **kwargs):
+def local_query(session, project='CMIP5', **kwargs):
     """
     """
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
     results=[]
-    project = project.lower()
+    project = project.upper()
     # for cmip5 separate var from other constraints 
-    if project == 'cmip5' and 'variable' in kwargs.keys():
+    if project == 'CMIP5' and 'variable' in kwargs.keys():
         var = kwargs.pop('variable')
-    ctables={'cmip5': [C5Dataset, Path.c5dataset],
-          'cmip6': [C6Dataset, Path.c6dataset] }
-        
-    if 'var' in locals():
-        r = (session.query(Path.path.label('path'),
-            *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
-            *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
-           )
-           .join(Path.extended)
-           .join(ctables[project][1])
-           .filter_by(**kwargs)
-           .filter(ExtendedMetadata.variable == var))
-    else:
-        r = (session.query(Path.path.label('path'),
-            *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
-            *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
-           )
-           .join(Path.extended)
-           .join(ctables[project][1])
-           .filter_by(**kwargs))
+    if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
+        family = kwargs.pop('experiment_family')
+    ctables={'CMIP5': [C5Dataset, Path.c5dataset],
+          'CMIP6': [C6Dataset, Path.c6dataset] }
+    family_dict = {'RCP': ['%rcp%'],
+                   'ESM': ['esm%'],
+                   'Atmos-only': ['sst%', 'amip%', 'aqua%'],
+                   'Control': ['sstClim%', '%Control'],
+                   'decadal': ['decadal%','noVolc%', 'volcIn%'],
+                   'Idealized': ['%CO2'],
+                   'Paleo': ['lgm','midHolocene', 'past1000'],
+                   'historical': ['historical%','%Historical']}
+
+    r = (session.query(Path.path.label('path'),
+         *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
+         *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
+        )
+        .join(Path.extended)
+        .join(ctables[project][1])
+        .filter_by(**kwargs))
+    if 'family' in locals():
+          r =r.filter(C5Dataset.experiment.like(any_(family_dict[family])))
+    if 'var' in locals(): #and 'family' not in locals():
+        r = r.filter(ExtendedMetadata.variable == var)
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
@@ -95,8 +100,20 @@ def local_query(session, project='cmip5', **kwargs):
         gdict['periods'] = convert_periods(nranges, gdict['frequency'])
         gdict['fdate'], gdict['tdate'] = get_range(gdict['periods'])
         gdict['time_complete'] = time_axis(gdict['periods'],gdict['fdate'],gdict['tdate'])
+        # make sure a version is available even for CMIP6 where is usually None
+        if gdict['version'] is None:
+            gdict['version'] = get_version(gdict['pdir'])
         results.append(gdict)
     return results
+
+def get_version(path):
+    ''' Retrieve version from path if not available in MAS '''
+    mo = re.search(r'v\d{8}', path)
+    if mo: 
+        return  mo.group()
+    else:
+        return  None 
+
 
 def get_range(periods):
     """
@@ -169,11 +186,14 @@ def get_keys(project):
     """
     # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
     # representing the corresponding facet for CMIP5 and CMIP6
-    # ex. ('variable', 'variable_id', 'v'): {'cmip5': 'variable', 'cmip6': 'variable_id'}
+    # ex. ('variable', 'variable_id', 'v'): {'CMIP5': 'variable', 'CMIP6': 'variable_id'}
     fkeys = pkg_resources.resource_filename(__name__, 'data/valid_keys.json')
     with open(fkeys, 'r') as f:
          data = json.loads(f.read()) 
-    valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
+    try:
+        valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
+    except:
+        raise ClefException(f"Keys validation not defined for project: {project}")
     return valid_keys
 
 def check_keys(valid_keys, kwargs):
@@ -198,10 +218,10 @@ def check_values(vocabularies, project, args):
     Check that arguments values passed to search are valid, if not print warning and exit
     """
     # load dictionaries to check arguments values are valid
-    if project == 'cmip5':
-        model, realm, variable, frequency, table, experiment, experiment_family = vocabularies
-    elif project == 'cmip6':
-        source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type = vocabularies
+    if project == 'CMIP5':
+        model, realm, variable, frequency, table, experiment, attributes, experiment_family = vocabularies
+    elif project == 'CMIP6':
+        source_id, realm, variable_id, frequency, table_id, experiment_id, attributes, activity_id, source_type = vocabularies
     else:
         raise NotImplementedError(f'Search for {project} not yet implemented')
     for k,v in args.items():
@@ -222,14 +242,15 @@ def load_vocabularies(project):
          frequencies = json.loads(data)['frequencies']
          tables = json.loads(data)['tables']
          experiments = json.loads(data)['experiments']
+         attributes = json.loads(data)['attributes']
          if project == 'CMIP5':
              families = json.loads(data)['families']
          if project == 'CMIP6':
              activities = json.loads(data)['activities']
              stypes = json.loads(data)['source_types']
-             return models, realms, variables, frequencies, tables, experiments, activities, stypes
+             return models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes
     
-    return models, realms, variables, frequencies, tables, experiments, families 
+    return models, realms, variables, frequencies, tables, experiments, families, attributes 
 
 def fix_model(project, models, invert=False):
     """
@@ -332,7 +353,7 @@ def and_filter(results, cols, fixed, **kwargs):
 def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
     ''' Call and_filter after executing local or remote query of passed constraints 
         :session: database session
-        :project: ESGF project to search (cmip5/cmip6)
+        :project: ESGF project to search (CMIP5/CMIP6)
         :input: cols (list) the attributes for which we want all values to be present
         :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
         :input: kwargs (dictionary) are the query constraints
@@ -347,7 +368,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
             # perform the query for each variable separately and concatenate the results
             combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
             for c in combs:
-                results.extend( search(session,project=project.lower(),**c) )
+                results.extend( search(session,project=project.upper(),**c) )
         # use ESGF search
         else:
             msg = "There are no simulations currently available on the ESGF nodes"
@@ -362,7 +383,9 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
             query=None
             response = esgf_query(query, fields, **kwquery)
             for row in response['response']['docs']:
+                version = row['dataset_id'].split("|")[0].split(".")[-1]
                 results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+                results[-1]['version'] = version
 
     except Exception as e:
         print('ERROR',str(e))
