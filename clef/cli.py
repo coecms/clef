@@ -33,6 +33,7 @@ import stat
 import json
 import pkg_resources
 import re
+import clef.cordex as cordex_
 
 def clef_catch():
     debug_logger = logging.getLogger('clex_debug')
@@ -305,10 +306,33 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
     common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints, and_attr):
+
+@clef.command(cls=cordex_.CordexCommand)
+@click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
+             help="Return output for datasets (default) or individual files")
+@click.option('--latest/--all-versions', 'latest', default=True,  
+             help="Return only the latest version or all of them. Default: --latest")
+@click.option('--replica/--no-replica', default=False, 
+             help="Return both original files and replicas. Default: --no-replica")
+@click.option('--distrib/--no-distrib', 'distrib', default=True, 
+             help="Distribute search across all ESGF nodes. Default: --distrib")
+@click.option('--debug/--no-debug', default=False,
+             help="Show debug output. Default: --no-debug")
+@click.pass_context
+def cordex(ctx, oformat, latest, replica, distrib, debug, and_attr, **kwargs):
+    dataset_constraints = {k:v for k, v in kwargs.items() if k in cordex_.cli_facets}
+    
+    project='CORDEX'
+
+    common_esgf_cli(ctx, project, [], oformat, latest, replica, distrib, debug,
+            dataset_constraints, and_attr)
+
+
+def common_esgf_cli(ctx, project, query, oformat, latest, replica, distrib, debug, constraints, and_attr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
+        logging.getLogger('clex_debug').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
     user_name=os.environ.get('USER','unknown')
@@ -337,7 +361,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
                 distrib=distrib,
                 replica=replica,
                 latest=latest,
-                cf_standard_name=cf_standard_name,
                 project=project,
                 **constraints,
                 )
@@ -368,7 +391,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
             distrib=distrib,
             replica=replica,
             latest=(latest if latest else None),
-            cf_standard_name=cf_standard_name,
             project=project,
             **terms
             )

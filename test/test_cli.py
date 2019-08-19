@@ -261,3 +261,9 @@ def test_cmip6_and(prod_cli):
 
     r = prod_cli(['--remote', 'cmip6', *facets, '--and=variable_id'])
     assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"
+    
+
+@pytest.mark.production
+def test_cordex(prod_cli):
+    r = prod_cli('cordex')
+    assert r.output is None
