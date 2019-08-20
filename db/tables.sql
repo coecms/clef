@@ -173,6 +173,71 @@ CREATE OR REPLACE VIEW c6_dataset_metadata AS
     WHERE md_type = 'netcdf'
     AND cmip_era = 6;
 
+CREATE OR REPLACE VIEW cordex_dataset_metadata AS
+    WITH x AS (
+        SELECT
+            md_hash AS file_id,
+            md_json->'attributes'->>'model_id' as model_id,
+            md_json->'attributes'->>'frequency' as frequency,
+            md_json->'attributes'->>'institute_id' as institute_id,
+            md_json->'attributes'->>'CORDEX_domain' as CORDEX_domain,
+            md_json->'attributes'->>'experiment_id' as experiment_id,
+            md_json->'attributes'->>'rcm_version_id' as rcm_version_id,
+            md_json->'attributes'->>'driving_model_id' as driving_model_id,
+            md_json->'attributes'->>'driving_experiment_name' as driving_experiment_name,
+            md_json->'attributes'->>'driving_model_ensemble_member' as driving_model_ensemble_member
+        FROM metadata
+        WHERE md_type = 'netcdf'
+        AND md_json->'attributes'->>'project_id' = 'CORDEX'
+    )
+    SELECT
+        x.*,
+        md5(
+            model_id || '.' ||
+            frequency || '.' ||
+            institute_id || '.' ||
+            CORDEX_domain || '.' ||
+            experiment_id || '.' ||
+            rcm_version_id || '.' ||
+            driving_model_id || '.' ||
+            driving_experiment_name || '.' ||
+            driving_model_ensemble_member
+        )::uuid AS dataset_id
+    FROM x;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS cordex_metadata_dataset_link AS
+    SELECT
+        file_id,
+        dataset_id
+    FROM cordex_dataset_metadata;
+CREATE UNIQUE INDEX IF NOT EXISTS cordex_metadata_dataset_link_file_id ON cordex_metadata_dataset_link(file_id);
+CREATE INDEX IF NOT EXISTS cordex_metadata_dataset_link_dataset_id ON cordex_metadata_dataset_link(dataset_id);
+GRANT SELECT ON cordex_metadata_dataset_link TO PUBLIC;
+
+CREATE MATERIALIZED VIEW cordex_dataset AS
+    WITH x AS (
+        SELECT DISTINCT ON (dataset_id)
+            dataset_id,
+            file_id
+        FROM cordex_metadata_dataset_link
+        ORDER BY dataset_id, file_id
+    )
+    SELECT
+        x.dataset_id,
+        model_id,
+        frequency,
+        institute_id,
+        CORDEX_domain,
+        experiment_id,
+        rcm_version_id,
+        driving_model_id,
+        driving_experiment_name,
+        driving_model_ensemble_member
+    FROM cordex_dataset_metadata
+    JOIN x USING (file_id);
+GRANT SELECT ON cordex_dataset TO PUBLIC;
+
+
 CREATE MATERIALIZED VIEW IF NOT EXISTS c5_metadata_dataset_link AS
     SELECT
         file_id,
