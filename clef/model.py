@@ -40,7 +40,8 @@ from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property
+from sqlalchemy import func as f
 
 Base = declarative_base()
 
@@ -301,15 +302,17 @@ class CordexDataset(Base):
     __tablename__ = 'cordex_dataset'
 
     dataset_id = Column(UUID, primary_key=True)
-    rcm_name = Column('model_id', Text)
+    model_id = Column('model_id', Text)
     time_frequency = Column('frequency', Text)
     institute = Column('institute_id', Text)
-    domain = Column('CORDEX_domain', Text)
+    domain = Column('cordex_domain', Text)
     # experiment_id = Column('experiment_id', Text)
     rcm_version = Column('rcm_version_id', Text)
     driving_model = Column('driving_model_id', Text)
     experiment = Column('driving_experiment_name', Text)
     ensemble = Column('driving_model_ensemble_member', Text)
+
+    rcm_name = column_property(f.substr(model_id, f.char_length(institute) + 2))
 
 
 class Info(Base):

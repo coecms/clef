@@ -295,3 +295,6 @@ Everything available on ESGF is also available locally
 
     r = prod_cli('--remote cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
     assert r.output == "cordex.output.AUS-44.UNSW.CSIRO-BOM-ACCESS1-0.historical.r1i1p1.WRF360K.v1.mon.tas.v20180614\n"
+
+    r = prod_cli('--local cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
+    assert r.output == "/g/data1/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614\n"

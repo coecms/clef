@@ -55,7 +55,7 @@ def local_query(session, project='CMIP5', **kwargs):
     results=[]
     project = project.upper()
     # for cmip5 separate var from other constraints 
-    if project == 'CMIP5' and 'variable' in kwargs.keys():
+    if (project in ['CMIP5', 'CORDEX']) and ('variable' in kwargs):
         var = kwargs.pop('variable')
     if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')
