@@ -95,28 +95,3 @@ class CordexCommand(click.Command):
         opt = click.Option(['--and', 'and_attr'], multiple=True, type=click.Choice(cli_facets.keys()),
                       help="Attributes for which we want to add AND filter, i.e. -v tasmin -v tasmax --and variable_id will return only model/ensemble that have both")
         self.params.append(opt)
-
-
-@click.command(cls=CordexCommand)
-@click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
-             help="Return output for datasets (default) or individual files")
-@click.option('--latest/--all-versions', 'latest', default=True,  
-             help="Return only the latest version or all of them. Default: --latest")
-@click.option('--replica/--no-replica', default=False, 
-             help="Return both original files and replicas. Default: --no-replica")
-@click.option('--distrib/--no-distrib', 'distrib', default=True, 
-             help="Distribute search across all ESGF nodes. Default: --distrib")
-@click.option('--debug/--no-debug', default=False,
-             help="Show debug output. Default: --no-debug")
-@click.pass_context
-def cli(ctx, oformat, latest, replica, distrib, debug, and_attr, **kwargs):
-    dataset_constraints = {k:v for k, v in kwargs.items() if k in cli_facets}
-    
-    project='CORDEX'
-
-    common_esgf_cli(ctx, project, oformat, latest, replica, distrib, debug,
-            dataset_constraints, and_attr)
-
-
-if __name__ == '__main__':
-    cli()
