@@ -281,6 +281,9 @@ def fix_model(project, models, invert=False):
 
 def call_local_query(s, project, oformat, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
+    if 'cf_standard_name' in kwargs:
+        raise ClefException("'cf_standard_name' not supported in local queries")
+
     datasets = []
     paths = []
     if 'model' in kwargs.keys():

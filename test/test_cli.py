@@ -264,6 +264,34 @@ def test_cmip6_and(prod_cli):
     
 
 @pytest.mark.production
+def test_cf_standard_name(prod_cli):
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--cf_standard_name=surface_temperature','--variant_label=r1i1p1f2']
+    r = prod_cli(['cmip6', *facets])
+    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/ts/gn/v20190406/\n\n" +
+        "Everything available on ESGF is also available locally\n")
+
+    r = prod_cli(['--remote', 'cmip6', *facets])
+    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.ts.gn.v20190406\n"
+
+    facets = ['--model=ACCESS1.0','--experiment=historical',
+            '--frequency=mon', '--realm=atmos', '--cf_standard_name=surface_temperature', '--ensemble=r1i1p1']
+
+    r = prod_cli(['cmip5', *facets])
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/ts/\n\n" +
+        "Everything available on ESGF is also available locally\n")
+
+    r = prod_cli(['--remote', 'cmip5', *facets])
+    assert r.output == "cmip5.output1.CSIRO-BOM.ACCESS1-0.historical.mon.atmos.Amon.r1i1p1.v20120727\n"
+
+
+@pytest.mark.production
 def test_cordex(prod_cli):
-    r = prod_cli('cordex')
-    assert r.output is None
+    r = prod_cli('cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
+    assert r.output == """
+/g/data1/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614/
+
+Everything available on ESGF is also available locally
+""".lstrip()
+
+    r = prod_cli('--remote cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
+    assert r.output == "cordex.output.AUS-44.UNSW.CSIRO-BOM-ACCESS1-0.historical.r1i1p1.WRF360K.v1.mon.tas.v20180614\n"

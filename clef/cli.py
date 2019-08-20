@@ -250,9 +250,10 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'cmor_table': cmor_table,
         'variable': variable,
         'experiment_family': experiment_family,
+        'cf_standard_name': cf_standard_name,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
@@ -301,9 +302,10 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'table_id': table_id,
         'variable_id': variable_id,
         'variant_label': variant_label,
+        'cf_standard_name': cf_standard_name,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
 
 
 
