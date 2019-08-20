@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .db import connect, Session
-from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
+from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, CordexDataset
 from .exception import ClefException
 from .esgf import esgf_query
 from datetime import datetime, timedelta
@@ -60,7 +60,8 @@ def local_query(session, project='CMIP5', **kwargs):
     if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')
     ctables={'CMIP5': [C5Dataset, Path.c5dataset],
-          'CMIP6': [C6Dataset, Path.c6dataset] }
+          'CMIP6': [C6Dataset, Path.c6dataset],
+          'CORDEX': [CordexDataset, Path.cordexdataset] }
     family_dict = {'RCP': ['%rcp%'],
                    'ESM': ['esm%'],
                    'Atmos-only': ['sst%', 'amip%', 'aqua%'],

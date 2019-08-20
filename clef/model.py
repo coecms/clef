@@ -72,6 +72,13 @@ c6_metadata_dataset_link = Table('c6_metadata_dataset_link', Base.metadata,
                                         ForeignKey('checksums.ch_hash')),
                                  Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
 
+cordex_metadata_dataset_link = Table('cordex_metadata_dataset_link', Base.metadata,
+                                 Column('file_id',
+                                        ForeignKey('esgf_paths.file_id'),
+                                        ForeignKey('metadata.md_hash'),
+                                        ForeignKey('checksums.ch_hash')),
+                                 Column('dataset_id', ForeignKey('cordex_dataset.dataset_id')))
+
 
 class Path(Base):
     """Path of a file on Raijin, with links to metadata
@@ -88,6 +95,8 @@ class Path(Base):
 
     #: :class:`C6Dataset`:
     c6dataset = relationship('C6Dataset', secondary=c6_metadata_dataset_link, viewonly=True)
+
+    cordexdataset = relationship('CordexDataset', secondary=cordex_metadata_dataset_link, viewonly=True)
 
     #: :class:`Netcdf`:
     netcdf = relationship('Netcdf', viewonly=True)
@@ -286,6 +295,21 @@ class C6Dataset(Base):
 
     #:
     table_id = Column('table_id', Text)
+
+
+class CordexDataset(Base):
+    __tablename__ = 'cordex_dataset'
+
+    dataset_id = Column(UUID, primary_key=True)
+    rcm_name = Column('model_id', Text)
+    time_frequency = Column('frequency', Text)
+    institute = Column('institute_id', Text)
+    domain = Column('CORDEX_domain', Text)
+    # experiment_id = Column('experiment_id', Text)
+    rcm_version = Column('rcm_version_id', Text)
+    driving_model = Column('driving_model_id', Text)
+    experiment = Column('driving_experiment_name', Text)
+    ensemble = Column('driving_model_ensemble_member', Text)
 
 
 class Info(Base):
