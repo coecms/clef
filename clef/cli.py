@@ -316,6 +316,11 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     connect(user=user)
     s = Session()
 
+    matching_fixed = {
+        'CMIP5': ['model','ensemble'],
+        'CMIP6': ['source_id','member_id'],
+        }
+
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
     clef_log.info('  ;  '.join([user_name,project,ctx.obj['flow'],args_str]))
@@ -328,9 +333,9 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
 
     if ctx.obj['flow'] == 'remote':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, ['source_id', 'member_id'], project=project, local=False, **terms)
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=False, **terms)
             for row in selection:
-                print(row['source_id'],row['member_id'], row['version'])
+                print(*[row[x] for x in matching_fixed[project]], row['version'])
             return
         else:
             q = find_checksum_id(' '.join(query),
@@ -354,9 +359,9 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, ['source_id','member_id'], project='CMIP6', local=True, **terms)
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=True, **terms)
             for row in selection:
-                print(row['source_id'],row['member_id'], row['version'])
+                print(*[row[x] for x in matching_fixed[project]], row['version'])
         else:
             paths = call_local_query(s, project, oformat, **terms) 
             for p in paths:
