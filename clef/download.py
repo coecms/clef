@@ -76,8 +76,12 @@ def helpdesk(user, rootdir, fname, project):
        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
-def search_queue_csv(qm, project, varlist):
-    ''' search missing dataset ids in download queue '''
+def read_queue(project):
+    ''' read queue csv file 
+    :input: project - CMIP5 or CMIP6 currently
+    :return: rows - a dictionary reprsenting each record stored in the file
+    :return: dids - a set of unique dataset_ids stored in the file
+    '''
     rows={}
     dids=set()
     # open csv file and read data in dictionary with dataset_id as key 
@@ -95,23 +99,47 @@ def search_queue_csv(qm, project, varlist):
     except FileNotFoundError:
         # Queue not available
         pass
+    return rows, dids 
             
-    # retrieve from table the missing dataset_ids
+
+def find_dids(qm, rows, dids, project, varlist):
+    ''' Retrieve missing dataset ids from dictionary representing queue table
+    :input: qm - query results
+    :input: rows - a dictionary representing each record stored in the file
+    :input: dids - a set of unique dataset_ids stored in the file
+    :input: project - CMIP5 or CMIP6 currently
+    :input: varlist - optional list of requested variables for CMIP5
+    :return: queued - a dictionary with (did+var,status) for CMIP5 and (did,status) for CMIP6
+             filtered based on query results
+    '''
     queued={}
     for q in qm:
-        if q[0].replace('ouput.','output1.') in dids:
-            did = q[0]
+        did = q[0].replace('output.','output1.')
+        if did in dids:
         # if CMIP5 you need to match also the variable
-            if project == "CMIP5" and varlist != []:
-                queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did and k[1] in varlist})
-                #if rows[did][0] not in varlist:
-                #    continue
-                #else:
-                #    queued[did + "  " + rows[did][0]] = rows[did][1]
+            if project == "CMIP5":
+                if varlist != []:
+                    queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did and k[1] in varlist})
+                else:
+                    queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did})
+            elif project == "CMIP6":
+                queued.update({k: v for k,v in rows.items() if k==did})
             else:
-                queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did})
-                #queued[did] = rows[did][1]
+                 pass 
+    return queued
 
+def search_queue_csv(qm, project, varlist):
+    ''' Search missing dataset ids in download queue 
+    :input: qm - query results
+    :input: project - CMIP5 or CMIP6 currently
+    :input: varlist - optional list of requested variables for CMIP5
+    :return: missing - list of missing dids updated to take into account already queued files
+    '''
+    # read queue file
+    rows, dids = read_queue(project)
+    
+    # retrieve from table the missing dataset_ids
+    queued = find_dids(qm, rows, dids, project, varlist)
     if len(queued) > 0:
         print("\nThe following datasets are not yet available in the database, but they have been requested or recently downloaded")
         for did,status in queued.items():
