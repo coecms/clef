@@ -299,7 +299,7 @@ def fix_model(project, models, invert=False):
     return [ mfix[m] if m in mfix.keys() else m for m in models]
 
 
-def call_local_query(s, project, oformat, csvf, **kwargs):
+def call_local_query(s, project, oformat, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
@@ -308,8 +308,6 @@ def call_local_query(s, project, oformat, csvf, **kwargs):
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
         datasets.extend( local_query(s,project=project,**c) ) 
-    if csvf:
-        write_csv(datasets)
     else:
         if oformat == 'dataset':
             for d in datasets:
@@ -317,7 +315,7 @@ def call_local_query(s, project, oformat, csvf, **kwargs):
         elif oformat == 'file':
             for d in datasets:
                paths.extend([d['pdir']+"/" + x for x in d['filenames']])
-    return paths
+    return datasets, paths
 
 
 def fix_path(path):
@@ -467,19 +465,19 @@ def print_stats(results):
         print('No results are available for this query')
         return
     stats_dict = stats(results)
-    print('Query summary')
-    print(f'{len(stats_dict["models"])} model/s were found locally:') 
+    print('\nQuery summary')
+    print(f'\n{len(stats_dict["models"])} model/s were found locally:') 
     for m in stats_dict["models"]: 
         print(m, end=' ')
     print()
-    print(f'A total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.') 
+    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.') 
     member_num = {k: len(v) for k,v in stats_dict['members'].items()}
     member_num = {len(v): [] for v in stats_dict['members'].values()}
     for k,v in stats_dict['members'].items():
         member_num[len(v)].append(k)
-    print(f'Number of members, model list:')
+    #print(f'\nNumber of members, model list:')
     for num in sorted(member_num.keys()):
-        print(f'{len(member_num[num])} models have {num} members:')
+        print(f'\n{len(member_num[num])} models have {num} members:')
         for m in member_num[num]: 
             print(m, end=' ')
         print()

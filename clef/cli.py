@@ -368,14 +368,15 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=True, **terms)
-            if csvf:
-                write_csv(results)
             for row in selection:
                 print(*[row[x] for x in matching_fixed[project]], row['version'])
         else:
-            paths = call_local_query(s, project, oformat, csvf, **terms) 
-            for p in paths:
-                print(p)
+            results, paths = call_local_query(s, project, oformat, **terms) 
+            if not stats:
+                for p in paths:
+                    print(p)
+        if csvf:
+            write_csv(results)
         if stats:
             print_stats(results)
         return 
