@@ -20,7 +20,7 @@ from .esgf import match_query, find_local_path, find_missing_id, find_checksum_i
 from .download import *
 from . import collections as colls 
 from .exception import ClefException
-from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching
+from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching, write_csv, print_stats
 import click
 import logging
 from datetime import datetime
@@ -141,6 +141,10 @@ def common_args(f):
                      help="Return both original files and replicas. Default: --no-replica"),
         click.option('--distrib/--no-distrib', 'distrib', default=True, 
                      help="Distribute search across all ESGF nodes. Default: --distrib"),
+        click.option('--csv/--no-csv', 'csvf', default=False,
+                     help="Send output to csv file including extra information, works only with --local option. Default: --no-csv"),
+        click.option('--stats/--no-stats',  default=False,
+                     help="Write summary of query results, works only with --local option. Default: --no-stats"),
         click.option('--debug/--no-debug', default=False,
                      help="Show debug output. Default: --no-debug")
     ]
@@ -215,7 +219,7 @@ def ds_args(f):
 @cmip5_args
 @common_args
 @click.pass_context
-def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
+def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
         cf_standard_name,
         ensemble,
         experiment,
@@ -251,14 +255,14 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat,
         'experiment_family': experiment_family,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
 @cmip6_args
 @common_args
 @click.pass_context
-def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
+def cmip6(ctx,query, debug, distrib, replica, latest, oformat, csvf, stats,
         cf_standard_name,
         variant_label,
         member_id,
@@ -302,10 +306,12 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat,
         'variant_label': variant_label,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
+        replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, debug, constraints, and_attr):
+def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
+               replica, distrib, csvf, stats, debug, constraints, and_attr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
@@ -315,6 +321,11 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     user=None
     connect(user=user)
     s = Session()
+
+    matching_fixed = {
+        'CMIP5': ['model','ensemble'],
+        'CMIP6': ['source_id','member_id'],
+        }
 
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
@@ -328,9 +339,11 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
 
     if ctx.obj['flow'] == 'remote':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, ['source_id', 'member_id'], project=project, local=False, **terms)
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=False, **terms)
+            if csvf:
+                write_csv(results)
             for row in selection:
-                print(row['source_id'],row['member_id'], row['version'])
+                    print(*[row[x] for x in matching_fixed[project]], row['version'])
             return
         else:
             q = find_checksum_id(' '.join(query),
@@ -354,13 +367,17 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, repl
     # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, ['source_id','member_id'], project='CMIP6', local=True, **terms)
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=True, **terms)
+            if csvf:
+                write_csv(results)
             for row in selection:
-                print(row['source_id'],row['member_id'], row['version'])
+                print(*[row[x] for x in matching_fixed[project]], row['version'])
         else:
-            paths = call_local_query(s, project, oformat, **terms) 
+            paths = call_local_query(s, project, oformat, csvf, **terms) 
             for p in paths:
                 print(p)
+        if stats:
+            print_stats(results)
         return 
 
     # if not local, query ESGF first and then MAS based on checksums

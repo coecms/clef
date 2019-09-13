@@ -19,28 +19,7 @@ from clef.code import *
 from code_fixtures import * 
 import pytest
 
-# Tests for the basic list queries
-
-def present_query(*args, **kwags):
-    """
-    A query returning something that is in the DB
-    """
-    response =  {
-            'responseHeader': {'params': {'rows': 1}},
-            'response': {
-                'numFound': 1,
-                'docs': [{
-                    'id': 'abcde',
-                    'checksum': ['6cf73c8c375f0005fa6dea53608a660e'],
-                    'title': 'clt_3hr_ACCESS1-3_1pctCO2_r1i1p1_036001010130-036412312230.nc',
-                    'version': '1',
-                    'latest': 'true',
-                    'score': 1.0,
-                    'dataset_id': 'dataset_bar|example.com',
-                    }],
-                }
-            }
-    return response
+# Tests for the functions defined in code.py 
 
 def test_check_values(c5_kwargs, c5_vocab):
     args = check_values(c5_vocab, 'CMIP5', c5_kwargs)
@@ -122,37 +101,41 @@ def test_and_filter(local_results, remote_results):
     # first selection should return mod1/exp1/r1i1p1
     # mod2/exp1/r1i1p1 
     # mod2/exp2/r1i1p1 
-    selection = and_filter(local_results, ['variable'],['model','ensemble','experiment'], **kwargs)
+    results, selection = and_filter(local_results, ['variable'],['model','ensemble','experiment'], **kwargs)
     assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
     assert len(selection) == 3
-    selection = and_filter(local_results, ['variable','experiment'],
+    assert len(results) == 6
+    results, selection = and_filter(local_results, ['variable','experiment'],
                 ['model','ensemble'], **kwargs)
     assert selection[0]['comb'] == { ('tas', 'exp1'), ('pr', 'exp1'),
                                      ('tas', 'exp2'), ('pr', 'exp2')} 
     assert len(selection) == 1 
+    assert len(results) == 4 
     # testing remote CMIP6 query results
     kwargs = {'experiment_id': ['exp1','exp2'], 'variable_id': ['tas','pr'],
               'table_id': ['Amon'], 'member_id': ['r1i1p1f1','r2i1p1f1']}
-    selection = and_filter(remote_results, ['variable_id'],
+    results, selection = and_filter(remote_results, ['variable_id'],
                 ['source_id','member_id','experiment_id'], **kwargs)
     assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
     assert len(selection) == 4 
+    assert len(results) == 8 
     dids=[]
     for s in selection: 
         dids.extend(s['dataset_id']) 
-    print(dids)
     assert 'mod1.exp1.Amon.r2i1p1f1.pr.v1' not in dids
     assert 'mod1.exp1.Amon.r1i1p1f1.pr.v1' in dids
-    selection = and_filter(remote_results, ['variable_id','experiment_id'],
+    results, selection = and_filter(remote_results, ['variable_id','experiment_id'],
                            ['source_id','member_id'], **kwargs)
     assert selection[0]['comb'] == { ('tas', 'exp1'), ('pr', 'exp1'),
                                      ('tas', 'exp2'), ('pr', 'exp2')} 
     assert len(selection) == 1 
-    selection = and_filter(remote_results, ['variable_id'],
+    assert len(results) == 4 
+    results, selection = and_filter(remote_results, ['variable_id'],
                 ['source_id','member_id','experiment_id','version'], **kwargs)
     models = [s['source_id'] for s in selection] 
     assert 'mod2' not in models
     assert len(selection) == 2 
+    assert len(results) == 4 
 
 
 @pytest.mark.production

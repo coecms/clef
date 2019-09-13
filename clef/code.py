@@ -25,6 +25,7 @@ import pandas
 import logging
 import sys
 import os
+import csv
 import json
 import pkg_resources
 import itertools
@@ -196,6 +197,25 @@ def get_keys(project):
         raise ClefException(f"Keys validation not defined for project: {project}")
     return valid_keys
 
+def get_facets(project):
+    """
+    Return dictionary of facets to use based on project
+    """
+    facets =  {'CMIP6': {}, 'CMIP5': {}}
+    ffacets = pkg_resources.resource_filename(__name__, 'data/facets.json')
+    with open(ffacets, 'r') as f:
+         data = json.loads(f.read()) 
+    try:
+        new_keys = ['mip','pr', 'e', 'f', 'gr', 'inst', 'era', 'res',  'prod',
+                    'r', 'm', 'mtype', 'se', 't', 'v', 'vl', 'en', 'ef', 'cf']
+        #for x,y in zip(new_keys, [x for x in data.keys()]):
+        #    facets['CMIP6'][x] = y
+        facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x for x in data.keys()]) }
+        facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x for x in data.values()]) }
+    except:
+        raise ClefException(f"Keys validation not defined for project: {project}")
+    return facets[project]
+
 def check_keys(valid_keys, kwargs):
     """
     Check that arguments keys passed to search are valid, if not print warning and exit
@@ -279,21 +299,24 @@ def fix_model(project, models, invert=False):
     return [ mfix[m] if m in mfix.keys() else m for m in models]
 
 
-def call_local_query(s, project, oformat, **kwargs):
+def call_local_query(s, project, oformat, csvf, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
-    if 'model' in kwargs.keys():
-        kwargs['model'] = fix_model(project, kwargs['model'])
+    #if 'model' in kwargs.keys():
+    #    kwargs['model'] = fix_model(project, kwargs['model'])
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
         datasets.extend( local_query(s,project=project,**c) ) 
-    if oformat == 'dataset':
-        for d in datasets:
-            paths.append(d['pdir'])
-    elif oformat == 'file':
-        for d in datasets:
-            paths.extend([d['pdir']+"/" + x for x in d['filenames']])
+    if csvf:
+        write_csv(datasets)
+    else:
+        if oformat == 'dataset':
+            for d in datasets:
+                paths.append(d['pdir'])
+        elif oformat == 'file':
+            for d in datasets:
+               paths.extend([d['pdir']+"/" + x for x in d['filenames']])
     return paths
 
 
@@ -347,7 +370,14 @@ def and_filter(results, cols, fixed, **kwargs):
     allvalues = (d['comb'].map(len) == len(comb) )
     # apply filter to table and return results as a dictionary
     selection=d[allvalues].to_dict('r')
-    return selection
+    sel_attrs = []
+    sel_fixed = []
+    for sim in selection:
+        sel_fixed.append(tuple([sim[a] for a in fixed]))
+    for sim in results:
+        if (tuple([sim[a] for a in fixed])) in sel_fixed:
+            sel_attrs.append(sim)
+    return sel_attrs, selection
 
 
 def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
@@ -395,5 +425,61 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
     if len(results) == 0:
         print(f'{msg} for {kwargs}')
         return
-    return results, and_filter(results, cols, fixed, **kwargs) 
+    return and_filter(results, cols, fixed, **kwargs) 
 
+def write_csv(list_dicts):
+    
+    if len(list_dicts) == 0:
+        print(f'Nothing to write to csv file')
+        return
+    project = list_dicts[0].get("project", "result")
+    csv_file = f'{project}_query.csv'
+    ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm']
+    columns = [x for x in list_dicts[0].keys() if x not in ignore] 
+    try:
+        with open(csv_file, 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, extrasaction='ignore', fieldnames=columns)
+            writer.writeheader()
+            writer.writerows(list_dicts)
+    except IOError:
+        print("I/O error") 
+
+def stats(results):
+    ''' Return some stats on search results
+    :input: results a list of dictonaries containing results
+    :return: stats_dict a dictionary containing the stats to print 
+    '''
+    stats_dict = {}
+    attrs = get_facets(results[0]['project'])
+    # get number of unique models
+    stats_dict['models'] = set(x[attrs['m']] for x in results)
+    # get number of unique models/ensembles
+    stats_dict['model_member'] = set((x[attrs['m']], x[attrs['en']]) for x in results)
+    # get number of unique ensembles for each model
+    stats_dict['members'] = {m:[] for m in stats_dict['models']}
+    for m,en in stats_dict['model_member']:
+        stats_dict['members'][m].append(en)
+    return stats_dict
+
+def print_stats(results):
+    ''' call stats function and then print out query statistics '''
+    if len(results) == 0:
+        print('No results are available for this query')
+        return
+    stats_dict = stats(results)
+    print('Query summary')
+    print(f'{len(stats_dict["models"])} model/s were found locally:') 
+    for m in stats_dict["models"]: 
+        print(m, end=' ')
+    print()
+    print(f'A total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.') 
+    member_num = {k: len(v) for k,v in stats_dict['members'].items()}
+    member_num = {len(v): [] for v in stats_dict['members'].values()}
+    for k,v in stats_dict['members'].items():
+        member_num[len(v)].append(k)
+    print(f'Number of members, model list:')
+    for num in sorted(member_num.keys()):
+        print(f'{len(member_num[num])} models have {num} members:')
+        for m in member_num[num]: 
+            print(m, end=' ')
+        print()
