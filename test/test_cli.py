@@ -181,6 +181,15 @@ def test_cmip5_present(prod_cli):
     assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
             "Everything available on ESGF is also available locally\n")
 
+
+@pytest.mark.production
+def test_cmip5_and(prod_cli):
+    r = prod_cli('--local cmip5 -m ACCESS1.0 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --ensemble r1i1p1 --and variable'.split())
+    assert r.output == "ACCESS1.0 r1i1p1 {None}\n"
+
+    r = prod_cli('--remote cmip5 -m ACCESS1.0 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --ensemble r1i1p1 --and variable'.split())
+    assert r.output == "ACCESS1.0 r1i1p1 {'v20120727', 'v20120115'}\n"
+
 @pytest.mark.production
 def test_cmip5_experiment_family(prod_cli):
     r = prod_cli(['--remote', 'cmip5','--model=ACCESS1.0','--experiment_family=RCP',
