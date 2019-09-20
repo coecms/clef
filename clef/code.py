@@ -368,6 +368,8 @@ def and_filter(results, cols, fixed, **kwargs):
     allvalues = (d['comb'].map(len) == len(comb) )
     # apply filter to table and return results as a dictionary
     selection=d[allvalues].to_dict('r')
+    # to subset results based on selection, create a list of tuple with the fixed attributes for selection (sel_fixed)
+    # then do the same for each results and append them to a new list only if they are in sel_fixed
     sel_attrs = []
     sel_fixed = []
     for sim in selection:
@@ -475,9 +477,30 @@ def print_stats(results):
     member_num = {len(v): [] for v in stats_dict['members'].values()}
     for k,v in stats_dict['members'].items():
         member_num[len(v)].append(k)
-    #print(f'\nNumber of members, model list:')
     for num in sorted(member_num.keys()):
         print(f'\n{len(member_num[num])} models have {num} members:')
         for m in member_num[num]: 
             print(m, end=' ')
         print()
+
+def latest(results):
+    ''' Sift through results dictionaries and return only the latest versions '''
+    latest=[]
+    if len(results) <= 1:
+        return results
+    # we are not considering all the attributes which could be different between two versions
+    separate = ['pdir', 'version', 'time_complete', 'filenames','fdate', 'tdate', 'periods']
+    cols = [ k for k in results[0].keys() if k not in separate]
+    # saving a new dictionary where each combination of the attributes which are common between versions
+    # are joined in a tuple and act as key, the value is the simulation dictionary
+    # if a value already exists for a tuple then the latest simulation is kept
+    combs={}
+    for sim in results:
+        comb = tuple([sim[a] for a in cols])
+        if comb in combs.keys():
+            if combs[comb]['version'] < sim['version']:
+                combs[comb] = sim
+        else:
+           combs[comb] = sim
+    latest=[v for v in combs.values()]
+    return latest

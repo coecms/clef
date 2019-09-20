@@ -49,7 +49,7 @@ def clef_catch():
 @click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote', 
                help="returns only ESGF search results")
 @click.option('--local', 'flow', is_flag=True, default=False, flag_value='local', 
-               help="returns only local files matching ESGF search")
+               help="returns only local files matching arguments in MAS database")
 
 @click.option('--missing', 'flow', is_flag=True, default=False, flag_value='missing',
                help="returns only missing files matching ESGF search")
