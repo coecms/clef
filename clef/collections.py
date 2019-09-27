@@ -69,11 +69,15 @@ class Session(object):
         """
         return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
 
-    #def build_drs(self):
-    #    """ Get the list of all variables in datasets collection as cmor names
-    #    :return: A list of strings
-    #    """
-    #    return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
+    def qc_list(self, dataset=None):
+        """ Get the list of all the qc tests in qc table, if dataset passed only the one applying to it
+        :input: dataset optional if passed return only tests for that dataset
+        :return: A list of strings
+        """
+        if dataset:
+            #return [x[0] for x in self.query(QC.qc_test).where(QC.dataset=dataset).distinct().all()]
+            pass
+        return [x[0] for x in self.query(QC.qc_test).distinct().all()]
 
     def command_query(self,**kwargs):
         """ Calling query after working out if output should be a dataset or variable list, depending on constraints

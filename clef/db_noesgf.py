@@ -164,3 +164,27 @@ class ECMWF(Base):
     cmor_name      = Column(String, index=True)
     cell_methods   = Column(String)
 
+class QC(Base):
+    """
+    Each record represents the qc results for a specific unit of a dataset. 
+    .. attribute:: id 
+    .. attribute:: dataset  
+       the main dataset name ie.e CMIP6, ERA5
+    .. attribute:: set_id 
+       an identifier for a particular subset of the data
+    .. attribute:: qc_test 
+        the name of the QC test 
+    .. attribute:: result 
+        The qc test result
+    .. attribute:: updated_at 
+        The date in which the test was run last
+    """
+    __tablename__ = 'qcs'
+    id          = Column(Integer, name='qc_id', primary_key = True)
+
+    dataset           = Column(String, index=True)
+    set_id            = Column(String, index=True)
+    qc_test           = Column(String)
+    result            = Column(String)
+    updated_at        = Column(String)
+
