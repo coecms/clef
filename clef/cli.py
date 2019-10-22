@@ -339,7 +339,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
 
     if ctx.obj['flow'] == 'remote':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=False, **terms)
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project,
+                                          local=False, latest=latest, **terms)
             if csvf:
                 write_csv(results)
             for row in selection:
@@ -367,11 +368,12 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
     # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, matching_fixed[project], project=project, local=True, **terms)
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project,
+                                          local=True, latest=latest, **terms)
             for row in selection:
                 print(*[row[x] for x in matching_fixed[project]], row['version'])
         else:
-            results, paths = call_local_query(s, project, oformat, **terms) 
+            results, paths = call_local_query(s, project, oformat, latest, **terms) 
             if not stats:
                 for p in paths:
                     print(p)
@@ -405,8 +407,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
         else:
             for result in ql:
                 print(result[0])
-    if ctx.obj['flow'] == 'local': 
-        return
 
     qm = find_missing_id(s, subq, oformat=oformat)
     

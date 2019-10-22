@@ -33,7 +33,7 @@ from calendar import monthrange
 import re
 
 
-def search(session, project='CMIP5', **kwargs):
+def search(session, project='CMIP5', latest=True, **kwargs):
     """
     This call the local query when integrated in python script before running query checks
     that the arguments names and values are correct and change model name where necessary
@@ -45,12 +45,17 @@ def search(session, project='CMIP5', **kwargs):
     check_values(vocabularies, project, args)
     if 'model' in args.keys():
         args['model'] = fix_model(project, [args['model']])[0]
-    return local_query(session, project, **args)
+    results = local_query(session, project, latest, **args)
+    if latest:
+        results = local_latest(results)
+    return results 
 
 
-def local_query(session, project='CMIP5', **kwargs):
+def local_query(session, project='CMIP5', latest=True, **kwargs):
     """
     """
+    global latest_version
+    latest_version=latest
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
     results=[]
@@ -86,7 +91,8 @@ def local_query(session, project='CMIP5', **kwargs):
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
     # temporary(?) fix to substitute output1/2 with combined
-    fix_paths = df['path'].map(fix_path)
+    #fix_paths = df['path'].map(fix_path, df['path'])
+    fix_paths = df['path'].apply(fix_path, latest=latest)
     df['pdir'] = fix_paths.map(os.path.dirname)
     df['filename'] = df['path'].map(os.path.basename)
     res = df.groupby(['pdir'])
@@ -299,7 +305,7 @@ def fix_model(project, models, invert=False):
     return [ mfix[m] if m in mfix.keys() else m for m in models]
 
 
-def call_local_query(s, project, oformat, **kwargs):
+def call_local_query(s, project, oformat, latest, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
@@ -307,7 +313,7 @@ def call_local_query(s, project, oformat, **kwargs):
     #    kwargs['model'] = fix_model(project, kwargs['model'])
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
-        datasets.extend( local_query(s,project=project,**c) ) 
+        datasets.extend( local_query(s,project=project, latest=latest, **c) ) 
     else:
         if oformat == 'dataset':
             for d in datasets:
@@ -318,7 +324,7 @@ def call_local_query(s, project, oformat, **kwargs):
     return datasets, paths
 
 
-def fix_path(path):
+def fix_path(path, latest):
     '''Get path from query results and replace al33 output1/2 dirs to combined 
         and rr3 ACCESS "/files/" path to "/latest/"
     '''
@@ -326,7 +332,7 @@ def fix_path(path):
         return re.sub(r'replicas\/CMIP5\/output[12]?\/','replicas/CMIP5/combined/',path)
     elif '/al33/replicas/CMIP5/unsolicited' in path:
         return path.replace('unsolicited','combined')
-    elif '/rr3/publications/CMIP5/output1/CSIRO-BOM' in path:
+    elif '/rr3/publications/CMIP5/output1/CSIRO-BOM' in path and latest:
         dirs=path.split("/")
         var = dirs[-2].split("_")[0]
         return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
@@ -380,12 +386,15 @@ def and_filter(results, cols, fixed, **kwargs):
     return sel_attrs, selection
 
 
-def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
+def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **kwargs):
     ''' Call and_filter after executing local or remote query of passed constraints 
         :session: database session
         :project: ESGF project to search (CMIP5/CMIP6)
         :input: cols (list) the attributes for which we want all values to be present
         :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
+        :input: project (string) the project, i.e. CMIP5 (default)/CMIP6
+        :input: local (boolean) if local query (default) or remote query (False)
+        :input: latest (boolean) if True (default) returns only latest version
         :input: kwargs (dictionary) are the query constraints
         :return: output of and_filter: query results and a filter selection lists 
     '''
@@ -398,7 +407,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
             # perform the query for each variable separately and concatenate the results
             combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
             for c in combs:
-                results.extend( search(session,project=project.upper(),**c) )
+                results.extend( search(session,project=project.upper(),latest=latest, **c) )
         # use ESGF search
         else:
             msg = "There are no simulations currently available on the ESGF nodes"
@@ -411,7 +420,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, **kwargs):
                                    'activity_id','table_id','version','grid_label','source_type',
                                    'frequency','member_id','sub_experiment_id'])
             query=None
-            response = esgf_query(query, fields, **kwquery)
+            response = esgf_query(query, fields, latest=latest, **kwquery)
             for row in response['response']['docs']:
                 version = row['dataset_id'].split("|")[0].split(".")[-1]
                 results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
@@ -483,12 +492,12 @@ def print_stats(results):
             print(m, end=' ')
         print()
 
-def latest(results):
-    ''' Sift through results dictionaries and return only the latest versions '''
+def local_latest(results):
+    ''' Sift through local query results dictionaries and return only the latest versions '''
     latest=[]
     if len(results) <= 1:
         return results
-    # we are not considering all the attributes which could be different between two versions
+    # separate all the attributes which could be different between two versions
     separate = ['pdir', 'version', 'time_complete', 'filenames','fdate', 'tdate', 'periods']
     cols = [ k for k in results[0].keys() if k not in separate]
     # saving a new dictionary where each combination of the attributes which are common between versions

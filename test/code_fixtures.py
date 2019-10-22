@@ -140,3 +140,29 @@ def remote_results():
      'dataset_id': 'mod3.exp1.Amon.r1i1p1f1.pr.v1'},
             ]
     return results
+
+@pytest.fixture(scope="module")
+def mversions():
+    """
+    Local query results with multiple versions for same simulation, to test local_latest
+    """
+# mod2 has v1 and v2 for exp1, and v2 for exp2
+# mod1 has v1 for exp2
+    outres = [{'filenames': ['pr.nc'], 'model': 'mod2', 'experiment': 'exp1',
+      'frequency': 'mon', 'ensemble': 'r1i1p1',
+      'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
+      'pdir': '/rootdir/mod2/exp1/mon/atmos/Amon/r1i1p1/v2/pr'},
+    {'filenames': ['pr.nc'], 'model': 'mod1','experiment': 'exp2',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr',
+     'pdir': '/rootdir/mod1/exp2/r1i1p1/v1/pr'},
+    {'filenames': ['pr.nc'], 'model': 'mod2', 'experiment': 'exp2',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
+     'pdir': '/rootdir/mod2/exp2/r1i1p1/v2/pr'}]
+    inres = outres + [
+     {'filenames': ['pr.nc'],'model': 'mod2', 'experiment': 'exp1',
+     'frequency': 'mon', 'ensemble': 'r1i1p1',
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr', 
+     'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/pr'}] 
+    return inres, outres
