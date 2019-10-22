@@ -114,6 +114,19 @@ def test_model(runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['source_id'] == ('CNRM-CM6-1',)
 
+@pytest.mark.parametrize('command', [cmip5, cmip6])
+def test_csv_stats(command, runner, mock_query):
+    cli_run(runner, command )
+    assert mock_query.called
+    assert mock_query.call_args[1]['stats'] == False 
+    assert mock_query.call_args[1]['csvf'] == False 
+    cli_run(runner, command, ['--stats'])
+    assert mock_query.called
+    assert mock_query.call_args[1]['stats'] == True 
+    cli_run(runner, command, ['--csv'])
+    assert mock_query.called
+    assert mock_query.call_args[1]['csvf'] == True 
+
 @pytest.fixture
 def prod_cli(runner, session):
     with mock.patch('clef.cli.connect', side_effect=dummy_connect):

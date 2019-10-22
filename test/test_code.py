@@ -165,6 +165,12 @@ def test_search(session):
 
     r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
 
+def test_stats(local_results):
+    statsd =  stats(local_results)
+    assert sorted(statsd['members']['mod1']) == ['r1i1p1','r2i1p1']
+    assert len(statsd['model_member']) == 5 
+    assert sorted(statsd['models']) == ['mod1', 'mod2', 'mod3']
+
 @pytest.mark.production
 def test_search_results(session):
     facets = {
