@@ -53,9 +53,13 @@ def search(session, project='CMIP5', latest=True, **kwargs):
 
 def local_query(session, project='CMIP5', latest=True, **kwargs):
     """
+    Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
+    :input: session the db session
+    :input: project 'CMIP5' by default
+    :input: latest True by default
+    :input: kwargs a dictionary with the query constraints
+    :return: a list of dictionary, each dictionary describe one simulation matching the constraints
     """
-    global latest_version
-    latest_version=latest
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
     results=[]
