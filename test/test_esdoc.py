@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # Copyright 2019 ARC Centre of Excellence for Climate Extremes
 # author: Paola Petrelli <paola.petrelli@utas.edu.au>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -49,8 +49,8 @@ def test_get_wdcc():
 
 
 def test_errata():
-    assert errata('hdl:21.14100/e4193a02-6405-49b6-8ad3-65def741a4dd') == 
-           ["b6302400-3620-c8f1-999b-d192c0349084","2f6b5963-f87e-b2df-a5b0-2f12b6b68d32"]
+    assert ( errata('hdl:21.14100/e4193a02-6405-49b6-8ad3-65def741a4dd') == 
+           ["b6302400-3620-c8f1-999b-d192c0349084","2f6b5963-f87e-b2df-a5b0-2f12b6b68d32"])
     assert errata('hdl:21.14100/7d16d79b-77c8-446c-9039-36c6803752f2') is None
 
 def test_retrieve_error(test_error):
