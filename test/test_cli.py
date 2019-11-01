@@ -114,19 +114,6 @@ def test_model(runner, mock_query):
     assert mock_query.called
     assert mock_query.call_args[1]['source_id'] == ('CNRM-CM6-1',)
 
-@pytest.mark.parametrize('command', [cmip5, cmip6])
-def test_csv_stats(command, runner, mock_query):
-    cli_run(runner, command )
-    assert mock_query.called
-    assert mock_query.call_args[1]['stats'] == False 
-    assert mock_query.call_args[1]['csvf'] == False 
-    cli_run(runner, command, ['--stats'])
-    assert mock_query.called
-    assert mock_query.call_args[1]['stats'] == True 
-    cli_run(runner, command, ['--csv'])
-    assert mock_query.called
-    assert mock_query.call_args[1]['csvf'] == True 
-
 @pytest.fixture
 def prod_cli(runner, session):
     with mock.patch('clef.cli.connect', side_effect=dummy_connect):
@@ -193,15 +180,6 @@ def test_cmip5_present(prod_cli):
     r = prod_cli(['--request', 'cmip5', *facets])
     assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
             "Everything available on ESGF is also available locally\n")
-
-
-@pytest.mark.production
-def test_cmip5_and(prod_cli):
-    r = prod_cli('--local cmip5 -m ACCESS1.0 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --ensemble r1i1p1 --and variable'.split())
-    assert r.output == "ACCESS1.0 r1i1p1 {None}\n"
-
-    r = prod_cli('--remote cmip5 -m ACCESS1.0 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --ensemble r1i1p1 --and variable'.split())
-    assert r.output == "ACCESS1.0 r1i1p1 {'v20120727', 'v20120115'}\n"
 
 @pytest.mark.production
 def test_cmip5_experiment_family(prod_cli):
@@ -283,3 +261,24 @@ def test_cmip6_and(prod_cli):
 
     r = prod_cli(['--remote', 'cmip6', *facets, '--and=variable_id'])
     assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"
+
+@pytest.mark.production
+def test_csv_stats(prod_cli):
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmax','--variant_label=r1i1p1f2']
+    r = prod_cli(['--local', 'cmip6', *facets, '--stats'])
+    assert stats == True 
+    assert 'Query summary' in r.output
+    assert csvf == False 
+    r = prod_cli(['--local', 'cmip6', *facets, '--csv'])
+    assert stats == False 
+    assert 'Query summary' not in r.output
+    assert csvf == True 
+    r = prod_cli(['--remote', 'cmip6', *facets, '--stats'])
+    assert stats == True 
+    assert 'Query summary' not in r.output
+    assert csvf == False 
+    r = prod_cli(['--remote', 'cmip6', *facets, '--csv'])
+    assert stats == False 
+    assert 'Query summary' not in r.output
+    assert csvf == True 
+
