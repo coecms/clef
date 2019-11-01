@@ -19,7 +19,7 @@ from sqlalchemy import create_engine, func, select, and_, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects import sqlite
 
-from .db_noesgf import Base, Dataset, Variable, ECMWF, QC
+from .db_noesgf import Base, Dataset, Variable, QC
 
 SQASession = sessionmaker()
 

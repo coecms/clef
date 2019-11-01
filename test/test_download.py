@@ -20,7 +20,7 @@
 from clef.download import write_request, helpdesk, find_dids
 from unittest.mock import patch
 from smtplib import SMTPException
-from download_fixtures import qm, rows5, rows6 
+from download_fixtures import qm, rows5, rows6
 import builtins
 
 def test_helpdesk(tmp_path):

@@ -23,12 +23,12 @@ def test_esdoc_urls():
     assert True 
 
 def test_get_model_doc():
-    assert True 
+    assert True
 
 def test_get_doc():
     base = 'https://api.es-doc.org/2/document/search-name?client=ESDOC-VIEWER-DEMO&encoding=html&'
     assert get_doc('CMIP6', 'model', 'MIROC6') == ( base +
-                   'project=CMIP6&name=MIROC6&type=CIM.2.SCIENCE.MODEL') 
+                   'project=CMIP6&name=MIROC6&type=CIM.2.SCIENCE.MODEL')
     assert get_doc('CMIP6', 'experiment', 'historical') == ( base +
                    'project=CMIP6&name=historical&type=cim.2.designing.NumericalExperiment')
     assert get_doc('CMIP6', 'mip', 'FAFMIP') == ( base +
@@ -49,7 +49,7 @@ def test_get_wdcc():
 
 
 def test_errata():
-    assert ( errata('hdl:21.14100/e4193a02-6405-49b6-8ad3-65def741a4dd') == 
+    assert ( errata('hdl:21.14100/e4193a02-6405-49b6-8ad3-65def741a4dd') ==
            ["b6302400-3620-c8f1-999b-d192c0349084","2f6b5963-f87e-b2df-a5b0-2f12b6b68d32"])
     assert errata('hdl:21.14100/7d16d79b-77c8-446c-9039-36c6803752f2') is None
 
