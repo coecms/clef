@@ -7,7 +7,7 @@
 # You may obtain a copy of the License at
 # 
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,6 @@
 #from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 #from .exception import ClefException
 #from .esgf import esgf_query
-import json
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -32,22 +31,22 @@ def esdoc_urls(dataset_ids):
     esdoc_urls=[]
     for did in dataset_ids:
         urls={}
-        attrs = did.split(".")
+        #attrs = did.split(".")
         #urls['model_url'] = get_model_doc(attrs[2],attrs[3])
         wdcc_url, urls['wdcc_url'] = get_wdcc(did)
         urls['exp_url'] = ''
         #exp_url = get_exp_doc()
         esdoc_urls.append(urls)
-    return esdoc_urls 
+    return esdoc_urls
 
 def get_wdcc(dataset_id):
     ''' Retrieve metadata documentation from WDCC site, this is less detailed than esdoc but often more readable
-        :input: dataset_id (str) the simulation dataset_id 
-        :return: wdcc_url (str) the wdcc_url for the document  
+        :input: dataset_id (str) the simulation dataset_id
+        :return: wdcc_url (str) the wdcc_url for the document
         :return: r.json() (dict) the web response as json
     '''
     wdcc_root = 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/'
-    settings = 'select?rows=1&wt=json' 
+    settings = 'select?rows=1&wt=json'
     project=dataset_id.split(".")[0]
     if project == 'cmip5':
         entry="*".join(dataset_id.split(".")[0:4])
@@ -64,7 +63,7 @@ def get_wdcc(dataset_id):
 
 def print_model(tables):
     ''' Print out esdoc CIM2 model document
-        :input: tables (str) html tables downloaded from web interface  
+        :input: tables (str) html tables downloaded from web interface
     '''
     dfs = pd.read_html(str(tables[0]))
     df = dfs[0]
@@ -78,7 +77,7 @@ def print_model(tables):
 
 def print_doc(tables, dtype):
     ''' Print out esdoc document, all types except model
-        :input: tables (str?) html tables downloaded from web interface  
+        :input: tables (str?) html tables downloaded from web interface
         :input: dtype (str) - the kind of document (i.e. experiment, mip)
     '''
     for table in tables:
@@ -122,7 +121,6 @@ def retrieve_error(uid):
     ''' Accept error uid and return errata as json plus webpage to view error '''
     view = 'https://errata.es-doc.org/static/view.html?uid='
     service = 'https://errata.es-doc.org/1/issue/retrieve?uid='
-    #b6302400-3620-c8f1-999b-d192c0349084 
     r = requests.get(service + uid)
     error = {view+uid: r.json()['issue']}
     return error

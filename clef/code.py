@@ -7,22 +7,19 @@
 # You may obtain a copy of the License at
 # 
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .db import connect, Session
+from .db import connect
 from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 from .exception import ClefException
 from .esgf import esgf_query
 from datetime import datetime, timedelta
-from sqlalchemy import any_, or_
-from sqlalchemy.orm import aliased
-from itertools import groupby
+from sqlalchemy import any_
 import pandas
-import logging
 import sys
 import os
 import csv
@@ -48,7 +45,7 @@ def search(session, project='CMIP5', latest=True, **kwargs):
     results = local_query(session, project, latest, **args)
     if latest:
         results = local_latest(results)
-    return results 
+    return results
 
 
 def local_query(session, project='CMIP5', latest=True, **kwargs):
@@ -64,7 +61,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     # each dict will represent a file matching the constraints
     results=[]
     project = project.upper()
-    # for cmip5 separate var from other constraints 
+    # for cmip5 separate var from other constraints
     if project == 'CMIP5' and 'variable' in kwargs.keys():
         var = kwargs.pop('variable')
     if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
@@ -120,7 +117,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
 def get_version(path):
     ''' Retrieve version from path if not available in MAS '''
     mo = re.search(r'v\d{8}', path)
-    if mo: 
+    if mo:
         return  mo.group()
     else:
         return  None 
@@ -129,7 +126,7 @@ def get_version(path):
 def get_range(periods):
     """
     Convert a list of NumericRange period to a from-date,to-date separate values
-    input: periods list of tuples representing lower and upper end of temporal interval, values are strings 
+    input: periods list of tuples representing lower and upper end of temporal interval, values are strings
     return: from_date, to_date as strings
     """
     try:
@@ -148,16 +145,16 @@ def convert_periods(nranges,frequency):
     """
     Convert period Numeric ranges to dates intervals and build the time axis
     input: nranges a list of each file period
-    input: frequency timestep frequency 
-    return: periods list of tuples representing lower and upper end of temporal interval, values are strings 
+    input: frequency timestep frequency
+    return: periods list of tuples representing lower and upper end of temporal interval, values are strings
     """
-    freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
+    #freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
     periods = []
     if len(nranges) == 0:
         return periods
     for r in nranges:
         if r is None:
-            continue 
+            continue
         lower, upper = str(r.lower), str(r.upper - 1)
         if len(lower) == 6:
             lower += '01'
@@ -177,7 +174,7 @@ def time_axis(periods,fdate,tdate):
     sp = sorted(periods)
     nextday = fdate
     i = 0
-    contiguos = True 
+    contiguos = True
     try:
         while sp[i][0] == nextday:
             t = datetime.strptime(sp[i][1],'%Y%m%d') + timedelta(days=1)
@@ -186,7 +183,7 @@ def time_axis(periods,fdate,tdate):
             if i >= len(sp):
                 break
         else:
-            contiguos = False 
+            contiguos = False
     except:
         return None 
     return contiguos
@@ -195,12 +192,12 @@ def get_keys(project):
     """
     Define valid arguments keys based on project
     """
-    # valid_keys has as keys tuple of all valid arguments and as values dictionaries 
+    # valid_keys has as keys tuple of all valid arguments and as values dictionaries
     # representing the corresponding facet for CMIP5 and CMIP6
     # ex. ('variable', 'variable_id', 'v'): {'CMIP5': 'variable', 'CMIP6': 'variable_id'}
     fkeys = pkg_resources.resource_filename(__name__, 'data/valid_keys.json')
     with open(fkeys, 'r') as f:
-         data = json.loads(f.read()) 
+         data = json.loads(f.read())
     try:
         valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
     except:
@@ -263,7 +260,6 @@ def load_vocabularies(project):
     ''' '''
     project = project.upper()
     vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
-    mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
     with open(vfile, 'r') as f:
          data = f.read()
          models = json.loads(data)['models']
@@ -279,8 +275,7 @@ def load_vocabularies(project):
              activities = json.loads(data)['activities']
              stypes = json.loads(data)['source_types']
              return models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes
-    
-    return models, realms, variables, frequencies, tables, experiments, families, attributes 
+    return models, realms, variables, frequencies, tables, experiments, families, attributes
 
 def fix_model(project, models, invert=False):
     """
@@ -313,23 +308,20 @@ def call_local_query(s, project, oformat, latest, **kwargs):
     ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
     datasets = []
     paths = []
-    #if 'model' in kwargs.keys():
-    #    kwargs['model'] = fix_model(project, kwargs['model'])
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
-        datasets.extend( local_query(s,project=project, latest=latest, **c) ) 
-    else:
-        if oformat == 'dataset':
-            for d in datasets:
-                paths.append(d['pdir'])
-        elif oformat == 'file':
-            for d in datasets:
-               paths.extend([d['pdir']+"/" + x for x in d['filenames']])
+        datasets.extend( local_query(s,project=project, latest=latest, **c) )
+    if oformat == 'dataset':
+        for d in datasets:
+            paths.append(d['pdir'])
+    elif oformat == 'file':
+        for d in datasets:
+            paths.extend([d['pdir']+"/" + x for x in d['filenames']])
     return datasets, paths
 
 
 def fix_path(path, latest):
-    '''Get path from query results and replace al33 output1/2 dirs to combined 
+    '''Get path from query results and replace al33 output1/2 dirs to combined
         and rr3 ACCESS "/files/" path to "/latest/"
     '''
     if '/al33/replicas/CMIP5/output' in path:
@@ -344,7 +336,7 @@ def fix_path(path, latest):
         return path
 
 def and_filter(results, cols, fixed, **kwargs):
-    ''' Filter query results to find all the simulations that have 
+    ''' Filter query results to find all the simulations that have
         all the different values passed for the attributes listed in cols.
         A simulation is defined by the attributes passed in the list fixed.
         :input: cols (list) the attributes for which we want all values to be present
@@ -362,7 +354,7 @@ def and_filter(results, cols, fixed, **kwargs):
         comb = list(itertools.product(*[kwargs[c] for c in cols]))
     # define the aggregation dictionary first
     # useful is a list of fields to retain in the table, the values
-    # get added to final fields list only if in results.keys 
+    # get added to final fields list only if in results.keys
     useful =  set(['version', 'source_id', 'model', 'pdir','dataset_id',
               'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in results[0].keys()]
@@ -391,7 +383,7 @@ def and_filter(results, cols, fixed, **kwargs):
 
 
 def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **kwargs):
-    ''' Call and_filter after executing local or remote query of passed constraints 
+    ''' Call and_filter after executing local or remote query of passed constraints
         :session: database session
         :project: ESGF project to search (CMIP5/CMIP6)
         :input: cols (list) the attributes for which we want all values to be present
@@ -400,7 +392,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
         :input: local (boolean) if local query (default) or remote query (False)
         :input: latest (boolean) if True (default) returns only latest version
         :input: kwargs (dictionary) are the query constraints
-        :return: output of and_filter: query results and a filter selection lists 
+        :return: output of and_filter: query results and a filter selection lists
     '''
 
     results = []
@@ -427,7 +419,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
             response = esgf_query(query, fields, latest=latest, **kwquery)
             for row in response['response']['docs']:
                 version = row['dataset_id'].split("|")[0].split(".")[-1]
-                results.append({k:(v[0] if type(v)==list else v) for k,v in row.items()})
+                results.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
                 results[-1]['version'] = version
 
     except Exception as e:
@@ -438,7 +430,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
     if len(results) == 0:
         print(f'{msg} for {kwargs}')
         return
-    return and_filter(results, cols, fixed, **kwargs) 
+    return and_filter(results, cols, fixed, **kwargs)
 
 def write_csv(list_dicts):
     
@@ -448,19 +440,19 @@ def write_csv(list_dicts):
     project = list_dicts[0].get("project", "result")
     csv_file = f'{project}_query.csv'
     ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm']
-    columns = [x for x in list_dicts[0].keys() if x not in ignore] 
+    columns = [x for x in list_dicts[0].keys() if x not in ignore]
     try:
         with open(csv_file, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, extrasaction='ignore', fieldnames=columns)
             writer.writeheader()
             writer.writerows(list_dicts)
     except IOError:
-        print("I/O error") 
+        print("I/O error")
 
 def stats(results):
     ''' Return some stats on search results
     :input: results a list of dictonaries containing results
-    :return: stats_dict a dictionary containing the stats to print 
+    :return: stats_dict a dictionary containing the stats to print
     '''
     stats_dict = {}
     attrs = get_facets(results[0]['project'])
@@ -481,18 +473,18 @@ def print_stats(results):
         return
     stats_dict = stats(results)
     print('\nQuery summary')
-    print(f'\n{len(stats_dict["models"])} model/s were found locally:') 
-    for m in stats_dict["models"]: 
+    print(f'\n{len(stats_dict["models"])} model/s were found locally:')
+    for m in stats_dict["models"]:
         print(m, end=' ')
     print()
-    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.') 
+    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.')
     member_num = {k: len(v) for k,v in stats_dict['members'].items()}
     member_num = {len(v): [] for v in stats_dict['members'].values()}
     for k,v in stats_dict['members'].items():
         member_num[len(v)].append(k)
     for num in sorted(member_num.keys()):
         print(f'\n{len(member_num[num])} models have {num} members:')
-        for m in member_num[num]: 
+        for m in member_num[num]:
             print(m, end=' ')
         print()
 

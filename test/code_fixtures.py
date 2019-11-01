@@ -163,6 +163,6 @@ def mversions():
     inres = outres + [
      {'filenames': ['pr.nc'],'model': 'mod2', 'experiment': 'exp1',
      'frequency': 'mon', 'ensemble': 'r1i1p1',
-     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr', 
-     'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/pr'}] 
+     'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr',
+     'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/pr'}]
     return inres, outres

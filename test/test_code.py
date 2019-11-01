@@ -5,9 +5,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@ from clef.code import *
 from code_fixtures import * 
 import pytest
 
-# Tests for the functions defined in code.py 
+# Tests for the functions defined in code.py
 
 def test_check_values(c5_kwargs, c5_vocab):
     args = check_values(c5_vocab, 'CMIP5', c5_kwargs)
@@ -139,14 +139,14 @@ def test_and_filter(local_results, remote_results):
                 ['source_id','member_id','experiment_id','version'], **kwargs)
     models = [s['source_id'] for s in selection] 
     assert 'mod2' not in models
-    assert len(selection) == 2 
-    assert len(results) == 4 
+    assert len(selection) == 2
+    assert len(results) == 4
 
 
 def test_local_latest(mversions):
     oneresult = [{}]
     assert local_latest(oneresult) == oneresult
-    assert local_latest(mversions[0]) == mversions[1] 
+    assert local_latest(mversions[0]) == mversions[1]
     assert local_latest(mversions[1]) == mversions[1]
 
 @pytest.mark.production
@@ -168,7 +168,7 @@ def test_search(session):
 def test_stats(local_results):
     statsd =  stats(local_results)
     assert sorted(statsd['members']['mod1']) == ['r1i1p1','r2i1p1']
-    assert len(statsd['model_member']) == 5 
+    assert len(statsd['model_member']) == 5
     assert sorted(statsd['models']) == ['mod1', 'mod2', 'mod3']
 
 @pytest.mark.production

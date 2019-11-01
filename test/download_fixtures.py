@@ -23,7 +23,7 @@ def rows6():
     """
     The dictionary representation of the CMIP6_queue_table.csv
     """
-    rows6 =  {'dataset3': 'done', 
+    rows6 =  {'dataset3': 'done',
               'dataset5': 'done', 'dataset4': 'queued',
               'dataset6': 'done', 'dataset2': 'queued',
               'dataset7': 'done', 'dataset8': 'queued'}

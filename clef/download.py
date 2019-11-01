@@ -77,7 +77,7 @@ def helpdesk(user, rootdir, fname, project):
     return
 
 def read_queue(project):
-    ''' read queue csv file 
+    ''' read queue csv file
     :input: project - CMIP5 or CMIP6 currently
     :return: rows - a dictionary reprsenting each record stored in the file
     :return: dids - a set of unique dataset_ids stored in the file
@@ -99,7 +99,7 @@ def read_queue(project):
     except FileNotFoundError:
         # Queue not available
         pass
-    return rows, dids 
+    return rows, dids
             
 
 def find_dids(qm, rows, dids, project, varlist):
@@ -125,11 +125,11 @@ def find_dids(qm, rows, dids, project, varlist):
             elif project == "CMIP6":
                 queued.update({k: v for k,v in rows.items() if k==did})
             else:
-                 pass 
+                 pass
     return queued
 
 def search_queue_csv(qm, project, varlist):
-    ''' Search missing dataset ids in download queue 
+    ''' Search missing dataset ids in download queue
     :input: qm - query results
     :input: project - CMIP5 or CMIP6 currently
     :input: varlist - optional list of requested variables for CMIP5

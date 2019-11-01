@@ -266,19 +266,19 @@ def test_cmip6_and(prod_cli):
 def test_csv_stats(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmax','--variant_label=r1i1p1f2']
     r = prod_cli(['--local', 'cmip6', *facets, '--stats'])
-    assert stats == True 
+    assert stats is True
     assert 'Query summary' in r.output
-    assert csvf == False 
+    assert csvf is False
     r = prod_cli(['--local', 'cmip6', *facets, '--csv'])
-    assert stats == False 
+    assert stats is False
     assert 'Query summary' not in r.output
-    assert csvf == True 
+    assert csvf is True
     r = prod_cli(['--remote', 'cmip6', *facets, '--stats'])
-    assert stats == True 
+    assert stats is True
     assert 'Query summary' not in r.output
-    assert csvf == False 
+    assert csvf is False
     r = prod_cli(['--remote', 'cmip6', *facets, '--csv'])
-    assert stats == False 
+    assert stats is False
     assert 'Query summary' not in r.output
-    assert csvf == True 
+    assert csvf is True
 

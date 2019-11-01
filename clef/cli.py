@@ -93,7 +93,7 @@ def config_log():
     flog = logging.FileHandler(logname) 
     try:
         os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
-    except:
+    except OSError:
         pass 
     flog.setLevel(logging.INFO)
     flog.setFormatter(formatter)

@@ -166,17 +166,17 @@ class ECMWF(Base):
 
 class QC(Base):
     """
-    Each record represents the qc results for a specific unit of a dataset. 
-    .. attribute:: id 
-    .. attribute:: dataset  
+    Each record represents the qc results for a specific unit of a dataset.
+    .. attribute:: id
+    .. attribute:: dataset
        the main dataset name ie.e CMIP6, ERA5
-    .. attribute:: set_id 
+    .. attribute:: set_id
        an identifier for a particular subset of the data
-    .. attribute:: qc_test 
-        the name of the QC test 
-    .. attribute:: result 
+    .. attribute:: qc_test
+        the name of the QC test
+    .. attribute:: result
         The qc test result
-    .. attribute:: updated_at 
+    .. attribute:: updated_at
         The date in which the test was run last
     """
     __tablename__ = 'qcs'

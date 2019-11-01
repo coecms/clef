@@ -20,7 +20,7 @@
 from clef.download import write_request, helpdesk, find_dids
 from unittest.mock import patch
 from smtplib import SMTPException
-from download_fixtures import *
+#from download_fixtures import *
 import builtins
 
 def test_helpdesk(tmp_path):
@@ -59,9 +59,8 @@ def test_find_dids(qm, rows5, rows6):
     assert find_dids(qm, rows6, dids6, 'CORDEX', []) == {}
     assert find_dids(qm, rows5, dids5, 'CMIP5', ['tas','pr']) == {'dataset1.output1.b tas': 'done',
                                                                  'dataset1.output1.b pr': 'done',
-                                                                 'dataset2 pr': 'queued'} 
+                                                                 'dataset2 pr': 'queued'}
     assert find_dids(qm, rows5, dids5, 'CMIP5', []) == {'dataset1.output1.b tas': 'done',
                                                         'dataset1.output1.b pr': 'done',
-                                                        'dataset2 pr': 'queued', 
-                                                        'dataset3 wmo': 'queued'} 
-    
+                                                        'dataset2 pr': 'queued',
+                                                        'dataset3 wmo': 'queued'}
