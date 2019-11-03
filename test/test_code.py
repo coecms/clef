@@ -123,7 +123,7 @@ def test_and_filter(local_results, remote_results):
     results, selection = and_filter(remote_results, ['variable_id'],
                 ['source_id','member_id','experiment_id'], **kwargs)
     assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
-    assert len(selection) == 4 
+    assert len(selection) == 4
     assert len(results) == 8
     dids=[]
     for s in selection:
