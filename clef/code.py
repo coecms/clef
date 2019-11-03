@@ -91,7 +91,6 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
     # temporary(?) fix to substitute output1/2 with combined
-    #fix_paths = df['path'].map(fix_path, df['path'])
     fix_paths = df['path'].apply(fix_path, latest=latest)
     df['pdir'] = fix_paths.map(os.path.dirname)
     df['filename'] = df['path'].map(os.path.basename)

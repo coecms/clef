@@ -33,6 +33,7 @@ import stat
 import json
 import pkg_resources
 import re
+from itertools import repeat
 
 def clef_catch():
     debug_logger = logging.getLogger('clex_debug')
@@ -401,7 +402,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
     if not ctx.obj['flow'] == 'missing':
         if project == 'CMIP5':
             # temporary fix to return only one combined path instead of 1 or 2 output ones
-            cpaths = sorted(set(map(fix_path, [p[0] for p in ql])))
+            cpaths = sorted(set(map(fix_path, [p[0] for p in ql], repeat(latest))))
             for p in cpaths:
                 print(p)
         else:

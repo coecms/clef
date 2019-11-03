@@ -68,6 +68,8 @@ def connect(url=default_url, user=None, debug=False):
         c = engine.connect()
         c.close()
     except sqlalchemy.exc.OperationalError:
-        raise ClefException('Failed to authenticate with NCI MAS database\nYou need to be part of one of the CMIP groups: oi10, al33, rr3.\nIf you are already please contact the NCI helpdesk')
+        raise ClefException('Failed to authenticate with NCI MAS database\n'+
+                            'You need to be part of one of the CMIP groups: oi10, al33, rr3.\n'+
+                            'If you are already please contact the NCI helpdesk')
 
     return engine

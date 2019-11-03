@@ -99,7 +99,7 @@ def get_doc(project, dtype, name):
     service = ('https://api.es-doc.org/2/document/search-name?client=ESDOC-VIEWER-DEMO&encoding=html'+
               f'&project={project}&name={name}&type={stype[dtype]}')
     r = requests.get(service)
-    soup = BeautifulSoup(r.content,'lxml')
+    soup = BeautifulSoup(r.text,'lxml')
     tables = soup.findAll("table")
     if dtype == 'model':
         print_model(tables)
