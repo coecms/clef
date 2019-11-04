@@ -15,7 +15,7 @@ limitations under the License.
 
 import os
 
-from sqlalchemy import create_engine, func, select, and_, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects import sqlite
 
@@ -80,9 +80,9 @@ class Session(object):
         return [x[0] for x in self.query(QC.qc_test).distinct().all()]
 
     def command_query(self,**kwargs):
-        """ Calling query after working out if output should be a dataset or variable list, depending on constraints
-            passed by the user.
-           :input: 
+        """ Calling query after working out if output should be a dataset or variable list,
+            depending on constraints passed by the user.
+           :input:
            :return:
         """
         # empty dictionaries to separate constraints for dataset and variable tables
@@ -102,13 +102,13 @@ class Session(object):
                 if len(v) > 1:
                     vlargs[k] = [x for x in v]
                 else:
-                    vargs[k] = v[0] 
+                    vargs[k] = v[0]
         # if dataset_id is the only key in vargs, return datasets only
         if len(vargs.keys()) + len(vlargs.keys()) == 1:
-            return datasets, variables, False 
+            return datasets, variables, False
         # build query filtering all single value arguments: vargs
         # filter query results using in_() for list of values arguments: vlargs
-        q1 = self.query(Variable).filter_by(**vargs) 
+        q1 = self.query(Variable).filter_by(**vargs)
         for attr, value in vlargs.items():
             q = q1.filter(getattr(Variable, attr).in_(value))
         #print( str(q.statement.compile(dialect=sqlite.dialect())))

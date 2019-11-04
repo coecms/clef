@@ -19,7 +19,7 @@ from datetime import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import itertools 
+import itertools
 import csv
 import platform
 
@@ -28,8 +28,8 @@ def write_request(project, missing):
     ''' write missing dataset_ids to file to create download request for synda '''
     current_dir = os.getcwd()
     user = os.environ.get('USER', 'unknown')
-    tstamp = datetime.now().strftime("%Y%m%dT%H%M%S") 
-    fname = "_".join([project,user,tstamp])+".txt" 
+    tstamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    fname = "_".join([project,user,tstamp])+".txt"
     f = open(os.path.join(current_dir,fname), 'w')
     variables=set()
     for m in missing:
@@ -67,13 +67,14 @@ def helpdesk(user, rootdir, fname, project):
     msg.attach(attachment)
     try:
        smtpObj = smtplib.SMTP('localhost')
-       smtpObj.sendmail(msg['From'],msg['To'],msg.as_string())        
+       smtpObj.sendmail(msg['From'],msg['To'],msg.as_string())
        print( "Your request was successfully sent to the NCI helpdesk")
        print(f'A copy of your request has been saved in \n {f.name}')
     except smtplib.SMTPException:
        print("Error: unable to send email")
        print(f'Your request has been saved in \n {f.name}')
-       print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
+       print('You can use this file to request the data via the NCI helpdesk:\n'+
+             ' help@nci.org.au  or https://help.nci.org.au.')
     return
 
 def read_queue(project):
@@ -84,11 +85,11 @@ def read_queue(project):
     '''
     rows={}
     dids=set()
-    # open csv file and read data in dictionary with dataset_id as key 
+    # open csv file and read data in dictionary with dataset_id as key
     try:
         with open("/g/data/ua8/Download/CMIP6/" + project + "_clef_table.csv","r") as csvfile:
             table_read = csv.reader(csvfile)
-         # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
+        # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
             for row in table_read:
                 if project == 'CMIP5':
                     rows[(row[1],row[0])] = row[2]
@@ -100,7 +101,7 @@ def read_queue(project):
         # Queue not available
         pass
     return rows, dids
-            
+ 
 
 def find_dids(qm, rows, dids, project, varlist):
     ''' Retrieve missing dataset ids from dictionary representing queue table
@@ -147,8 +148,7 @@ def search_queue_csv(qm, project, varlist):
     if project == 'CMIP5' and varlist != []:
         # this combines every dataset_id with all the variables, returns a list of "did  var" strings
         combs = [x[0]+" "+x[1] for x in itertools.product([q[0] for q in qm], varlist)]
-        missing = [x for x in combs if x not in queued] 
+        missing = [x for x in combs if x not in queued]
     else:
-        missing = [q[0] for q in qm if q[0] not in queued] 
+        missing = [q[0] for q in qm if q[0] not in queued]
     return missing
-

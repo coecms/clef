@@ -20,7 +20,7 @@ from esdoc_fixtures import *
 
 def test_esdoc_urls():
     #dids=[]
-    assert True 
+    assert True
 
 def test_get_model_doc():
     assert True

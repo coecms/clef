@@ -15,24 +15,19 @@
 # limitations under the License.
 from __future__ import print_function
 from .db import connect, Session
-from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, Checksum
 from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
 from .download import *
-from . import collections as colls 
+from . import collections as colls
 from .exception import ClefException
 from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching, write_csv, print_stats
 import click
 import logging
 from datetime import datetime
-from sqlalchemy import any_, or_
-from sqlalchemy.orm import aliased
 import sys
 import six
 import os
 import stat
-import json
 import pkg_resources
-import re
 from itertools import repeat
 
 def clef_catch():
@@ -47,9 +42,9 @@ def clef_catch():
 
 
 @click.group()
-@click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote', 
+@click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote',
                help="returns only ESGF search results")
-@click.option('--local', 'flow', is_flag=True, default=False, flag_value='local', 
+@click.option('--local', 'flow', is_flag=True, default=False, flag_value='local',
                help="returns only local files matching arguments in MAS database")
 
 @click.option('--missing', 'flow', is_flag=True, default=False, flag_value='missing',
@@ -80,22 +75,22 @@ def config_log():
     # set the level for the logger, has to be logging.LEVEL not a string
     # until we do so cleflog doesn't have a level and inherits the root logger level:WARNING
     logger.setLevel(logging.INFO)
-    
+
     # add a handler to send WARNING level messages to console
     clog = logging.StreamHandler()
     clog.setLevel(logging.WARNING)
-    logger.addHandler(clog)    
+    logger.addHandler(clog)
 
-    # add a handler to send INFO level messages to file 
+    # add a handler to send INFO level messages to file
     # the messagges will be appended to the same file
     # create a new log file every month
-    month = datetime.now().strftime("%Y%m") 
-    logname = '/g/data/ua8/Download/CMIP6/clef_log_' + month + '.txt' 
-    flog = logging.FileHandler(logname) 
+    month = datetime.now().strftime("%Y%m")
+    logname = '/g/data/ua8/Download/CMIP6/clef_log_' + month + '.txt'
+    flog = logging.FileHandler(logname)
     try:
         os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
     except OSError:
-        pass 
+        pass
     flog.setLevel(logging.INFO)
     flog.setFormatter(formatter)
     logger.addHandler(flog)
@@ -114,16 +109,16 @@ def cmip5_args(f):
                       help="CMIP5 experiment: piControl, rcp85, amip ..."),
         click.option('--experiment_family',multiple=False, type=click.Choice(families),
                       help="CMIP5 experiment family: Decadal, RCP ..."),
-        click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x', 
+        click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x',
                       help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
         click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(tables) ),
         click.option('--variable', '-v', multiple=True, type=click.Choice(variables), metavar='x',
                       help="Variable name as shown in filanames: tas, pr, sic ... "),
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
-        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ), 
+        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ),
         click.option('--realm', multiple=True, type=click.Choice(realms) ),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
-                      help="Attributes for which we want to add AND filter, i.e. -v tasmin -v tasmax --and variable will return only model/ensemble that have both"),
+                      help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values"),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
     for c in reversed(constraints):
@@ -136,14 +131,14 @@ def common_args(f):
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
                      help="Return output for datasets (default) or individual files"),
-        click.option('--latest/--all-versions', 'latest', default=True,  
+        click.option('--latest/--all-versions', 'latest', default=True,
                      help="Return only the latest version or all of them. Default: --latest"),
-        click.option('--replica/--no-replica', default=False, 
+        click.option('--replica/--no-replica', default=False,
                      help="Return both original files and replicas. Default: --no-replica"),
-        click.option('--distrib/--no-distrib', 'distrib', default=True, 
+        click.option('--distrib/--no-distrib', 'distrib', default=True,
                      help="Distribute search across all ESGF nodes. Default: --distrib"),
         click.option('--csv/--no-csv', 'csvf', default=False,
-                     help="Send output to csv file including extra information, works only with --local option. Default: --no-csv"),
+                     help="Send output to csv file including extra information. Default: --no-csv"),
         click.option('--stats/--no-stats',  default=False,
                      help="Write summary of query results, works only with --local option. Default: --no-stats"),
         click.option('--debug/--no-debug', default=False,
@@ -154,7 +149,7 @@ def common_args(f):
     return f
 
 def cmip6_args(f):
-# 
+    #
     models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes = load_vocabularies('CMIP6')
     constraints = [
         click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
@@ -165,19 +160,20 @@ def cmip6_args(f):
                      help="CMIP6 CMOR table: Amon, SIday, Oday ..."),
         click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(models),  metavar='x',
                      help="CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ..."),
-        click.option('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(variables),  metavar='x', 
+        click.option('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(variables),  metavar='x',
                      help="CMIP6 variable name as in filenames"),
         click.option('--member', '-mi', 'member_id', multiple=True, help="CMIP6 member id: <sub-exp-id>-r#i#p#f#"),
-        click.option('--grid', '--grid_label', '-g', 'grid_label', multiple=True, help="CMIP6 grid label: i.e. gn for the model native grid"),
-        click.option('--resolution', '--nominal_resolution','-nr' , 'nominal_resolution', multiple=True, help="Approximate resolution: '250 km', pass in quotes"),
+        click.option('--grid', '--grid_label', '-g', 'grid_label', multiple=True,
+                     help="CMIP6 grid label: i.e. gn for the model native grid"),
+        click.option('--resolution', '--nominal_resolution','-nr' , 'nominal_resolution', multiple=True,
+                     help="Approximate resolution: '250 km', pass in quotes"),
         click.option('--frequency',multiple=True, type=click.Choice(frequencies) ),
-                     # help="Frequency"),
         click.option('--realm', multiple=True, type=click.Choice(realms) ),
-                     # help="CMIP6 realm"),
-        click.option('--sub_experiment_id', '-se', multiple=True, help="Only available for hindcast and forecast experiments: sYYYY"),
+        click.option('--sub_experiment_id', '-se', multiple=True,
+                     help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
-                      help="Attributes for which we want to add AND filter, i.e. -v tasmin -v tasmax --and variable_id will return only model/ensemble that have both"),
+                      help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values"),
         click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
     for c in reversed(constraints):
@@ -203,13 +199,13 @@ def ds_args(f):
         click.option('--cmor-name', '-cn', multiple=True, type=click.Choice(cm_names),
         #click.option('--cmor-name', '-cn', multiple=False, type=click.Choice(cm_names),
                       help="Variable cmor_name useful to look for a variable across datasets"),
-        click.option('--variable', '-va', 'varname', multiple=True, type=click.Choice(variables), 
+        click.option('--variable', '-va', 'varname', multiple=True, type=click.Choice(variables),
                       help="Variable name as defined in files: tas, pr, sic, T ... "),
-        click.option('--frequency', 'frequency', multiple=True, type=click.Choice(['yr','mon','day','6hr','3hr','1hr']), 
+        click.option('--frequency', 'frequency', multiple=True, type=click.Choice(['yr','mon','day','6hr','3hr','1hr']),
                       help="Time frequency on which variable is defined"),
-        click.option('--from-date', 'fdate', multiple=False, help="""To define a time range of availability of a variable, 
+        click.option('--from-date', 'fdate', multiple=False, help="""To define a time range of availability of a variable,
                       can be used on its own or together with to-date. Format is YYYYMMDD"""),
-        click.option('--to-date', 'tdate', multiple=False, help="""To define a time range of availability of a variable, 
+        click.option('--to-date', 'tdate', multiple=False, help="""To define a time range of availability of a variable,
                       can be used on its own or together with from-date. Format is YYYYMMDD""")
     ]
     for c in reversed(constraints):
@@ -241,8 +237,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
     """
     project='CMIP5'
 
-    # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0  
-    if len(model) > 0: 
+    # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0
+    if len(model) > 0:
         model = fix_model(project, model)
     dataset_constraints = {
         'ensemble': ensemble,
@@ -283,8 +279,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat, csvf, stats,
         ):
     """
     Search ESGF and local database for CMIP6 files
-
-    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
+    Constraints can be specified multiple times, in which case they are combined using OR:
+     -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
     The --latest flag will check ESGF for the latest version available, this is the default behaviour
     """
 
@@ -382,7 +378,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
             write_csv(results)
         if stats:
             print_stats(results)
-        return 
+        return
 
     # if not local, query ESGF first and then MAS based on checksums
     subq = match_query(s, query=' '.join(query),
@@ -410,9 +406,9 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
                 print(result[0])
 
     qm = find_missing_id(s, subq, oformat=oformat)
-    
+
     # if there are missing datasets, search for dataset_id in synda queue,
-    #  update list and print result 
+    #  update list and print result
     if qm.count() > 0:
         varlist = []
         if project == 'CMIP5' and 'variable' in terms:
@@ -437,7 +433,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
 @ds_args
 def ds(**kwargs):
     """
-    Search local database for non-ESGF datasets 
+    Search local database for non-ESGF datasets
     """
     # open noesgf connection
     db = colls.connect()
@@ -448,5 +444,5 @@ def ds(**kwargs):
             print(" ".join([ds.name,'v'+ds.version + ":",ds.drs]))
         for v in variables:
             if v.dataset_id == ds.id:
-                print(v.varname + ": " + v.path() ) 
+                print(v.varname + ": " + v.path() )
     return
