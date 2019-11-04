@@ -117,7 +117,7 @@ def find_dids(qm, rows, dids, project, varlist):
     for q in qm:
         did = q[0].replace('output.','output1.')
         if did in dids:
-        # if CMIP5 you need to match also the variable
+        # when CMIP5 you need to match also the variable
             if project == "CMIP5":
                 if varlist != []:
                     queued.update({k[0]+" "+k[1]: v for k,v in rows.items() if k[0]==did and k[1] in varlist})

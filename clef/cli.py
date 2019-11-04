@@ -118,7 +118,7 @@ def cmip5_args(f):
         click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ),
         click.option('--realm', multiple=True, type=click.Choice(realms) ),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
-                      help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values"),
+                      help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values")),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
     for c in reversed(constraints):
@@ -173,7 +173,7 @@ def cmip6_args(f):
                      help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
-                      help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values"),
+                      help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
         click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
     for c in reversed(constraints):
@@ -341,7 +341,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
             if csvf:
                 write_csv(results)
             for row in selection:
-                    print(*[row[x] for x in matching_fixed[project]], row['version'])
+                print(*[row[x] for x in matching_fixed[project]], row['version'])
             return
         else:
             q = find_checksum_id(' '.join(query),
