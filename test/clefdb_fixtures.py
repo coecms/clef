@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import pytest
-from clef import collections 
+from clef import collections
 from clef.db_noesgf import Dataset, Variable
 from sqlalchemy.orm.exc import NoResultFound
 from datetime import date
@@ -50,12 +50,11 @@ def retrieve_item(db, klass, **kwargs):
 #    Add a new test dataset item to the DB
 #    """
 #    dataset = insert_unique(db, Version,**kwargs)
- #   dataset = insert_unique(db, Dataset,
- #           dataset_id = dataset_id,
- #           name       = name,
- #           path        = path,
- #   return version.id
-
+#    dataset = insert_unique(db, Dataset,
+#           dataset_id = dataset_id,
+#           name       = name,
+#           path        = path,
+#    return version.id
 
 
 @pytest.fixture(scope="module")
@@ -147,9 +146,9 @@ def session(request):
         standard_name   = 'rainfall_rate',
         cmor_name  = 'pr',
         units      = 'mm day-1',
-        levels     = '1000 900 800 500 200 0', 
-        grid     = 'NA', 
-        frequency     = '6hr', 
+        levels     = '1000 900 800 500 200 0',
+        grid     = 'NA',
+        frequency     = '6hr',
         updated_on  = '20181029',
         fdate  = '20000101',
         tdate  = '20180831')

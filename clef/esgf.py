@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # Copyright 2017 ARC Centre of Excellence for Climate Systems Science
 # author: Scott Wales <scott.wales@unimelb.edu.au>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,14 +28,12 @@ database
 
 from __future__ import print_function
 import requests
-import json
 import sys
 import sqlalchemy as sa
-from sqlalchemy.sql import column, label
-from sqlalchemy.orm import aliased
+from sqlalchemy.sql import column
 from sqlalchemy import String, Float, Integer, or_, func
 from .pgvalues import values
-from .model import Path, Checksum, c5_metadata_dataset_link, c6_metadata_dataset_link
+from .model import Path, Checksum
 from .exception import ClefException
 
 
@@ -45,7 +43,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query, fields, otype='File', limit=5000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
+def esgf_query(query, fields, otype='File', limit=10000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
@@ -80,10 +78,10 @@ def esgf_query(query, fields, otype='File', limit=5000, offset=0,  distrib=True,
           'limit': limit,
           'distrib': distrib,
           'replica': replica,
-          'latest': latest, 
+          'latest': latest,
           'type': otype,
           'format': 'application/solr+json',
-          } 
+          }
     params.update(kwargs)
     if otype == 'Dataset': params.pop('type')
     #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
@@ -110,7 +108,7 @@ def link_to_esgf(query, **kwargs):
     Returns:
         str: URL to the ESGF search website
     """
-    
+
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     params = {
             'query': query,
@@ -124,9 +122,9 @@ def link_to_esgf(query, **kwargs):
             }
     params.update(constraints)
 
-    endpoint = 'cmip5'
-    if params.get('project','').lower() == 'cmip6':
-        endpoint = 'cmip6'
+    #endpoint = 'cmip5'
+    #if params.get('project','').lower() == 'cmip6':
+    #    endpoint = 'cmip6'
 
 
     #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
@@ -175,7 +173,7 @@ def find_checksum_id(query, **kwargs):
     records=[]
     # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
     no_filter = True
-    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None)==False and constraints.get('variable', None) is not None:
+    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None) is False and constraints.get('variable', None) is not None:
         matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
         no_filter = False
 
@@ -200,7 +198,7 @@ def find_checksum_id(query, **kwargs):
             doc['dataset_id'].split('|')[0], # Drop the server name
             doc['title'],
             doc['version'],
-            doc['score']) 
+            doc['score'])
             for doc in records],
         alias_name = 'esgf_query'
         )

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # Copyright 2017 ARC Centre of Excellence for Climate Systems Science
 # author: Scott Wales <scott.wales@unimelb.edu.au>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,6 +68,8 @@ def connect(url=default_url, user=None, debug=False):
         c = engine.connect()
         c.close()
     except sqlalchemy.exc.OperationalError:
-        raise ClefException('Failed to authenticate with NCI MAS database\nYou need to be part of one of the CMIP groups: oi10, al33, rr3.\nIf you are already please contact the NCI helpdesk')
+        raise ClefException('Failed to authenticate with NCI MAS database\n'+
+                            'You need to be part of one of the CMIP groups: oi10, al33, rr3.\n'+
+                            'If you are already please contact the NCI helpdesk')
 
     return engine

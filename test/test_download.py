@@ -3,6 +3,7 @@
 # Copyright 2019 Scott Wales
 #
 # Author: Scott Wales <scott.wales@unimelb.edu.au>
+# Author: Paola Petrelli <paola.petrelli@utas.edu.au>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +17,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clef.download import write_request, helpdesk
+from clef.download import write_request, helpdesk, find_dids
 from unittest.mock import patch
 from smtplib import SMTPException
+from download_fixtures import qm, rows5, rows6
 import builtins
 
 def test_helpdesk(tmp_path):
@@ -50,3 +52,15 @@ def test_write_request(tmp_path):
                     write_request('dummy_project', ['a','b'])
                     helpdesk_.assert_not_called()
 
+def test_find_dids(qm, rows5, rows6):
+    dids5 = set([k[0] for k in rows5.keys()])
+    dids6 = set([k for k in rows6.keys()])
+    assert find_dids(qm, rows6, dids6, 'CMIP6', []) == {'dataset3': 'done', 'dataset2': 'queued'}
+    assert find_dids(qm, rows6, dids6, 'CORDEX', []) == {}
+    assert find_dids(qm, rows5, dids5, 'CMIP5', ['tas','pr']) == {'dataset1.output1.b tas': 'done',
+                                                                 'dataset1.output1.b pr': 'done',
+                                                                 'dataset2 pr': 'queued'}
+    assert find_dids(qm, rows5, dids5, 'CMIP5', []) == {'dataset1.output1.b tas': 'done',
+                                                        'dataset1.output1.b pr': 'done',
+                                                        'dataset2 pr': 'queued',
+                                                        'dataset3 wmo': 'queued'}

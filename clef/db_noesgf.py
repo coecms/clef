@@ -1,24 +1,22 @@
 #!/usr/bin/env python
-"""
-Copyright 2018 ARC Centre of Excellence for Climate Systems Science
-author: Paola Petrelli <paola.petrelli@utas.edu.au>
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright 2018 ARC Centre of Excellence for Climate Extremes
+# author: Paola Petrelli <paola.petrelli@utas.edu.au>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-#from clef.data import *
-
-import os
 import re
 
 Base = declarative_base()
@@ -26,23 +24,24 @@ Base = declarative_base()
 class Dataset(Base):
     """
     Each record define main characteristics of one dataset.
-    A dataset must have only one file format, version, drs and filename structure. If ore then one exists for the same data then these are two separate datasets with same name. 
+    A dataset must have only one file format, version, drs and filename structure.
+    If more than one exists for the same data then these are two separate datasets with same name.
     Search through these using :func:`
-    .. attribute:: name 
+    .. attribute:: name
         Dataset name
-    .. attribute:: version 
+    .. attribute:: version
         Dataset version
-    .. attribute:: drs 
+    .. attribute:: drs
         Directory structure pattern
-    .. attribute:: filename 
+    .. attribute:: filename
         Filename pattern
-    .. attribute:: fileformat 
+    .. attribute:: fileformat
         File format
-    .. attribute:: access 
+    .. attribute:: access
         Access rules: i.e. NCI group membership and/or creators terms
-    .. attribute:: manager 
+    .. attribute:: manager
         Dataset manager e-mail
-    .. attribute:: reference 
+    .. attribute:: reference
         A url referencing infomration on the dataset
     """
     __tablename__ = 'datasets'
@@ -56,7 +55,7 @@ class Dataset(Base):
     manager    = Column(String)
     reference  = Column(String)
 
-    variables  = relationship('Variable', backref='dataset', order_by='Variable.varname', 
+    variables  = relationship('Variable', backref='dataset', order_by='Variable.varname',
                  cascade="all, delete-orphan", passive_deletes=True)
 
     __table_args__ = (
@@ -66,31 +65,31 @@ class Dataset(Base):
 
 class Variable(Base):
     """
-    Each record represents a variable for a specific dataset. 
+    Each record represents a variable for a specific dataset.
     i.e. you can have T defined for ERAI and for ERA5 and they will be two seperate records even if all attributes might be the same  
-    .. attribute:: id 
+    .. attribute:: id
         :class:`Dataset` associated with this record (foreign key)
-    .. attribute:: varname 
+    .. attribute:: varname
         Variable name as defined in the file (for self-describing formats)
-    .. attribute:: long_name 
-        long_name attribute definition 
-    .. attribute:: standard_name 
-        standard_name attribute definition 
-    .. attribute:: cmor_name 
-        corresponding cmor_name if exists 
+    .. attribute:: long_name
+        long_name attribute definition
+    .. attribute:: standard_name
+        standard_name attribute definition
+    .. attribute:: cmor_name
+        corresponding cmor_name if exists
     .. attribute:: units
-        Variable units 
-    .. attribute:: grid 
-        Label for grid on which variable is defined (or actual boundary?)
-    .. attribute:: resolution 
+        Variable units
+    .. attribute:: grid
+        Label for grid on which variable is defined
+    .. attribute:: resolution
        Grid resolution
-    .. attribute:: stream 
-       Group/subset to which variable belongs to where it applies, i.e. for ECMWF datasets 
-    .. attribute:: realm 
+    .. attribute:: stream
+       Group/subset to which variable belongs to where it applies, i.e. for ECMWF datasets
+    .. attribute:: realm
        variable realm: ie. atmos, ocean etc where it applies, i.e. for all datasets following CMOR conventions
-    .. attribute:: frequency 
+    .. attribute:: frequency
        Frequency as: mon, 6hr, yr, ...
-    .. attribute:: levels 
+    .. attribute:: levels
        Vertical levels: a list of values, empty (or 0??) if surface field
     #.. testsetup::
     #    >>> cmip5  = getfixture('session')
@@ -116,10 +115,10 @@ class Variable(Base):
 
     def path(self):
         """
-        Returns the filepath pattern for a variable based on the drs and filename pattern 
-        :returns: 
+        Returns the filepath pattern for a variable based on the drs and filename pattern
+        :returns:
         """
-        drs = self.dataset.drs + self.dataset.filename 
+        drs = self.dataset.drs + self.dataset.filename
         placeholds = re.findall('<[a-zA-Z]*[_]?[a-zA-Z]*>', drs)
         for col in Dataset.__table__.columns.keys():
             if "<"+col+">" in placeholds:
@@ -127,29 +126,29 @@ class Variable(Base):
         for col in Variable.__table__.columns.keys():
             if "<"+col+">" in placeholds and 'date' not in col:
                 drs = drs.replace("<"+col+">",getattr(self,col))
-        return drs 
+        return drs
 
 
 class ECMWF(Base):
     """
-    Each record represents a variable for a specific dataset. 
+    Each record represents a variable for a specific dataset.
     i.e. you can have T defined for ERAI and for ERA5 and they will be two seperate records even if all attributes might be the same  
-    .. attribute:: id 
-    .. attribute:: code 
+    .. attribute:: id
+    .. attribute:: code
         Grib code for variable: <code>.<table>
-    .. attribute:: name 
+    .. attribute:: name
         Variable name used in ECMWF files
-    .. attribute:: cds_name 
+    .. attribute:: cds_name
         Variable name used for requests via Copernicus climate service
     .. attribute:: units
-        Variable units 
-    .. attribute:: long_name 
-        long_name attribute definition 
-    .. attribute:: standard_name 
-        standard_name attribute definition 
-    .. attribute:: cmor_name 
-        corresponding cmor_name if exists 
-    .. attribute:: cell_methods 
+        Variable units
+    .. attribute:: long_name
+        long_name attribute definition
+    .. attribute:: standard_name
+        standard_name attribute definition
+    .. attribute:: cmor_name
+        corresponding cmor_name if exists
+    .. attribute:: cell_methods
        Cell_methods attribute for variable if applicable
     """
     __tablename__ = 'ecmwf_vars'
@@ -163,4 +162,28 @@ class ECMWF(Base):
     standard_name  = Column(String, index=True)
     cmor_name      = Column(String, index=True)
     cell_methods   = Column(String)
+
+class QC(Base):
+    """
+    Each record represents the qc results for a specific unit of a dataset.
+    .. attribute:: id
+    .. attribute:: dataset
+       the main dataset name ie.e CMIP6, ERA5
+    .. attribute:: set_id
+       an identifier for a particular subset of the data
+    .. attribute:: qc_test
+        the name of the QC test
+    .. attribute:: result
+        The qc test result
+    .. attribute:: updated_at
+        The date in which the test was run last
+    """
+    __tablename__ = 'qcs'
+    id          = Column(Integer, name='qc_id', primary_key = True)
+
+    dataset           = Column(String, index=True)
+    set_id            = Column(String, index=True)
+    qc_test           = Column(String)
+    result            = Column(String)
+    updated_at        = Column(String)
 

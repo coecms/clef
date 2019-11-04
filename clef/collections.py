@@ -15,11 +15,11 @@ limitations under the License.
 
 import os
 
-from sqlalchemy import create_engine, func, select, and_, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects import sqlite
 
-from .db_noesgf import Base, Dataset, Variable, ECMWF
+from .db_noesgf import Base, Dataset, Variable, QC
 
 SQASession = sessionmaker()
 
@@ -69,16 +69,20 @@ class Session(object):
         """
         return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
 
-    #def build_drs(self):
-    #    """ Get the list of all variables in datasets collection as cmor names
-    #    :return: A list of strings
-    #    """
-    #    return [x[0] for x in self.query(Variable.cmor_name).distinct().all()]
+    def qc_list(self, dataset=None):
+        """ Get the list of all the qc tests in qc table, if dataset passed only the one applying to it
+        :input: dataset optional if passed return only tests for that dataset
+        :return: A list of strings
+        """
+        if dataset:
+            #return [x[0] for x in self.query(QC.qc_test).where(QC.dataset=dataset).distinct().all()]
+            pass
+        return [x[0] for x in self.query(QC.qc_test).distinct().all()]
 
     def command_query(self,**kwargs):
-        """ Calling query after working out if output should be a dataset or variable list, depending on constraints
-            passed by the user.
-           :input: 
+        """ Calling query after working out if output should be a dataset or variable list,
+            depending on constraints passed by the user.
+           :input:
            :return:
         """
         # empty dictionaries to separate constraints for dataset and variable tables
@@ -98,13 +102,13 @@ class Session(object):
                 if len(v) > 1:
                     vlargs[k] = [x for x in v]
                 else:
-                    vargs[k] = v[0] 
+                    vargs[k] = v[0]
         # if dataset_id is the only key in vargs, return datasets only
         if len(vargs.keys()) + len(vlargs.keys()) == 1:
-            return datasets, variables, False 
+            return datasets, variables, False
         # build query filtering all single value arguments: vargs
         # filter query results using in_() for list of values arguments: vlargs
-        q1 = self.query(Variable).filter_by(**vargs) 
+        q1 = self.query(Variable).filter_by(**vargs)
         for attr, value in vlargs.items():
             q = q1.filter(getattr(Variable, attr).in_(value))
         #print( str(q.statement.compile(dialect=sqlite.dialect())))

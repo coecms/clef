@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # Copyright 2017 ARC Centre of Excellence for Climate Systems Science
 # author: Scott Wales <scott.wales@unimelb.edu.au>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,7 +48,7 @@ def mock_query(session):
                 yield query
 
 def cli_run(runner, cmd, args=[]):
-    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'default', 
+    ctx = {'search':False, 'local': False, 'missing': False, 'request': False, 'flow': 'default',
             'log': logging.getLogger('cleflog')}
     result = runner.invoke(cmd, args, obj=ctx, catch_exceptions=False)
     print(result.output, file=sys.stderr)
@@ -64,7 +64,7 @@ def test_versions(command, runner, mock_query):
     # Check the query args are passed correctly
     cli_run(runner, command)
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == True
+    assert mock_query.call_args[1]['latest'] is True
 
     cli_run(runner, command, ['--all-versions'])
     assert mock_query.called
@@ -72,7 +72,7 @@ def test_versions(command, runner, mock_query):
 
     cli_run(runner, command, ['--latest'])
     assert mock_query.called
-    assert mock_query.call_args[1]['latest'] == True
+    assert mock_query.call_args[1]['latest'] is True
 
 
 @pytest.mark.parametrize('command', [cmip5])
@@ -164,15 +164,18 @@ def test_cmip5_present(prod_cli):
             '--frequency=mon', '--realm=atmos', '--variable=tas', '--ensemble=r1i1p1']
 
     r = prod_cli(['cmip5', *facets])
-    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
-        "Everything available on ESGF is also available locally\n")
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/"+
+                        "atmos/Amon/r1i1p1/latest/tas/\n\n" +
+                        "Everything available on ESGF is also available locally\n")
 
     r = prod_cli(['cmip5', *facets, '--format=file'])
-    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/tas_Amon_ACCESS1-0_historical_r1i1p1_185001-200512.nc\n\n" +
-            "Everything available on ESGF is also available locally\n")
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/"+
+                        "atmos/Amon/r1i1p1/latest/tas/tas_Amon_ACCESS1-0_historical_r1i1p1_185001-200512.nc\n\n" +
+                        "Everything available on ESGF is also available locally\n")
 
     r = prod_cli(['--local', 'cmip5', *facets])
-    assert r.output == "/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas\n"
+    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/"+
+                       "atmos/Amon/r1i1p1/latest/tas\n")
 
     r = prod_cli(['--remote', 'cmip5', *facets])
     assert r.output == "cmip5.output1.CSIRO-BOM.ACCESS1-0.historical.mon.atmos.Amon.r1i1p1.v20120727\n"
@@ -180,15 +183,6 @@ def test_cmip5_present(prod_cli):
     r = prod_cli(['--request', 'cmip5', *facets])
     assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/tas/\n\n" +
             "Everything available on ESGF is also available locally\n")
-
-
-@pytest.mark.production
-def test_cmip5_and(prod_cli):
-    r = prod_cli('--local cmip5 -m ACCESS1.0 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --ensemble r1i1p1 --and variable'.split())
-    assert r.output == "ACCESS1.0 r1i1p1 {None}\n"
-
-    r = prod_cli('--remote cmip5 -m ACCESS1.0 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --ensemble r1i1p1 --and variable'.split())
-    assert r.output == "ACCESS1.0 r1i1p1 {'v20120727', 'v20120115'}\n"
 
 @pytest.mark.production
 def test_cmip5_experiment_family(prod_cli):
@@ -217,9 +211,11 @@ def test_cmip6_present(prod_cli):
         "Everything available on ESGF is also available locally\n")
 
     r = prod_cli(['cmip6', *facets, '--format=file'])
-    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_185001-194912.nc\n" +
-            "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_195001-201412.nc\n\n" +
-            "Everything available on ESGF is also available locally\n")
+    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/"+
+                        "v20190406/tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_185001-194912.nc\n" +
+                        "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/"+
+                        "v20190406/tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_195001-201412.nc\n\n" +
+                        "Everything available on ESGF is also available locally\n")
 
     r = prod_cli(['--local', 'cmip6', *facets])
     assert r.output == "/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406\n"
@@ -228,12 +224,14 @@ def test_cmip6_present(prod_cli):
     assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406\n"
 
     r = prod_cli(['--remote', 'cmip6', *facets, '--format=file'])
-    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406.tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_185001-194912.nc\n" +
-    "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406.tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_195001-201412.nc\n")
+    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406."+
+                        "tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_185001-194912.nc\n" +
+                        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.tas.gn.v20190406."+
+                        "tas_Amon_UKESM1-0-LL_historical_r1i1p1f2_gn_195001-201412.nc\n")
 
     r = prod_cli(['--request', 'cmip6', *facets])
     assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/\n\n" +
-            "Everything available on ESGF is also available locally\n")
+                        "Everything available on ESGF is also available locally\n")
 
 @pytest.mark.production
 def test_cmip6_missing(prod_cli):
@@ -270,3 +268,24 @@ def test_cmip6_and(prod_cli):
 
     r = prod_cli(['--remote', 'cmip6', *facets, '--and=variable_id'])
     assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"
+
+@pytest.mark.production
+def test_csv_stats(prod_cli):
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmax','--variant_label=r1i1p1f2']
+    r = prod_cli(['--local', 'cmip6', *facets, '--stats'])
+    assert stats is True
+    assert 'Query summary' in r.output
+    assert csvf is False
+    r = prod_cli(['--local', 'cmip6', *facets, '--csv'])
+    assert stats is False
+    assert 'Query summary' not in r.output
+    assert csvf is True
+    r = prod_cli(['--remote', 'cmip6', *facets, '--stats'])
+    assert stats is True
+    assert 'Query summary' not in r.output
+    assert csvf is False
+    r = prod_cli(['--remote', 'cmip6', *facets, '--csv'])
+    assert stats is False
+    assert 'Query summary' not in r.output
+    assert csvf is True
+

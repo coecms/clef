@@ -17,6 +17,8 @@ Contents:
    ds.rst
    code.rst
    queries.rst
+   new_features.rst
+   training.rst
    architecture.rst
    api/api.rst
    autoapi/modules.rst
