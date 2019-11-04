@@ -253,7 +253,7 @@ def find_local_path(session, subq, oformat='file'):
         return (session
                  .query('esgf_paths.path')
                  .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id is not None)
+                .filter(subq.c.esgf_paths_file_id != None)
                 .filter(sa.not_(sa.and_(
                     subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
                     sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
@@ -263,7 +263,7 @@ def find_local_path(session, subq, oformat='file'):
         return (session
                 .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
                 .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id is not None)
+                .filter(subq.c.esgf_paths_file_id != None)
                 .filter(sa.not_(sa.and_(
                     subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
                     sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
@@ -289,12 +289,12 @@ def find_missing_id(session, subq, oformat='file'):
         return (session
                 .query('esgf_query.id')
                 .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id is None))
+                .filter(subq.c.esgf_paths_file_id == None))
     elif oformat == 'dataset':
         return (session
                 .query('esgf_query.dataset_id')
                 .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id is None)
+                .filter(subq.c.esgf_paths_file_id == None)
                 .distinct())
     else:
         raise NotImplementedError
