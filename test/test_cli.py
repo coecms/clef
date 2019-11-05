@@ -202,6 +202,23 @@ cmip5.output1.CSIRO-BOM.ACCESS1-0.rcp85.mon.atmos.Amon.r1i1p1.v20120727
 Everything available on ESGF is also available locally
 """.lstrip()
 
+    r = prod_cli(['--local', 'cmip5','--model=ACCESS1.0', '--experiment=historical', '--experiment_family=RCP',
+        '--frequency=mon','--variable=tas'])
+    assert r.output == ""
+
+    r = prod_cli(['--local', 'cmip5','--model=ACCESS1.0', '--experiment=rcp45', '--experiment_family=RCP',
+        '--frequency=mon','--variable=tas'])
+    assert r.output == """
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas/
+""".lstrip()
+
+    r = prod_cli(['--local', 'cmip5','--model=ACCESS1.0', '--experiment_family=RCP',
+        '--frequency=mon','--variable=tas'])
+    assert r.output == """
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas/
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp85/mon/atmos/Amon/r1i1p1/latest/tas/
+""".lstrip()
+
 @pytest.mark.production
 def test_cmip6_present(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tas','--variant_label=r1i1p1f2']
