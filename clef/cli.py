@@ -240,6 +240,11 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
     # check model name is ESGF-valid (i.e. ACCESS1.0 no ACCESS1-0
     if len(model) > 0:
         model = fix_model(project, model)
+    # change experiment_family to tuple to behave like other arguments
+    if experiment_family == None:
+        experiment_family = ()
+    else:
+        experiment_family = (experiment_family,)
     dataset_constraints = {
         'ensemble': ensemble,
         'experiment': experiment,
@@ -249,9 +254,8 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
         'time_frequency': time_frequency,
         'cmor_table': cmor_table,
         'variable': variable,
-        'experiment_family': experiment_family,
+        'experiment_family': experiment_family
         }
-
     common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
