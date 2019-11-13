@@ -198,7 +198,7 @@ def get_keys(project):
          data = json.loads(f.read())
     try:
         valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
-    except:
+    except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return valid_keys
 
@@ -217,7 +217,7 @@ def get_facets(project):
         #    facets['CMIP6'][x] = y
         facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x for x in data.keys()]) }
         facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x for x in data.values()]) }
-    except:
+    except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return facets[project]
 
@@ -524,3 +524,14 @@ def local_latest(results):
            combs[comb] = sim
     latest=[v for v in combs.values()]
     return latest
+
+def ids_dict(dids):
+    '''Gets a list of dataset_ids and return a list of dictionaries in same style as local query results
+    :input: dids (list) list of dataset_ids
+    :return: results (list) list of dictionary, one for id listing simulation attributes
+    '''
+    results = []
+    for did in dids:
+        dataset_id
+    return results
+
