@@ -470,17 +470,6 @@ def stats(results):
     return stats_dict
 
 
-def ids_dict(dids):
-    '''Gets a list of dataset_ids and return a list of dictionaries in same style as local query results
-    :input: dids (list) list of dataset_ids
-    :return: results (list) list of dictionary, one for id listing simulation attributes
-    '''
-    results = []
-    for did in dids:
-        dataset_id
-    return results
-
-
 def print_stats(results):
     ''' call stats function and then print out query statistics '''
     if len(results) == 0:
