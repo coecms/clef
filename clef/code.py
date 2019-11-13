@@ -198,7 +198,7 @@ def get_keys(project):
          data = json.loads(f.read())
     try:
         valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
-    except:
+    except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return valid_keys
 
@@ -217,7 +217,7 @@ def get_facets(project):
         #    facets['CMIP6'][x] = y
         facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x for x in data.keys()]) }
         facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x for x in data.values()]) }
-    except:
+    except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return facets[project]
 

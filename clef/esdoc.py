@@ -118,7 +118,7 @@ def errata(tracking_id):
             return [x for x in uids.split(';')]
         else:
             return None
-    except:
+    except KeyError:
         print(f'Issue with handle: {tracking_id}')
         print(r.json()["errorMessage"])
         return None
