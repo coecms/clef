@@ -108,14 +108,21 @@ def get_doc(project, dtype, name):
     return service
 
 def errata(tracking_id):
-    ''' return errata uids connected to a tracking id '''
+    '''Return errata uids connected to a tracking id
+    '''
     service = 'https://errata.es-doc.org/1/resolve/pid?pids='
     r = requests.get(service + tracking_id.split(":")[1])
-    uids = r.json()['errata'][0][1][0][0]
-    if uids:
-        return [x for x in uids.split(';')]
-    else:
+    try:
+        uids = r.json()['errata'][0][1][0][0]
+        if uids:
+            return [x for x in uids.split(';')]
+        else:
+            return None
+    except KeyError:
+        print(f'Issue with handle: {tracking_id}')
+        print(r.json()["errorMessage"])
         return None
+
 
 def retrieve_error(uid):
     ''' Accept error uid and return errata as json plus webpage to view error '''
@@ -134,5 +141,5 @@ def print_error(uid):
         print(f'Description: {error[k]["description"]}')
 
 
-url, data = get_wdcc('CMIP5.output1.MIROC.MIROC5.historical.r1i1p1')
-print(data)
+#url, data = get_wdcc('CMIP5.output1.MIROC.MIROC5.historical.r1i1p1')
+#print(data)
