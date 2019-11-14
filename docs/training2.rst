@@ -1,12 +1,9 @@
 CMIP6
 -----
-
-.. code:: ipython3
+::
 
     !clef cmip6 --help
 
-
-.. parsed-literal::
 
     Usage: clef cmip6 [OPTIONS] [QUERY]...
     
@@ -67,13 +64,10 @@ approximation of the actual resolution and **grid**.
 
 Controlling the ouput: clef options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: ipython3
+::
 
     !clef --local cmip6 -e 1pctCO2 -t Amon -v tasmax -v tasmin -g gr
 
-
-.. parsed-literal::
 
     /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20180626
     /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-ESM2-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20181018
@@ -97,14 +91,10 @@ executed first on the ESGF and then its results are matched locally. In
 the example above the final result is exactly the same, whichever way we
 perform the query. This way of searching can give you more results if a
 node is offline or if a version have been unpublished from the ESGF but
-is still available locally.
-
-.. code:: ipython3
+is still available locally.::
 
     !clef --missing cmip6 -e 1pctCO2 -v clw -v clwvi -t Amon -g gr
 
-
-.. parsed-literal::
 
     Available on ESGF but not locally:
     CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r1i1p1f1.Amon.clwvi.gr.v20191020
@@ -115,14 +105,10 @@ is still available locally.
 This time we used the *–missing* option and the tool returned only the
 results matching the constraints that are available on the ESGF but not
 locally (we changed variables to make sure to get some missing data
-back).
-
-.. code:: ipython3
+back).::
 
     !clef --remote cmip6 -e 1pctCO2 -v tasmin -t Amon -g gr
 
-
-.. parsed-literal::
 
     CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20180626
     CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20181018
@@ -132,14 +118,10 @@ back).
 
 
 The *–remote* option returns the Dataset_ids of the data matching the
-constraints, regardless that they are available locally or not.
-
-.. code:: ipython3
+constraints, regardless that they are available locally or not.::
 
     !clef --remote cmip6 -e 1pctCO2 -v tasmin -t Amon -g gr -mi r1i1p1f2 --format file
 
-
-.. parsed-literal::
 
     CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20180626.tasmin_Amon_CNRM-CM6-1_1pctCO2_r1i1p1f2_gr_185001-199912.nc
     CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20181018.tasmin_Amon_CNRM-ESM2-1_1pctCO2_r1i1p1f2_gr_185001-199912.nc
@@ -167,16 +149,11 @@ do not fall into this list. The list is available from the NCI climate
 confluence website: Even without consulting the list you can use
 **clef**, as we demonstrated above, to search for a particular dataset,
 if it is not queued or downloaded already **clef** will give you an
-option to request it from NCI. Let’s see how it works.
-
-.. code:: bash
+option to request it from NCI. Let’s see how it works.::
 
     %%bash
     clef --request cmip6 -e 1pctCO2 -v clw -v clwvi -t Amon -g gr
     no
-
-
-.. parsed-literal::
 
     Available on ESGF but not locally:
     CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r1i1p1f1.Amon.clwvi.gr.v20191020
@@ -201,21 +178,15 @@ YES y yes
 
 With anything else or if you don’t pass anything it will assume you
 don’t want to put in a request. It still saved the request in a file we
-can use later.
-
-.. code:: ipython3
+can use later.::
 
     !cat CMIP6_*.txt
-
-
-.. parsed-literal::
 
     dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r1i1p1f1.Amon.clwvi.gr.v20191020
     dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clw.gr.v20191020
     dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clwvi.gr.v20191020
     dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r3i1p1f1.Amon.clw.gr.v20191020
     ...
-
 
 If I answered ‘yes’ the tool would have sent an e-mail to the NCI
 helpdesk with the text file attached, NCI can pass that file as input to

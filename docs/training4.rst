@@ -16,9 +16,7 @@ than one value to the query we are using lists in our *constraints*
 dictionary. Then we need to define the attributes for which we want all
 values to be present, only *variable_id* in this case. Finally we tell
 the function which attributes define a simulation, this would most often
-be *model* and *member*.
-
-.. code:: ipython3
+be *model* and *member*.::
 
     constraints = {'variable_id': ['pr','mrso'], 'frequency': ['mon'], 'experiment_id': ['historical']}
     allvalues = ['variable_id']
@@ -31,19 +29,13 @@ both variables and the corresponding subset of the original query
 constraints keys won’t work, you will have to use the attributes full
 names. You can see by printing the length of both lists and one of the
 first item of *selection* that the results have been grouped by
-models/ensembles and then filtered.
-
-.. code:: ipython3
+models/ensembles and then filtered.::
 
     print(len(results),len(selection))
     selection[0]
 
-.. parsed-literal::
 
     46 23
-
-
-.. parsed-literal::
 
     {'source_id': 'BCC-CSM2-MR',
      'member_id': 'r1i1p1f1',
@@ -54,10 +46,9 @@ models/ensembles and then filtered.
      'version': {'v20181114', 'v20181126'}}
 
 
-
 The full definition the **matching()** shows all the function arguments:
->matching(session, cols, fixed, project=‘CMIP5’, local=True,
-latest=True, \**kwargs)
+ * matching(session, cols, fixed, project=‘CMIP5’, local=True,
+            latest=True, \**kwargs)
 
 From this you can see that like **search()** by default *project* is
 ‘CMIP5’ and *latest* is True. We didn’t have to use yet the *local*
@@ -68,9 +59,7 @@ AND filter on more than one attribute
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We can pass more than value for more than one attribute, let’s add
-*piControl* to the experiment list.
-
-.. code:: ipython3
+*piControl* to the experiment list.::
 
     constraints = {'variable_id': ['pr','mrso'], 'frequency': ['mon'], 'experiment_id': ['historical', 'piControl']}
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
@@ -78,11 +67,7 @@ We can pass more than value for more than one attribute, let’s add
     selection[0]
 
 
-.. parsed-literal::
-
     100 29
-
-.. parsed-literal::
 
     {'source_id': 'BCC-CSM2-MR',
      'member_id': 'r1i1p1f1',
@@ -95,15 +80,12 @@ We can pass more than value for more than one attribute, let’s add
      'version': {'v20181012', 'v20181016', 'v20181114', 'v20181126'}}
 
 
-
 As you can see we get now many more results but only a few more
 combinations after applying the filter. This is because we are still
 defining a simulation by using model and member combinations we haven’t
 included experiment and the results for the two experiments are grouped
 together, to fix this we need to add *experiment_id* to the *fixed*
-list.
-
-.. code:: ipython3
+list.::
 
     fixed = ['source_id', 'member_id','experiment_id']
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
@@ -111,11 +93,7 @@ list.
     selection[0]
 
 
-.. parsed-literal::
-
     98 49
-
-.. parsed-literal::
 
     {'source_id': 'BCC-CSM2-MR',
      'member_id': 'r1i1p1f1',
@@ -127,12 +105,9 @@ list.
      'version': {'v20181114', 'v20181126'}}
 
 
-
 If we wanted to find all models/members combinations which have both
 variables and both experiments, then we should have kept *fixed* as it
-was and add *experiment_id* to the *allvalues* list instead.
-
-.. code:: ipython3
+was and add *experiment_id* to the *allvalues* list instead.::
 
     allvalues = ['variable_id', 'experiment_id']
     fixed=['source_id','member_id']
@@ -141,11 +116,7 @@ was and add *experiment_id* to the *allvalues* list instead.
     selection[0]
 
 
-.. parsed-literal::
-
     80 20
-
-.. parsed-literal::
 
     {'source_id': 'BCC-CSM2-MR',
      'member_id': 'r1i1p1f1',
@@ -161,7 +132,6 @@ was and add *experiment_id* to the *allvalues* list instead.
      'version': {'v20181012', 'v20181016', 'v20181114', 'v20181126'}}
 
 
-
 AND filter applied to remote ESGF query
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -169,9 +139,7 @@ You can of course do the same query for CMIP5, in that case you can omit
 *project* when calling the function since its default value is ‘CMIP5’.
 Another default option is *local=True*, this says the function to perfom
 this query directly on MAS if you want you can perform the same query on
-the ESGF database, so you can see what has been published.
-
-.. code:: ipython3
+the ESGF database, so you can see what has been published.::
 
     constraints = {'variable': ['tasmin','tasmax'], 'cmor_table': ['Amon'], 'experiment': ['historical','rcp26', 'rcp85']}
     allvalues = ['variable', 'experiment']
@@ -181,11 +149,7 @@ the ESGF database, so you can see what has been published.
     selection[0]
 
 
-.. parsed-literal::
-
     1488 46
-
-.. parsed-literal::
 
     {'model': 'CNRM-CM5',
      'ensemble': 'r1i1p1',
@@ -202,11 +166,11 @@ the ESGF database, so you can see what has been published.
      'version': {'v20110629', 'v20110901', 'v20110930'}}
 
 
-
 Please note how I used different attributes names because we are
 querying CMIP5 now. *comb* highlights all the combinations that have to
 be present for a model/ensemble to be returned while we are getting a
 dataset_id rather than a directory path.
+
 
 AND filter on the command line
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -215,14 +179,10 @@ The command line version of **matching** can be called using the *–and*
 flag followed by the attribute for which we want all values, the flag
 can be used more than once. By default model/ensemble combinations
 define a simulation, and only model, ensemble and version are returned
-as final result.
-
-.. code:: ipython3
+as final result.::
 
     !clef --local cmip5 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --and variable
 
-
-.. parsed-literal::
 
     ACCESS1.0 r1i1p1 {None}
     ...
@@ -231,14 +191,10 @@ as final result.
     inmcm4 r1i1p1 {'20130207'}
 
 
-The same will work for *–remote* and *cmip6*
-
-.. code:: ipython3
+The same will work for *–remote* and *cmip6*::
 
     !clef --remote cmip6 -v pr -v mrso -e piControl  -mi r1i1p1f1 --frequency mon --and variable_id
 
-
-.. parsed-literal::
 
     BCC-CSM2-MR r1i1p1f1 {'v20181016', 'v20181012'}
     BCC-ESM1 r1i1p1f1 {'v20181211', 'v20181214'}

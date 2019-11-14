@@ -10,31 +10,21 @@ correspondent in CMIP6 is activity. However, not all experiments belong
 to a family and searching for both experiment and experiment_family at
 the same time can give unexpected results. Let’s look at an example, if
 I want to get all the rcps experiments and historical I might be tempted
-to pass them as constraints in the same query:
-
-.. code:: ipython3
+to pass them as constraints in the same query:::
 
     !clef cmip5 -m CMCC-CM -e historical --experiment_family RCP -t Omon -v tos -en r1i1p1
 
 
-.. parsed-literal::
-
-    None
     No matches found on ESGF, check at https://esgf.nci.org.au/search/esgf-nci?query=&type=File&distrib=True&replica=False&latest=True&project=CMIP5&ensemble=r1i1p1&experiment=historical&model=CMCC-CM&cmor_table=Omon&variable=tos&experiment_family=RCP
 
 
 We couldn’t find any matches because both constraints have to be true,
 similarly if we pass rcp45 as experiment as well as the family RCP we
-will only get the rcp45 results.
-
-.. code:: ipython3
+will only get the rcp45 results.::
 
     !clef cmip5 -m CMCC-CM -e rcp45 --experiment_family RCP -t Omon -v tos -en r1i1p1
 
 
-.. parsed-literal::
-
-    None
     /g/data1b/al33/replicas/CMIP5/combined/CMCC/CMCC-CM/rcp45/mon/ocean/Omon/r1i1p1/v20120518/tos/
     /g/data1b/al33/replicas/CMIP5/combined/CMCC/CMCC-CM/rcp45/mon/ocean/Omon/r1i1p1/v20170725/tos/
     
@@ -42,14 +32,10 @@ will only get the rcp45 results.
 
 
 Finally, it is now possible to use experiment_family also in the local
-search:
-
-.. code:: ipython3
+search:::
 
     !clef --local cmip5 -m CMCC-CM --experiment_family RCP -t Omon -v tos -en r1i1p1
 
-
-.. parsed-literal::
 
     /g/data1b/al33/replicas/CMIP5/combined/CMCC/CMCC-CM/rcp45/mon/ocean/Omon/r1i1p1/v20120518/tos
     /g/data1b/al33/replicas/CMIP5/combined/CMCC/CMCC-CM/rcp45/mon/ocean/Omon/r1i1p1/v20170725/tos
@@ -63,14 +49,10 @@ Searching for other climate datasets: ds
 Let’s get back to the command line now and have a look at the third
 command **ds**\  This command let you query a separate database that
 contains information on other climate datasets which are available on
-raijin.
-
-.. code:: ipython3
+raijin.::
 
     !clef ds --help
 
-
-.. parsed-literal::
 
     Usage: clef ds [OPTIONS]
     
@@ -108,14 +90,10 @@ raijin.
 | with no other argument will return a list of the local datasets
   available in the database. NB this is not an exhaustive list of the
   climate collections at NCI and not all the datasets already in the
-  database have been completed.
-
-.. code:: ipython3
+  database have been completed.::
 
     !clef ds
 
-
-.. parsed-literal::
 
     ERA5 v1.0: /g/data/ub4/era5/netcdf/<stream>/<varname>/<year>/
     MACC v1.0: /g/data/ub4/macc/grib/<stream>/
@@ -133,14 +111,10 @@ raijin.
 If you specify any of the variable options then the query will return a
 list of variables rather then datasets. Since variables can be named
 differently among datasets, using the *standard_name* or *cmor_name*
-options to identify them is the best option.
-
-.. code:: ipython3
+options to identify them is the best option.::
 
     !clef ds -f netcdf --standard-name air_temperature
 
-
-.. parsed-literal::
 
     2T: /g/data/ub4/era5/netcdf/surface/2T/<year>/2T_era5_-90 90 -180 179.75_<YYYYMMDD>_<YYYYMMDD>.nc
     T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc
@@ -156,14 +130,10 @@ options to identify them is the best option.
 
 This returns all the variable available as netcdf files and with
 air_temperature as standard_name. NB for each variable a path structure
-is returned.
-
-.. code:: ipython3
+is returned.::
 
     !clef ds -f netcdf --cmor-name ta
 
-
-.. parsed-literal::
 
     T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc
     T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc

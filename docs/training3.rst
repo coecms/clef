@@ -8,9 +8,7 @@ python code. By doing so you also get access to a lot more information
 on the datasets returned not only the path. To do so we have first to
 import some functions from the clef.code sub-module. In particular the
 **search()** function and **connect()** and **Session()** that we’ll use
-to open a connection to the database.
-
-.. code:: ipython3
+to open a connection to the database.::
 
     from clef.code import *
     db = connect()
@@ -24,26 +22,18 @@ Running search()
 the query constraints: > search(session, project=‘CMIP5’, latest=True,
 \**kwargs)
 
-Let’s start by defining some constraints.
-
-.. code:: ipython3
+Let’s start by defining some constraints.::
 
     constraints = {'variable': 'tas', 'model': 'MIROC5', 'cmor_table': 'day', 'experiment': 'rcp85'}
 
 The available keys depend on the project you are querying and the
 attributes stored by the database. You can use any of the *facets* used
 for ESGF but in future we will be adding other options based on extra
-fields which are stored as attributes.
-
-.. code:: ipython3
+fields which are stored as attributes.::
 
     results = search(s, project='CMIP5', **constraints)
     results
 
-
-
-
-.. parsed-literal::
 
     [{'filenames': ['tas_day_MIROC5_rcp85_r1i1p1_20100101-20191231.nc',
        'tas_day_MIROC5_rcp85_r1i1p1_20900101-20991231.nc',
@@ -77,18 +67,11 @@ Both the keys and values of the constraints get checked before being
 passed to the query function. This means that if you passed a key or a
 value that doesn’t exist for the chosen project, the function will print
 a list of valid values and then exit. Let’s re-write the constraints
-dictionary to show an example.
-
-.. code:: ipython3
+dictionary to show an example.::
 
     constraints = {'v': 'tas', 'm': 'MIROC5', 'table': 'day', 'experiment': 'rcp85', 'activity': 'CMIP'}
     results = search(s, **constraints)
 
-
-::
-
-
-    ---------------------------------------------------------------------------
 
     ClefException: Warning activity is not a valid constraint nameValid constraints are:
     dict_values([['source_id', 'model', 'm'], ['realm'], ['time_frequency', 'frequency', 'f'], ['variable_id', 'variable', 'v'], ['experiment_id', 'experiment', 'e'], ['table_id', 'table', 'cmor_table', 't'], ['member_id', 'member', 'ensemble', 'en', 'mi'], ['institution_id', 'institution', 'institute'], ['experiment_family']])
@@ -99,17 +82,12 @@ constraints for CMIP5, in fact that can be used only with CMIP6 NB. that
 the search accepted all the other abbreviations, there’s a few terms
 that can be used for each key. The full list of valid keys is available
 from from the github repository:
-https://github.com/coecms/clef/blob/master/clef/data/valid_keys.json
-
-.. code:: ipython3
+https://github.com/coecms/clef/blob/master/clef/data/valid_keys.json::
 
     constraints = {'v': 'tas', 'm': 'MIROC5', 'table': 'day', 'experiment': 'rcp85', 'member': 'r1i1p1'}
     results = search(s, **constraints)
     results[0]
 
-
-
-.. parsed-literal::
 
     {'filenames': ['tas_day_MIROC5_rcp85_r1i1p1_20100101-20191231.nc',
       'tas_day_MIROC5_rcp85_r1i1p1_20900101-20991231.nc',
@@ -155,11 +133,9 @@ random number of inputs passed by the command line we set up a function
 **call_local_query()** that deals with this more efficiently. The
 arguments are very similar to **search()** with the important difference
 that we are passing list of values instead of strings:
->call_local_query(s, project, oformat, latest, \**kwargs)
+ * call_local_query(s, project, oformat, latest, \**kwargs)
 
-Let’s look at an example:
-
-.. code:: ipython3
+Let’s look at an example:::
 
     constraints = {'variable': ['tasmin','tasmax'], 'model': ['MIROC5','MIROC4h'],
                    'cmor_table': ['day'], 'experiment': ['rcp85'], 'ensemble': ['r1i1p1']}
