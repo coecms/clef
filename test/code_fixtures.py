@@ -33,7 +33,7 @@ def nranges(request):
 def periods(request):
     period1 = [('20750101', '21001231'), ('20060101', '20401231'),
              ('20410101', '20741231')]
-    period2 = [('20050201', '20050228'), ('20050101', '20050131')] 
+    period2 = [('20050201', '20050228'), ('20050101', '20050131')]
     return period1, period2
 
 
@@ -79,7 +79,7 @@ def local_results():
      'frequency': 'mon', 'ensemble': 'r2i1p1',
      'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr',
      'pdir': '/rootdir/mod1/exp1/r2i1p1/pr', 'project':'CMIP5'},
-# mod2 has both pr and tas for r1 and for exp1 and exp2 but tas is v1 and pr is v2 
+# mod2 has both pr and tas for r1 and for exp1 and exp2 but tas is v1 and pr is v2
     {'filenames': ['pr.nc'], 'model': 'mod2', 'experiment': 'exp1',
       'frequency': 'mon', 'ensemble': 'r1i1p1', 'project':'CMIP5',
       'cmor_table': 'Amon', 'version': 'v2', 'variable': 'pr',
@@ -182,3 +182,44 @@ def mversions():
      'cmor_table': 'Amon', 'version': 'v1', 'variable': 'pr',
      'pdir': '/rootdir/mod2/exp1/r1i1p1/v1/pr'}]
     return inres, outres
+
+@pytest.fixture(scope="module")
+def dids6():
+    '''List of CMIP6 dataset_ids
+    '''
+    return ['CMIP6.CMIP.NCC.NorESM2-LM.historical.r3i1p1f1.day.tas.gn.v20190920',
+            'CMIP6.CMIP.NUIST.NESM3.historical.r2i1p1f1.day.tas.gn.v20190812']
+
+@pytest.fixture(scope="module")
+def results6():
+    '''Corresponding list of results for dids6
+    '''
+    return [{'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NCC',
+              'source_id': 'NorESM2-LM', 'experiment_id': 'historical',
+              'member_id': 'r3i1p1f1', 'table_id': 'day',
+              'variable_id': 'tas', 'grid_label': 'gn', 'version': 'v20190920'},
+            {'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NUIST',
+              'source_id': 'NESM3', 'experiment_id': 'historical',
+              'member_id': 'r2i1p1f1', 'table_id': 'day',
+              'variable_id': 'tas', 'grid_label': 'gn', 'version': 'v20190812'}]
+
+
+@pytest.fixture(scope="module")
+def dids5():
+    '''List of CMIP5 dataset_ids
+    '''
+    return ['cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r5i1p1.v1',
+            'cmip5.output.MIROC.MIROC5.historical.day.atmos.day.r2i1p1.v20120101']
+
+@pytest.fixture(scope="module")
+def results5():
+    '''Corresponding list of results for dids5
+    '''
+    return [{'project': 'cmip5', 'product': 'output1', 'institute': 'ICHEC',
+              'model': 'EC-EARTH', 'experiment': 'historical', 'time_frequency': 'day',
+              'realm': 'atmos', 'cmor_table': 'day', 'ensemble': 'r5i1p1',
+              'version': 'v1'},
+            {'project': 'cmip5', 'product': 'output', 'institute': 'MIROC',
+              'model': 'MIROC5', 'experiment': 'historical', 'time_frequency': 'day',
+              'realm': 'atmos', 'cmor_table': 'day', 'ensemble': 'r2i1p1',
+              'version': 'v20120101'}]

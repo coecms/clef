@@ -19,7 +19,7 @@ from .esgf import match_query, find_local_path, find_missing_id, find_checksum_i
 from .download import *
 from . import collections as colls
 from .exception import ClefException
-from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching, write_csv, print_stats
+from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching, write_csv, print_stats, ids_dict
 import click
 import logging
 from datetime import datetime
@@ -31,7 +31,7 @@ import pkg_resources
 from itertools import repeat
 
 def clef_catch():
-    debug_logger = logging.getLogger('clex_debug')
+    debug_logger = logging.getLogger('clef_debug')
     debug_logger.setLevel(logging.CRITICAL)
     try:
         clef()
@@ -62,14 +62,14 @@ def clef(ctx, flow, debug):
     ctx.obj['log'] = config_log()
 
     if debug:
-        debug_logger = logging.getLogger('clex_debug')
+        debug_logger = logging.getLogger('clef_debug')
         debug_logger.setLevel(logging.DEBUG)
     
 
 def config_log():
     ''' configure log file to keep track of users queries '''
     # start a logger
-    logger = logging.getLogger('cleflog')
+    logger = logging.getLogger('clef_log')
     # set a formatter to manage the output format of our handler
     formatter = logging.Formatter('%(asctime)s; %(message)s',"%Y-%m-%d %H:%M:%S")
     # set the level for the logger, has to be logging.LEVEL not a string
@@ -342,11 +342,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=False, latest=latest, **terms)
-            if csvf:
-                write_csv(results)
             for row in selection:
                 print(*[row[x] for x in matching_fixed[project]], row['version'])
-            return
         else:
             q = find_checksum_id(' '.join(query),
                 distrib=distrib,
@@ -360,11 +357,19 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
             if oformat == 'file':
                 for result in s.query(q):
                     print(result.id)
+                return
             else:
                 ids=sorted(set(x.dataset_id for x in s.query(q)))
+# when stats or csvf are True first extract attributes from dataset_ids
+                if stats or csvf:
+                    results = ids_dict(ids)
                 for did in ids:
                     print(did)
-            return
+        if stats:
+            print_stats(results)
+        if csvf:
+            write_csv(results)
+        return
 
     # if local query MAS based on attributes not checksums
     if ctx.obj['flow'] == 'local':

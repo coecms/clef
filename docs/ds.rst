@@ -44,6 +44,7 @@ Since variables can be named differently among datasets, using the standard_name
 Examples
 --------
 Looking for all datasets which have air temperature data and netcdf as file format::
+
     $ clef ds -f netcdf --standard-name air_temperature
       ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
       tas: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_sfc/1.0/tas/tas_6hr_ERAI_historical_oper_an_sfc_<YYYYMMDD>_<YYYYMMDD>.nc

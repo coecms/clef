@@ -40,7 +40,7 @@ def esdoc_urls(dataset_ids):
     return esdoc_urls
 
 def get_wdcc(dataset_id):
-    ''' Retrieve metadata documentation from WDCC site, this is less detailed than esdoc but often more readable
+    '''Retrieve metadata documentation from WDCC site, this is less detailed than esdoc but often more readable
         :input: dataset_id (str) the simulation dataset_id
         :return: wdcc_url (str) the wdcc_url for the document
         :return: r.json() (dict) the web response as json
@@ -88,8 +88,8 @@ def print_doc(tables, dtype):
                print(df.iloc[i,0] +' > ' + df.iloc[i,1])
     return
 
-def get_doc(project, dtype, name):
-    ''' Retrieve esdoc document and then call function to print it to screen
+def get_doc(dtype, name, project='CMIP6'):
+    '''Retrieve esdoc document and then call function to print it to screen
         :input: project (str) - ESGF project
         :input: dtype (str) - the kind of document (i.e. experiment, mip)
         :input: name (str) - the canonical name of the related document, usually model/experiment/mip name works

@@ -122,7 +122,7 @@ def test_and_filter(local_results, remote_results):
               'table_id': ['Amon'], 'member_id': ['r1i1p1f1','r2i1p1f1']}
     results, selection = and_filter(remote_results, ['variable_id'],
                 ['source_id','member_id','experiment_id'], **kwargs)
-    assert selection[0]['comb'] == { ('tas', ), ('pr', )} 
+    assert selection[0]['comb'] == { ('tas', ), ('pr', )}
     assert len(selection) == 4
     assert len(results) == 8
     dids=[]
@@ -167,11 +167,19 @@ def test_search(session):
     r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
     # missing assertion
 
-def test_stats(local_results):
+def test_stats(local_results, results5, results6):
     statsd =  stats(local_results)
     assert sorted(statsd['members']['mod1']) == ['r1i1p1','r2i1p1']
     assert len(statsd['model_member']) == 5
     assert sorted(statsd['models']) == ['mod1', 'mod2', 'mod3']
+    statsd =  stats(results6)
+    assert sorted(statsd['members']['NorESM2-LM']) == ['r3i1p1f1']
+    assert len(statsd['model_member']) == 2
+    assert sorted(statsd['models']) == ['NESM3', 'NorESM2-LM']
+    statsd =  stats(results5)
+    assert sorted(statsd['members']['EC-EARTH']) == ['r5i1p1']
+    assert len(statsd['model_member']) == 2
+    assert sorted(statsd['models']) == ['EC-EARTH', 'MIROC5']
 
 @pytest.mark.production
 def test_search_results(session):
@@ -215,3 +223,6 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
 
+def test_ids_dict(dids6, results6, dids5, results5):
+    assert ids_dict(dids6) == results6
+    assert ids_dict(dids5) == results5
