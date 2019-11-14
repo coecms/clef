@@ -18,7 +18,12 @@ Contents:
    code.rst
    queries.rst
    new_features.rst
-   training.rst
+   training1.rst
+   training2.rst
+   training3.rst
+   training4.rst
+   training5.rst
+   training6.rst
    architecture.rst
    api/api.rst
    autoapi/modules.rst
