@@ -18,14 +18,15 @@ presently two main commands:
  * :code:`clef ds` to execute searches on non-ESGF climate datasets 
 
 Examples
-========
+--------
 
 The search works like the ESGF search website, e.g. https://esgf.nci.org.au/search/esgf_nci.
 Results can be filtered by using flags matching the ESGF search facets.
 
 CMIP5
------
++++++
 ::
+
     $ clef cmip5 --model ACCESS1.0 \
                --experiment historical \
                --frequency mon \
@@ -42,8 +43,9 @@ CMIP5
     Everything available on ESGF is also available locally
 
 CMIP6
------
++++++
 ::           
+
     $ clef cmip6 --activity CMIP \
                --experiment historical \
                --source_type AOGCM \
@@ -61,9 +63,8 @@ CMIP6
     CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.historical.r2i1p1f2.Amon.va.gr.v20181126
 
 ds
---
+++
 ::
-
 
     $ clef ds -f netcdf --standard-name air_temperature
     ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc

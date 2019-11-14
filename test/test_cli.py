@@ -299,7 +299,7 @@ def test_csv_stats(prod_cli):
     assert csvf is True
     r = prod_cli(['--remote', 'cmip6', *facets, '--stats'])
     assert stats is True
-    assert 'Query summary' not in r.output
+    assert 'Query summary' in r.output
     assert csvf is False
     r = prod_cli(['--remote', 'cmip6', *facets, '--csv'])
     assert stats is False

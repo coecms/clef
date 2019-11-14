@@ -240,7 +240,7 @@ def check_keys(valid_keys, kwargs):
 
 def check_values(vocabularies, project, args):
     '''Check that arguments values passed to search are valid, if not print warning and exit
-    ''' 
+    '''
     # load dictionaries to check arguments values are valid
     if project == 'CMIP5':
         model, realm, variable, frequency, table, experiment, attributes, experiment_family = vocabularies
@@ -434,15 +434,14 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
     return and_filter(results, cols, fixed, **kwargs)
 
 def write_csv(list_dicts):
+    '''Write query results to csv file
     '''
-    '''
-    
     if len(list_dicts) == 0:
         print(f'Nothing to write to csv file')
         return
     project = list_dicts[0].get("project", "result")
-    csv_file = f'{project}_query.csv'
-    ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm']
+    csv_file = f'{project.upper()}_query.csv'
+    ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm', 'product']
     columns = [x for x in list_dicts[0].keys() if x not in ignore]
     try:
         with open(csv_file, 'w') as csvfile:
@@ -458,7 +457,7 @@ def stats(results):
     :return: stats_dict a dictionary containing the stats to print
     '''
     stats_dict = {}
-    attrs = get_facets(results[0]['project'])
+    attrs = get_facets(results[0]['project'].upper())
     # get number of unique models
     stats_dict['models'] = set(x[attrs['m']] for x in results)
     # get number of unique models/ensembles
@@ -488,20 +487,21 @@ def print_stats(results):
         return
     stats_dict = stats(results)
     print('\nQuery summary')
-    print(f'\n{len(stats_dict["models"])} model/s were found locally:')
-    for m in stats_dict["models"]:
+    print(f'\n{len(stats_dict["models"])} model/s are available:')
+    for m in sorted(stats_dict["models"]):
         print(m, end=' ')
     print()
-    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.')
+    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations are available.')
     member_num = {k: len(v) for k,v in stats_dict['members'].items()}
     member_num = {len(v): [] for v in stats_dict['members'].values()}
     for k,v in stats_dict['members'].items():
         member_num[len(v)].append(k)
     for num in sorted(member_num.keys()):
-        print(f'\n{len(member_num[num])} models have {num} members:')
-        for m in member_num[num]:
+        print(f'\n{len(member_num[num])} model/s have {num} member/s:')
+        for m in sorted(member_num[num]):
             print(m, end=' ')
         print()
+
 
 def local_latest(results):
     ''' Sift through local query results dictionaries and return only the latest versions '''
@@ -525,13 +525,25 @@ def local_latest(results):
     latest=[v for v in combs.values()]
     return latest
 
+
 def ids_dict(dids):
     '''Gets a list of dataset_ids and return a list of dictionaries in same style as local query results
     :input: dids (list) list of dataset_ids
     :return: results (list) list of dictionary, one for id listing simulation attributes
     '''
     results = []
+    project = dids[0].split(".")[0]
+    if project == 'CMIP6':
+        facets_list = ['project', 'activity_id', 'institution_id', 'source_id',
+                  'experiment_id', 'member_id', 'table_id', 'variable_id',
+                  'grid_label', 'version']
+    elif project == 'cmip5':
+        facets_list = ['project', 'product', 'institute', 'model', 'experiment',
+                       'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
+    else:
+        print(f'Warning: project {project} not available')
+        return results 
     for did in dids:
-        dataset_id
+        results.append({k:v for k,v in zip(facets_list,did.split("."))})
     return results
 
