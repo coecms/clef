@@ -209,14 +209,14 @@ Everything available on ESGF is also available locally
     r = prod_cli(['--local', 'cmip5','--model=ACCESS1.0', '--experiment=rcp45', '--experiment_family=RCP',
         '--frequency=mon','--variable=tas'])
     assert r.output == """
-/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas/
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas
 """.lstrip()
 
     r = prod_cli(['--local', 'cmip5','--model=ACCESS1.0', '--experiment_family=RCP',
         '--frequency=mon','--variable=tas'])
     assert r.output == """
-/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas/
-/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp85/mon/atmos/Amon/r1i1p1/latest/tas/
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp45/mon/atmos/Amon/r1i1p1/latest/tas
+/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/rcp85/mon/atmos/Amon/r1i1p1/latest/tas
 """.lstrip()
 
 @pytest.mark.production
@@ -252,30 +252,30 @@ def test_cmip6_present(prod_cli):
 
 @pytest.mark.production
 def test_cmip6_missing(prod_cli):
-    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tas','--variant_label=r2i1p1f2']
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmin','--variant_label=r2i1p1f2']
 
     r = prod_cli(['cmip6', *facets])
     assert r.output == ("\nAvailable on ESGF but not locally:\n"+
-        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502\n")
+        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708\n")
 
     r = prod_cli(['cmip6', *facets, '--format=file'])
     assert r.output == ("\nAvailable on ESGF but not locally:\n"+
-            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_185001-194912.nc\n" +
-            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_195001-201412.nc\n")
+            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708.tasmin_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_185001-194912.nc\n" +
+            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708.tasmin_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_195001-201412.nc\n")
 
     r = prod_cli(['--local', 'cmip6', *facets])
     assert r.output == ""
 
     r = prod_cli(['--remote', 'cmip6', *facets])
-    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502\n"
+    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708\n"
 
     r = prod_cli(['--remote', 'cmip6', *facets, '--format=file'])
-    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_185001-194912.nc\n" +
-            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502.tas_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_195001-201412.nc\n")
+    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708.tasmin_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_185001-194912.nc\n" +
+            "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708.tasmin_Amon_UKESM1-0-LL_historical_r2i1p1f2_gn_195001-201412.nc\n")
 
     with mock.patch('clef.cli.write_request') as write_request:
         r = prod_cli(['--request', 'cmip6', *facets])
-        write_request.assert_called_with('CMIP6', ['CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tas.gn.v20190502'])
+        write_request.assert_called_with('CMIP6', ['CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708'])
 
 @pytest.mark.production
 def test_cmip6_and(prod_cli):
@@ -290,19 +290,19 @@ def test_cmip6_and(prod_cli):
 def test_csv_stats(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmax','--variant_label=r1i1p1f2']
     r = prod_cli(['--local', 'cmip6', *facets, '--stats'])
-    assert stats is True
+    # assert stats is True
     assert 'Query summary' in r.output
-    assert csvf is False
+    # assert csvf is False
     r = prod_cli(['--local', 'cmip6', *facets, '--csv'])
-    assert stats is False
+    # assert stats is False
     assert 'Query summary' not in r.output
-    assert csvf is True
+    # assert csvf is True
     r = prod_cli(['--remote', 'cmip6', *facets, '--stats'])
-    assert stats is True
+    # assert stats is True
     assert 'Query summary' in r.output
-    assert csvf is False
+    # assert csvf is False
     r = prod_cli(['--remote', 'cmip6', *facets, '--csv'])
-    assert stats is False
+    # assert stats is False
     assert 'Query summary' not in r.output
-    assert csvf is True
+    # assert csvf is True
 
