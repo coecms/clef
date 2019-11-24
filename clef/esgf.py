@@ -26,7 +26,6 @@ database
   missing from the replica respectively.
 """
 
-from __future__ import print_function
 import requests
 import sys
 import sqlalchemy as sa
@@ -86,9 +85,18 @@ def esgf_query(query, fields, otype='File', limit=10000, offset=0,  distrib=True
     if otype == 'Dataset': params.pop('type')
     #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
     #                 params = params )
-    r = requests.get('https://esgf.nci.org.au/esg-search/search',
+    try:
+        r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
-    r.raise_for_status()
+        r.raise_for_status()
+        print(r.raise_for_status())
+    except Exception as err:
+        r = requests.get(f'https://esgf-node.llnl.gov/esg-search/search',
+                     params = params )
+        r.raise_for_status()
+    except Exception as err:
+        raise ClefException(f'Currently is not possible to contact one of the ESGF nodes try again later or use --local option') 
+    #r.raise_for_status()
     return r.json()
 
 
@@ -122,9 +130,6 @@ def link_to_esgf(query, **kwargs):
             }
     params.update(constraints)
 
-    #endpoint = 'cmip5'
-    #if params.get('project','').lower() == 'cmip6':
-    #    endpoint = 'cmip6'
 
 
     #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
@@ -132,7 +137,6 @@ def link_to_esgf(query, **kwargs):
     r = requests.Request('GET','https://esgf.nci.org.au/search/esgf-nci',
             params=params,
             )
-    #p = r.prepare()
     return r.prepare().url
 
 

@@ -27,11 +27,11 @@ def test_get_model_doc():
 
 def test_get_doc():
     base = 'https://api.es-doc.org/2/document/search-name?client=ESDOC-VIEWER-DEMO&encoding=html&'
-    assert get_doc('CMIP6', 'model', 'MIROC6') == ( base +
+    assert get_doc('model', 'MIROC6', 'CMIP6') == ( base +
                    'project=CMIP6&name=MIROC6&type=CIM.2.SCIENCE.MODEL')
-    assert get_doc('CMIP6', 'experiment', 'historical') == ( base +
+    assert get_doc('experiment', 'historical') == ( base +
                    'project=CMIP6&name=historical&type=cim.2.designing.NumericalExperiment')
-    assert get_doc('CMIP6', 'mip', 'FAFMIP') == ( base +
+    assert get_doc('mip', 'FAFMIP') == ( base +
                    'project=CMIP6&name=FAFMIP&type=cim.2.designing.Project')
 
 def test_get_wdcc():

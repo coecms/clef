@@ -49,14 +49,13 @@ def search(session, project='CMIP5', latest=True, **kwargs):
 
 
 def local_query(session, project='CMIP5', latest=True, **kwargs):
-    """
-    Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
+    '''Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
     :input: session the db session
     :input: project 'CMIP5' by default
     :input: latest True by default
     :input: kwargs a dictionary with the query constraints
     :return: a list of dictionary, each dictionary describe one simulation matching the constraints
-    """
+    ''' 
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
     results=[]
@@ -114,7 +113,8 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     return results
 
 def get_version(path):
-    ''' Retrieve version from path if not available in MAS '''
+    '''Retrieve version from path if not available in MAS
+    '''
     mo = re.search(r'v\d{8}', path)
     if mo:
         return  mo.group()
@@ -123,11 +123,10 @@ def get_version(path):
 
 
 def get_range(periods):
-    """
-    Convert a list of NumericRange period to a from-date,to-date separate values
+    '''Convert a list of NumericRange period to a from-date,to-date separate values
     input: periods list of tuples representing lower and upper end of temporal interval, values are strings
     return: from_date, to_date as strings
-    """
+    ''' 
     try:
         lower, higher = int(periods[0][0]), int(periods[0][1])
         for nr in periods[1:]:
@@ -140,13 +139,13 @@ def get_range(periods):
         return None, None
     return str(lower), str(higher)
 
+
 def convert_periods(nranges,frequency):
-    """
-    Convert period Numeric ranges to dates intervals and build the time axis
+    '''Convert period Numeric ranges to dates intervals and build the time axis
     input: nranges a list of each file period
     input: frequency timestep frequency
     return: periods list of tuples representing lower and upper end of temporal interval, values are strings
-    """
+    ''' 
     #freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
     periods = []
     if len(nranges) == 0:
@@ -161,13 +160,13 @@ def convert_periods(nranges,frequency):
         periods.append((lower,upper))
     return periods
 
+
 def time_axis(periods,fdate,tdate):
-    """
-    Check that files constitute a contiguos time axis
+    '''Check that files constitute a contiguos time axis
     input: periods a list of ('from_date', 'to_date') for each file
     input: fdate, tdate from_date and to_date strings
     return: True or False
-    """
+    '''
     if periods == []:
         return None 
     sp = sorted(periods)
@@ -187,10 +186,10 @@ def time_axis(periods,fdate,tdate):
         return None 
     return contiguos
 
+
 def get_keys(project):
-    """
-    Define valid arguments keys based on project
-    """
+    '''Define valid arguments keys based on project
+    '''
     # valid_keys has as keys tuple of all valid arguments and as values dictionaries
     # representing the corresponding facet for CMIP5 and CMIP6
     # ex. ('variable', 'variable_id', 'v'): {'CMIP5': 'variable', 'CMIP6': 'variable_id'}
@@ -199,14 +198,14 @@ def get_keys(project):
          data = json.loads(f.read())
     try:
         valid_keys = {v[project]: k.split(":") for k,v in data.items() if v[project] != 'NA'}
-    except:
+    except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return valid_keys
 
+
 def get_facets(project):
-    """
-    Return dictionary of facets to use based on project
-    """
+    '''Return dictionary of facets to use based on project
+    '''
     facets =  {'CMIP6': {}, 'CMIP5': {}}
     ffacets = pkg_resources.resource_filename(__name__, 'data/facets.json')
     with open(ffacets, 'r') as f:
@@ -218,14 +217,14 @@ def get_facets(project):
         #    facets['CMIP6'][x] = y
         facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x for x in data.keys()]) }
         facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x for x in data.values()]) }
-    except:
+    except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return facets[project]
 
+
 def check_keys(valid_keys, kwargs):
-    """
-    Check that arguments keys passed to search are valid, if not print warning and exit
-    """
+    '''Check that arguments keys passed to search are valid, if not print warning and exit
+    ''' 
     # load dictionary to check arguments keys are valid
     # rewrite kwargs with the right facet name
     args = {}
@@ -240,9 +239,8 @@ def check_keys(valid_keys, kwargs):
     return args
 
 def check_values(vocabularies, project, args):
-    """
-    Check that arguments values passed to search are valid, if not print warning and exit
-    """
+    '''Check that arguments values passed to search are valid, if not print warning and exit
+    '''
     # load dictionaries to check arguments values are valid
     if project == 'CMIP5':
         model, realm, variable, frequency, table, experiment, attributes, experiment_family = vocabularies
@@ -255,8 +253,10 @@ def check_values(vocabularies, project, args):
             raise ClefException(f'"{v}" is not a valid value for the facet "{k}" in project {project}')
     return args
 
+
 def load_vocabularies(project):
-    ''' '''
+    '''
+    '''
     project = project.upper()
     vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
     with open(vfile, 'r') as f:
@@ -276,9 +276,9 @@ def load_vocabularies(project):
              return models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes
     return models, realms, variables, frequencies, tables, experiments, families, attributes
 
+
 def fix_model(project, models, invert=False):
-    """
-    Fix model name where file attribute is different from values accepted by facets
+    '''Fix model name where file attribute is different from values accepted by facets
 
     >>> fix_model('CMIP5', ['CESM1(BGC)', 'CESM1-BGC'])
     ['CESM1(BGC)', 'CESM1(BGC)']
@@ -290,7 +290,7 @@ def fix_model(project, models, invert=False):
         project: Either 'CMIP5' or 'CMIP6'
         models: List of models to convert
         invert: Invert the conversion (so go from ``CESM1(BGC)`` to ``CESM1-BGC``)
-    """
+    '''
     project = project.upper()
     if project  == 'CMIP5':
         mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
@@ -304,7 +304,9 @@ def fix_model(project, models, invert=False):
 
 
 def call_local_query(s, project, oformat, latest, **kwargs):
-    ''' call local_query for each combination of constraints passed as argument, return datasets/files paths '''
+    '''Call local_query for each combination of constraints passed as argument, return datasets/files paths
+    '''
+
     datasets = []
     paths = []
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
@@ -432,13 +434,14 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
     return and_filter(results, cols, fixed, **kwargs)
 
 def write_csv(list_dicts):
-    
+    '''Write query results to csv file
+    '''
     if len(list_dicts) == 0:
         print(f'Nothing to write to csv file')
         return
     project = list_dicts[0].get("project", "result")
-    csv_file = f'{project}_query.csv'
-    ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm']
+    csv_file = f'{project.upper()}_query.csv'
+    ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm', 'product']
     columns = [x for x in list_dicts[0].keys() if x not in ignore]
     try:
         with open(csv_file, 'w') as csvfile:
@@ -454,7 +457,7 @@ def stats(results):
     :return: stats_dict a dictionary containing the stats to print
     '''
     stats_dict = {}
-    attrs = get_facets(results[0]['project'])
+    attrs = get_facets(results[0]['project'].upper())
     # get number of unique models
     stats_dict['models'] = set(x[attrs['m']] for x in results)
     # get number of unique models/ensembles
@@ -465,6 +468,7 @@ def stats(results):
         stats_dict['members'][m].append(en)
     return stats_dict
 
+
 def print_stats(results):
     ''' call stats function and then print out query statistics '''
     if len(results) == 0:
@@ -472,20 +476,21 @@ def print_stats(results):
         return
     stats_dict = stats(results)
     print('\nQuery summary')
-    print(f'\n{len(stats_dict["models"])} model/s were found locally:')
-    for m in stats_dict["models"]:
+    print(f'\n{len(stats_dict["models"])} model/s are available:')
+    for m in sorted(stats_dict["models"]):
         print(m, end=' ')
     print()
-    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations were found locally.')
+    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations are available.')
     member_num = {k: len(v) for k,v in stats_dict['members'].items()}
     member_num = {len(v): [] for v in stats_dict['members'].values()}
     for k,v in stats_dict['members'].items():
         member_num[len(v)].append(k)
     for num in sorted(member_num.keys()):
-        print(f'\n{len(member_num[num])} models have {num} members:')
-        for m in member_num[num]:
+        print(f'\n{len(member_num[num])} model/s have {num} member/s:')
+        for m in sorted(member_num[num]):
             print(m, end=' ')
         print()
+
 
 def local_latest(results):
     ''' Sift through local query results dictionaries and return only the latest versions '''
@@ -508,3 +513,26 @@ def local_latest(results):
            combs[comb] = sim
     latest=[v for v in combs.values()]
     return latest
+
+
+def ids_dict(dids):
+    '''Gets a list of dataset_ids and return a list of dictionaries in same style as local query results
+    :input: dids (list) list of dataset_ids
+    :return: results (list) list of dictionary, one for id listing simulation attributes
+    '''
+    results = []
+    project = dids[0].split(".")[0]
+    if project == 'CMIP6':
+        facets_list = ['project', 'activity_id', 'institution_id', 'source_id',
+                  'experiment_id', 'member_id', 'table_id', 'variable_id',
+                  'grid_label', 'version']
+    elif project == 'cmip5':
+        facets_list = ['project', 'product', 'institute', 'model', 'experiment',
+                       'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
+    else:
+        print(f'Warning: project {project} not available')
+        return results 
+    for did in dids:
+        results.append({k:v for k,v in zip(facets_list,did.split("."))})
+    return results
+

@@ -40,7 +40,7 @@ def esdoc_urls(dataset_ids):
     return esdoc_urls
 
 def get_wdcc(dataset_id):
-    ''' Retrieve metadata documentation from WDCC site, this is less detailed than esdoc but often more readable
+    '''Retrieve metadata documentation from WDCC site, this is less detailed than esdoc but often more readable
         :input: dataset_id (str) the simulation dataset_id
         :return: wdcc_url (str) the wdcc_url for the document
         :return: r.json() (dict) the web response as json
@@ -88,8 +88,8 @@ def print_doc(tables, dtype):
                print(df.iloc[i,0] +' > ' + df.iloc[i,1])
     return
 
-def get_doc(project, dtype, name):
-    ''' Retrieve esdoc document and then call function to print it to screen
+def get_doc(dtype, name, project='CMIP6'):
+    '''Retrieve esdoc document and then call function to print it to screen
         :input: project (str) - ESGF project
         :input: dtype (str) - the kind of document (i.e. experiment, mip)
         :input: name (str) - the canonical name of the related document, usually model/experiment/mip name works
@@ -108,14 +108,21 @@ def get_doc(project, dtype, name):
     return service
 
 def errata(tracking_id):
-    ''' return errata uids connected to a tracking id '''
+    '''Return errata uids connected to a tracking id
+    '''
     service = 'https://errata.es-doc.org/1/resolve/pid?pids='
     r = requests.get(service + tracking_id.split(":")[1])
-    uids = r.json()['errata'][0][1][0][0]
-    if uids:
-        return [x for x in uids.split(';')]
-    else:
+    try:
+        uids = r.json()['errata'][0][1][0][0]
+        if uids:
+            return [x for x in uids.split(';')]
+        else:
+            return None
+    except KeyError:
+        print(f'Issue with handle: {tracking_id}')
+        print(r.json()["errorMessage"])
         return None
+
 
 def retrieve_error(uid):
     ''' Accept error uid and return errata as json plus webpage to view error '''
@@ -134,5 +141,5 @@ def print_error(uid):
         print(f'Description: {error[k]["description"]}')
 
 
-url, data = get_wdcc('CMIP5.output1.MIROC.MIROC5.historical.r1i1p1')
-print(data)
+#url, data = get_wdcc('CMIP5.output1.MIROC.MIROC5.historical.r1i1p1')
+#print(data)

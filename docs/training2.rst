@@ -1,0 +1,196 @@
+CMIP6
+-----
+::
+
+    !clef cmip6 --help
+
+
+    Usage: clef cmip6 [OPTIONS] [QUERY]...
+    
+      Search ESGF and local database for CMIP6 files Constraints can be
+      specified multiple times, in which case they are combined using OR:  -v
+      tas -v tasmin will return anything matching variable = 'tas' or variable =
+      'tasmin'. The --latest flag will check ESGF for the latest version
+      available, this is the default behaviour
+    
+    Options:
+      -mip, --activity [AerChemMIP|C4MIP|CDRMIP|CFMIP|CMIP|CORDEX|DAMIP|DCPP|DynVarMIP|FAFMIP|GMMIP|GeoMIP|HighResMIP|ISMIP6|LS3MIP|LUMIP|OMIP|PAMIP|PMIP|RFMIP|SIMIP|ScenarioMIP|VIACSAB|VolMIP]
+      -e, --experiment x              CMIP6 experiment, list of available depends
+                                      on activity
+      --source_type [AER|AGCM|AOGCM|BGC|CHEM|ISM|LAND|OGCM|RAD|SLAB]
+      -t, --table x                   CMIP6 CMOR table: Amon, SIday, Oday ...
+      -m, --model, --source_id x      CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ...
+      -v, --variable x                CMIP6 variable name as in filenames
+      -mi, --member TEXT              CMIP6 member id: <sub-exp-id>-r#i#p#f#
+      -g, --grid, --grid_label TEXT   CMIP6 grid label: i.e. gn for the model
+                                      native grid
+      -nr, --resolution, --nominal_resolution TEXT
+                                      Approximate resolution: '250 km', pass in
+                                      quotes
+      --frequency [1hr|1hrCM|1hrPt|3hr|3hrPt|6hr|6hrPt|day|dec|fx|mon|monC|monPt|subhrPt|yr|yrPt]
+      --realm [atmos|ocean|land|landIce|seaIce|aerosol|atmosChem|ocnBgchem]
+      -se, --sub_experiment_id TEXT   Only available for hindcast and forecast
+                                      experiments: sYYYY
+      -vl, --variant_label TEXT       Indicates a model variant: r#i#p#f#
+      --and [variable_id|experiment_id|table_id|realm|frequency|member_id|source_id|source_type|activity_id|grib_label|nominal_resolution|sub_experiment_id]
+                                      Attributes for which we want to add AND
+                                      filter, i.e. `--and variable_id` to apply to
+                                      variable values
+      --institution TEXT              Modelling group institution id: IPSL, NOAA-
+                                      GFDL ...
+      --cf_standard_name TEXT         CF variable standard_name, use instead of
+                                      variable constraint
+      --format [file|dataset]         Return output for datasets (default) or
+                                      individual files
+      --latest / --all-versions       Return only the latest version or all of
+                                      them. Default: --latest
+      --replica / --no-replica        Return both original files and replicas.
+                                      Default: --no-replica
+      --distrib / --no-distrib        Distribute search across all ESGF nodes.
+                                      Default: --distrib
+      --csv / --no-csv                Send output to csv file including extra
+                                      information. Default: --no-csv
+      --stats / --no-stats            Write summary of query results, works only
+                                      with --local option. Default: --no-stats
+      --debug / --no-debug            Show debug output. Default: --no-debug
+      --help                          Show this message and exit.
+
+
+The **cmip6** sub-command works in the same way but some constraints are
+different. As well as changes in terminology CMIP6 has more attributes
+(*facets*) that can be used to select the data. Examples of these are
+the **activity** which groups experiments, **resolution** which is an
+approximation of the actual resolution and **grid**.
+
+Controlling the ouput: clef options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+    !clef --local cmip6 -e 1pctCO2 -t Amon -v tasmax -v tasmin -g gr
+
+
+    /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20180626
+    /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-ESM2-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20181018
+    /g/data1b/oi10/replicas/CMIP6/CMIP/EC-Earth-Consortium/EC-Earth3-Veg/1pctCO2/r1i1p1f1/Amon/tasmax/gr/v20190702
+    /g/data1b/oi10/replicas/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/1pctCO2/r1i1p1f1/Amon/tasmax/gr/v20180727
+    /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmin/gr/v20180626
+    ...
+
+In this example we used the *–local* option for the main command
+**clef** to get only the local matching data path as output. Note also
+that: - we are using abbreviations for the options where available; - we
+are passing the variable *-v* option twice; - we used the CMIP6 specific
+option *-g/–grid* to search for all data that is not on the model native
+grid. This doesn’t indicate a grid common to all the CMIP6 output only
+to the model itself, the same is true for member_id and other
+attributes.
+
+*–local* is actually executing the query directly on the NCI MAS
+database, which is different from the default query where the search is
+executed first on the ESGF and then its results are matched locally. In
+the example above the final result is exactly the same, whichever way we
+perform the query. This way of searching can give you more results if a
+node is offline or if a version have been unpublished from the ESGF but
+is still available locally.::
+
+    !clef --missing cmip6 -e 1pctCO2 -v clw -v clwvi -t Amon -g gr
+
+
+    Available on ESGF but not locally:
+    CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r1i1p1f1.Amon.clwvi.gr.v20191020
+    CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clw.gr.v20191020
+    CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clwvi.gr.v20191020
+    ...
+
+This time we used the *–missing* option and the tool returned only the
+results matching the constraints that are available on the ESGF but not
+locally (we changed variables to make sure to get some missing data
+back).::
+
+    !clef --remote cmip6 -e 1pctCO2 -v tasmin -t Amon -g gr
+
+
+    CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20180626
+    CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20181018
+    CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r2i1p1f2.Amon.tasmin.gr.v20181031
+    CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r3i1p1f2.Amon.tasmin.gr.v20181107
+    ...
+
+
+The *–remote* option returns the Dataset_ids of the data matching the
+constraints, regardless that they are available locally or not.::
+
+    !clef --remote cmip6 -e 1pctCO2 -v tasmin -t Amon -g gr -mi r1i1p1f2 --format file
+
+
+    CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20180626.tasmin_Amon_CNRM-CM6-1_1pctCO2_r1i1p1f2_gr_185001-199912.nc
+    CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20181018.tasmin_Amon_CNRM-ESM2-1_1pctCO2_r1i1p1f2_gr_185001-199912.nc
+
+
+Running the same command with the option *–format file* after the
+sub-command, will return the File_ids instead of the default
+Dataset_ids. Please note that *–local*, *–remote* and *–missing*
+together with *–request*, which we will look at next, are all options of
+the main command **clef** and they need to come before any sub-commands.
+
+Requesting new data
+-------------------
+
+What should we do if we found out there is some data we are interested
+to that has not been downloaded or requested yet? This is a complex data
+collection, NCI, in consultation with the community, decided the best
+way to manage it was to have one point of reference. Part of this
+agreement is that NCI will download the files and update the database
+that **clef** is interrrogating. After consultation with the community a
+priority list was decided and NCI has started downloading anything that
+falls into it as soon as become available. Users can then request from
+the NCI helpdesk, other combinations of variables, experiments etc that
+do not fall into this list. The list is available from the NCI climate
+confluence website: Even without consulting the list you can use
+**clef**, as we demonstrated above, to search for a particular dataset,
+if it is not queued or downloaded already **clef** will give you an
+option to request it from NCI. Let’s see how it works.::
+
+    %%bash
+    clef --request cmip6 -e 1pctCO2 -v clw -v clwvi -t Amon -g gr
+    no
+
+    Available on ESGF but not locally:
+    CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r1i1p1f1.Amon.clwvi.gr.v20191020
+    CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clw.gr.v20191020
+    CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clwvi.gr.v20191020
+    ...
+    
+    Finished writing file: CMIP6_pxp581_20191114T134444.txt
+    Do you want to proceed with request for missing files? (N/Y)
+     No is default
+    Your request has been saved in 
+     /home/581/pxp581/clef/docs/CMIP6_pxp581_20191114T134444.txt
+    You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.
+
+
+We run the same query which gave us as a result 4 missing datasets but
+this time we used the *–request* option after **clef**. The tool will
+execute the query remotely, then look for matches locally and on the NCI
+download list. Having found none gives as an option of putting in a
+request. It will accept any of the following as a positive answer: > Y
+YES y yes
+
+With anything else or if you don’t pass anything it will assume you
+don’t want to put in a request. It still saved the request in a file we
+can use later.::
+
+    !cat CMIP6_*.txt
+
+    dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r1i1p1f1.Amon.clwvi.gr.v20191020
+    dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clw.gr.v20191020
+    dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r2i1p1f1.Amon.clwvi.gr.v20191020
+    dataset_id=CMIP6.CMIP.CAS.FGOALS-f3-L.1pctCO2.r3i1p1f1.Amon.clw.gr.v20191020
+    ...
+
+If I answered ‘yes’ the tool would have sent an e-mail to the NCI
+helpdesk with the text file attached, NCI can pass that file as input to
+their download tool and queue your request. NB if you are running clef
+from raijin you cannot send an e-mail so in that case the tool will
+remind you you you need to send an e-mail to the NCI helpdesk yourself
+to finalise the request.
