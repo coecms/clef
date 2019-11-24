@@ -143,6 +143,10 @@ Run tests with py.test (they will default to using the test database)::
 
     py.test
 
+or connect to the production database with::
+
+    py.test --db=postgresql://clef.nci.org.au/postgres
+
 Build the documentation using Sphinx::
 
     python setup.py build_sphinx

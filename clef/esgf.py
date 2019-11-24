@@ -89,7 +89,6 @@ def esgf_query(query, fields, otype='File', limit=10000, offset=0,  distrib=True
         r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
         r.raise_for_status()
-        print(r.raise_for_status())
     except Exception as err:
         r = requests.get(f'https://esgf-node.llnl.gov/esg-search/search',
                      params = params )
