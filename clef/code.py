@@ -58,6 +58,10 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     ''' 
     # create empty list for results dictionaries
     # each dict will represent a file matching the constraints
+    pandas.set_option('display.max_rows', None)
+    pandas.set_option('display.max_columns', None)
+    pandas.set_option('display.width', None)
+    pandas.set_option('display.max_colwidth', -1)
     results=[]
     project = project.upper()
     # for cmip5 separate var from other constraints
@@ -90,32 +94,30 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
 
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pandas.read_sql(r.selectable, con=session.connection())
+    df = df.rename(columns={'path': 'opath'})
     # temporary(?) fix to substitute output1/2 with combined
-    fix_paths = df['path'].apply(fix_path, latest=latest)
-    df['pdir'] = fix_paths.map(os.path.dirname)
-    df['filename'] = df['path'].map(os.path.basename)
-    res = df.groupby(['pdir'])
-    results=[]
-    cols = [x for x in list(df) if x not in ['filename','path','period'] ]
-    for g,v in res.groups.items():
-        gdict={}
-        gdict['filenames'] = df['filename'].iloc[list(v)].tolist()
-        nranges = df['period'].iloc[list(v)].tolist()
-        for c in cols:
-            gdict[c] = df[c].iloc[list(v)].unique()[0]
-        gdict['periods'] = convert_periods(nranges, gdict['frequency'])
-        gdict['fdate'], gdict['tdate'] = get_range(gdict['periods'])
-        gdict['time_complete'] = time_axis(gdict['periods'],gdict['fdate'],gdict['tdate'])
-        # make sure a version is available even for CMIP6 where is usually None
-        if gdict['version'] is None:
-            gdict['version'] = get_version(gdict['pdir'])
-        results.append(gdict)
-    return results
+    fix_paths = df['opath'].apply(fix_path, latest=latest)
+    df['path'] = fix_paths.map(os.path.dirname)
+    df['filename'] = df['opath'].map(os.path.basename)
+    mcols = ['filename','period']
+    agg_dict = {k: ('first' if k not in mcols else list) for k in list(df)}
+    res = df.groupby(['path']).agg(agg_dict)
+    res['periods'] = res.period.apply(convert_periods)
+    res['fdate'], res['tdate'] = zip(*res['periods'].map(get_range))
+    res['time_complete'] = res.apply(lambda x: time_axis(x['periods'],x['fdate'],x['tdate']), axis=1)
+    # make sure a version is available even for CMIP6 where is usually None
+    mask = res['version'].isnull()
+    res.loc[mask, 'version'] = res.loc[mask, 'path'].apply(get_version)
+    # remove unuseful columns
+    todel = ['opath','r','i','p','f','period']
+    cols = [c for c in todel if c in res.columns]
+    res = res.drop(columns=cols)
+    return res
 
 def get_version(path):
     '''Retrieve version from path if not available in MAS
     '''
-    mo = re.search(r'v\d{8}', path)
+    mo = re.search(r'\d{8}', path)
     if mo:
         return  mo.group()
     else:
@@ -140,13 +142,11 @@ def get_range(periods):
     return str(lower), str(higher)
 
 
-def convert_periods(nranges,frequency):
+def convert_periods(nranges):
     '''Convert period Numeric ranges to dates intervals and build the time axis
     input: nranges a list of each file period
-    input: frequency timestep frequency
     return: periods list of tuples representing lower and upper end of temporal interval, values are strings
     ''' 
-    #freq = {'mon': 'M', 'day': 'D', '6hr': '6H'}
     periods = []
     if len(nranges) == 0:
         return periods

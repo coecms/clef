@@ -63,13 +63,13 @@ def test_fix_model():
     assert models == ['CESM1(BGC)', 'ACCESS1.0']
 
 def test_convert_periods(nranges, periods, empty):
-    res1 = convert_periods(nranges,'mon')
+    res1 = convert_periods(nranges)
     assert res1 == periods[0]
-    assert convert_periods(empty,'mon') == ([])
+    assert convert_periods(empty) == ([])
 
     nranges2 = nranges.copy()
     nranges2.append(None)
-    res2 = convert_periods(nranges2, 'mon')
+    res2 = convert_periods(nranges2)
     assert res2 == res1
 
 def test_time_axis(periods):
@@ -219,8 +219,9 @@ def test_matching(session):
     assert r is None
 
 def test_get_version():
-    assert get_version('/g/data/inst/model/var/v20130405') == 'v20130405'
-    assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
+    assert get_version('/g/data/inst/model/var/v20130405') == '20130405'
+    assert get_version('/g/data/inst/model/var/v20130405/tas/files') == '20130405'
+    assert get_version('/g/data/inst/model/var/files/tas_20110518') == '20110518'
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
 
 def test_ids_dict(dids6, results6, dids5, results5):
