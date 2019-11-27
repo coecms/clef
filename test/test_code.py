@@ -145,10 +145,15 @@ def test_and_filter(local_results, remote_results):
 
 
 def test_local_latest(mversions):
-    oneresult = [{}]
-    assert local_latest(oneresult) == oneresult
-    assert local_latest(mversions[0]) == mversions[1]
-    assert local_latest(mversions[1]) == mversions[1]
+    noresult = pandas.DataFrame({})
+    oneresult = pandas.DataFrame({'A': 'a', 'B': 'b'}, index=[0])
+    assert local_latest(noresult).empty
+    assert local_latest(oneresult).equals(oneresult)
+    out = local_latest(mversions[0])
+    assert len(out.index) == len(mversions[1].index)
+    assert out[ out['path'] == '/rootdir/mod2/exp1/r1i1p1/v1/pr' ].empty 
+    assert len(local_latest(mversions[1]).index) == len(mversions[1].index)
+    #assert local_latest(mversions[1]).equals(mversions[1])
 
 @pytest.mark.production
 def test_search(session):

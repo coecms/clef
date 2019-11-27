@@ -62,7 +62,6 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     pandas.set_option('display.max_columns', None)
     pandas.set_option('display.width', None)
     pandas.set_option('display.max_colwidth', -1)
-    results=[]
     project = project.upper()
     # for cmip5 separate var from other constraints
     if project == 'CMIP5' and 'variable' in kwargs.keys():
@@ -102,17 +101,30 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     mcols = ['filename','period']
     agg_dict = {k: ('first' if k not in mcols else list) for k in list(df)}
     res = df.groupby(['path']).agg(agg_dict)
-    res['periods'] = res.period.apply(convert_periods)
-    res['fdate'], res['tdate'] = zip(*res['periods'].map(get_range))
-    res['time_complete'] = res.apply(lambda x: time_axis(x['periods'],x['fdate'],x['tdate']), axis=1)
+    res.apply(post_local, axis=1)
+
+    #res['periods'] = res.period.apply(convert_periods)
+    #res['fdate'], res['tdate'] = zip(*res['periods'].map(get_range))
+    #res['time_complete'] = res.apply(lambda x: time_axis(x['periods'],x['fdate'],x['tdate']), axis=1)
     # make sure a version is available even for CMIP6 where is usually None
-    mask = res['version'].isnull()
-    res.loc[mask, 'version'] = res.loc[mask, 'path'].apply(get_version)
+    #mask = res['version'].isnull()
+    #res.loc[mask, 'version'] = res.loc[mask, 'path'].apply(get_version)
     # remove unuseful columns
     todel = ['opath','r','i','p','f','period']
     cols = [c for c in todel if c in res.columns]
     res = res.drop(columns=cols)
     return res
+
+def post_local(row):
+    '''Postprocess local query results row by row 
+    ''' 
+    row['periods'] = convert_periods(row['period'])
+    row['fdate'], row['tdate'] = get_range(row['periods'])
+    row['time_complete'] = time_axis(row['periods'],row['fdate'],row['tdate'])
+    # make sure a version is available even for CMIP6 where is usually None
+    if row['version'] is None:
+        row['version'] = get_version(row['path'])
+    return row
 
 def get_version(path):
     '''Retrieve version from path if not available in MAS
@@ -314,10 +326,10 @@ def call_local_query(s, project, oformat, latest, **kwargs):
         datasets.extend( local_query(s,project=project, latest=latest, **c) )
     if oformat == 'dataset':
         for d in datasets:
-            paths.append(d['pdir'])
+            paths.append(d['path'])
     elif oformat == 'file':
         for d in datasets:
-            paths.extend([d['pdir']+"/" + x for x in d['filenames']])
+            paths.extend([d['path']+"/" + x for x in d['filename']])
     return datasets, paths
 
 
@@ -336,17 +348,18 @@ def fix_path(path, latest):
     else:
         return path
 
-def and_filter(results, cols, fixed, **kwargs):
+def and_filter(tab, cols, fixed, **kwargs):
     ''' Filter query results to find all the simulations that have
         all the different values passed for the attributes listed in cols.
         A simulation is defined by the attributes passed in the list fixed.
+        :input: tab (dataframe) the results of the query
         :input: cols (list) the attributes for which we want all values to be present
         :input: fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
         :input: kwargs (dictionary) are the query constraints
         :return: query results and a list of dictionaries each representing a 'simulation'
                  that has all the requested values for "cols"
     '''
-    tab = pandas.DataFrame(results)
+    #tab = pandas.DataFrame(results)
     # if you want to select all the values for two or more columns
     # create a new column with their values paired to use for the aggregation
     if len(cols) >= 1 :
@@ -356,7 +369,7 @@ def and_filter(results, cols, fixed, **kwargs):
     # define the aggregation dictionary first
     # useful is a list of fields to retain in the table, the values
     # get added to final fields list only if in results.keys
-    useful =  set(['version', 'source_id', 'model', 'pdir','dataset_id',
+    useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
               'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in results[0].keys()]
     agg_dict = {k: set for k in fields}
@@ -367,19 +380,18 @@ def and_filter(results, cols, fixed, **kwargs):
        .agg(agg_dict)
        .reset_index())
     # create a filter to select the rows where the lenght of the simulation combinations is
-    # is equal to the number of "cols" combinations
-    allvalues = (d['comb'].map(len) == len(comb) )
-    # apply filter to table and return results as a dictionary
-    selection=d[allvalues].to_dict('r')
+    # is equal to the number of "cols" combinations and apply to table
+    selection = d[ d['comb'].map(len) == len(comb) ]
     # to subset results based on selection, create a list of tuple with the fixed attributes for selection (sel_fixed)
     # then do the same for each results and append them to a new list only if they are in sel_fixed
     sel_attrs = []
-    sel_fixed = []
-    for sim in selection:
-        sel_fixed.append(tuple([sim[a] for a in fixed]))
-    for sim in results:
-        if (tuple([sim[a] for a in fixed])) in sel_fixed:
-            sel_attrs.append(sim)
+    #sel_fixed = []
+    #selection['fixed'] = "-".join(selection[a] for a in fixed
+    #for sim in selection:
+    #    sel_fixed.append(tuple([sim[a] for a in fixed]))
+    #for sim in results:
+    #    if (tuple([sim[a] for a in fixed])) in sel_fixed:
+    #        sel_attrs.append(sim)
     return sel_attrs, selection
 
 
@@ -396,7 +408,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
         :return: output of and_filter: query results and a filter selection lists
     '''
 
-    results = []
+    results = pandas.DataFrame() 
     try:
         # use local search
         if local:
@@ -404,7 +416,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
             # perform the query for each variable separately and concatenate the results
             combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
             for c in combs:
-                results.extend( search(session,project=project.upper(),latest=latest, **c) )
+                results.append( search(session,project=project.upper(),latest=latest, **c) )
         # use ESGF search
         else:
             msg = "There are no simulations currently available on the ESGF nodes"
@@ -441,7 +453,7 @@ def write_csv(list_dicts):
         return
     project = list_dicts[0].get("project", "result")
     csv_file = f'{project.upper()}_query.csv'
-    ignore = ['periods', 'filenames', 'institute', 'project', 'institution_id','realm', 'product']
+    ignore = ['periods', 'filename', 'institute', 'project', 'institution_id','realm', 'product']
     columns = [x for x in list_dicts[0].keys() if x not in ignore]
     try:
         with open(csv_file, 'w') as csvfile:
@@ -493,26 +505,15 @@ def print_stats(results):
 
 
 def local_latest(results):
-    ''' Sift through local query results dictionaries and return only the latest versions '''
-    latest=[]
-    if len(results) <= 1:
+    '''Sift through local query results dataframe and return only the latest versions
+    '''
+    if len(results.index) <= 1:
         return results
     # separate all the attributes which could be different between two versions
-    separate = ['pdir', 'version', 'time_complete', 'filenames','fdate', 'tdate', 'periods']
-    cols = [ k for k in results[0].keys() if k not in separate]
-    # saving a new dictionary where each combination of the attributes which are common between versions
-    # are joined in a tuple and act as key, the value is the simulation dictionary
-    # if a value already exists for a tuple then the latest simulation is kept
-    combs={}
-    for sim in results:
-        comb = tuple([sim[a] for a in cols])
-        if comb in combs.keys():
-            if combs[comb]['version'] < sim['version']:
-                combs[comb] = sim
-        else:
-           combs[comb] = sim
-    latest=[v for v in combs.values()]
-    return latest
+    separate = ['path', 'version', 'time_complete', 'filename','fdate', 'tdate', 'periods']
+    cols = [ k for k in results.columns if k not in separate]
+    results.sort_values('version').drop_duplicates(subset=cols, keep='last', inplace=True)#.sort_index()
+    return results
 
 
 def ids_dict(dids):
