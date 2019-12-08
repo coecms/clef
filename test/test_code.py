@@ -153,7 +153,7 @@ def test_local_latest(mversions):
     assert len(out.index) == len(mversions[1].index)
     assert out[ out['path'] == '/rootdir/mod2/exp1/r1i1p1/v1/pr' ].empty 
     assert len(local_latest(mversions[1]).index) == len(mversions[1].index)
-    #assert local_latest(mversions[1]).equals(mversions[1])
+
 
 @pytest.mark.production
 def test_search(session):

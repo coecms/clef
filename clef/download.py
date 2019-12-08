@@ -13,15 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
-import os
-from datetime import datetime
+
+
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import os
 import itertools
 import csv
 import platform
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from datetime import datetime
 
 
 def write_request(project, missing):

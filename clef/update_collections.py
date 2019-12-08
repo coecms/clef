@@ -16,8 +16,6 @@
 
 # This collects all functions to update database using SQLalchemy
 
-from __future__ import print_function
-
 from sqlalchemy.orm.exc import NoResultFound
 from . import collections as colls
 from .db_noesgf import *

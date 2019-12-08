@@ -24,12 +24,10 @@ Database connection functions
     :func:`connect()` must be called before creating any new sessions
 """
 
-from __future__ import print_function
-
-from getpass import getpass
-
 import sqlalchemy
 import sqlalchemy.exc
+
+from getpass import getpass
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker

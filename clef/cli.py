@@ -13,22 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
-from .db import connect, Session
-from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
-from .download import *
-from . import collections as colls
-from .exception import ClefException
-from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching, write_csv, print_stats, ids_dict
+
+
 import click
 import logging
-from datetime import datetime
 import sys
-import six
 import os
 import stat
-import pkg_resources
+
 from itertools import repeat
+from datetime import datetime
+
+from .db import connect, Session
+from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
+from .download import write_request 
+from . import collections as colls
+from .exception import ClefException
+from .code import call_local_query, matching, write_csv, print_stats, ids_dict
+from .helpers import load_vocabularies, fix_model, fix_path
+
 
 def clef_catch():
     debug_logger = logging.getLogger('clef_debug')
@@ -103,21 +106,23 @@ def warning(message):
 
 
 def cmip5_args(f):
-    models, realms, variables, frequencies, tables, experiments, families, attributes = load_vocabularies('CMIP5')
+    """Define CMIP5 only click arguments
+    """
+    vocab = load_vocabularies('CMIP5')
     constraints = [
-        click.option('--experiment', '-e', multiple=True, type=click.Choice(experiments), metavar='x',
+        click.option('--experiment', '-e', multiple=True, type=click.Choice(vocab['experiments']), metavar='x',
                       help="CMIP5 experiment: piControl, rcp85, amip ..."),
-        click.option('--experiment_family',multiple=False, type=click.Choice(families),
+        click.option('--experiment_family',multiple=False, type=click.Choice(vocab['families']),
                       help="CMIP5 experiment family: Decadal, RCP ..."),
-        click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x',
+        click.option('--model', '-m', multiple=True, type=click.Choice(vocab['models']),  metavar='x',
                       help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
-        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(tables) ),
-        click.option('--variable', '-v', multiple=True, type=click.Choice(variables), metavar='x',
+        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(vocab['tables']) ),
+        click.option('--variable', '-v', multiple=True, type=click.Choice(vocab['variables']), metavar='x',
                       help="Variable name as shown in filanames: tas, pr, sic ... "),
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
-        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ),
-        click.option('--realm', multiple=True, type=click.Choice(realms) ),
-        click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
+        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(vocab['frequencies']) ),
+        click.option('--realm', multiple=True, type=click.Choice(vocab['realms']) ),
+        click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values")),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
@@ -126,6 +131,8 @@ def cmip5_args(f):
     return f
 
 def common_args(f):
+    """Define common click arguments
+    """
     constraints = [
         click.argument('query', nargs=-1),
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
@@ -149,30 +156,31 @@ def common_args(f):
     return f
 
 def cmip6_args(f):
-    #
-    models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes = load_vocabularies('CMIP6')
+    """Define CMIP6 only click arguments
+    """
+    vocab = load_vocabularies('CMIP6')
     constraints = [
-        click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
-        click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(experiments), metavar='x',
-                     help="CMIP6 experiment, list of available depends on activity"),
-        click.option('--source_type',multiple=True, type=click.Choice(stypes) ),
-        click.option('--table', '-t', 'table_id', multiple=True, type=click.Choice(tables), metavar='x',
+        click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(vocab['activities']) ) ,
+        click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(vocab['experiments']),
+                     metavar='x', help="CMIP6 experiment, list of available depends on activity"),
+        click.option('--source_type',multiple=True, type=click.Choice(vocab['stypes']) ),
+        click.option('--table', '-t', 'table_id', multiple=True, type=click.Choice(vocab['tables']), metavar='x',
                      help="CMIP6 CMOR table: Amon, SIday, Oday ..."),
-        click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(models),  metavar='x',
-                     help="CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ..."),
-        click.option('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(variables),  metavar='x',
-                     help="CMIP6 variable name as in filenames"),
+        click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(vocab['models']),
+                     metavar='x', help="CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ..."),
+        click.option('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(vocab['variables']),
+                     metavar='x', help="CMIP6 variable name as in filenames"),
         click.option('--member', '-mi', 'member_id', multiple=True, help="CMIP6 member id: <sub-exp-id>-r#i#p#f#"),
         click.option('--grid', '--grid_label', '-g', 'grid_label', multiple=True,
                      help="CMIP6 grid label: i.e. gn for the model native grid"),
         click.option('--resolution', '--nominal_resolution','-nr' , 'nominal_resolution', multiple=True,
                      help="Approximate resolution: '250 km', pass in quotes"),
-        click.option('--frequency',multiple=True, type=click.Choice(frequencies) ),
-        click.option('--realm', multiple=True, type=click.Choice(realms) ),
+        click.option('--frequency',multiple=True, type=click.Choice(vocab['frequencies']) ),
+        click.option('--realm', multiple=True, type=click.Choice(vocab['realms']) ),
         click.option('--sub_experiment_id', '-se', multiple=True,
                      help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
-        click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
+        click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
         click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
@@ -334,7 +342,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
 
     terms = {}
     # Add filters
-    for key, value in six.iteritems(constraints):
+    for key, value in constraints.items():
         if value is not None and len(value) > 0:
             terms[key] = value
 

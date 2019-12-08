@@ -26,11 +26,14 @@ database
   missing from the replica respectively.
 """
 
+
 import requests
 import sys
 import sqlalchemy as sa
+
 from sqlalchemy.sql import column
 from sqlalchemy import String, Float, Integer, or_, func
+
 from .pgvalues import values
 from .model import Path, Checksum
 from .exception import ClefException

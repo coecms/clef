@@ -49,8 +49,8 @@ def c5_kwargs(request):
 
 @pytest.fixture(scope="module")
 def c5_vocab(request):
-    return ([ 'INM-CM4'], ['atmos'], ['tas'], ['mon'],
-           [ 'Amon'], ['rcp85'], ['variable'], ['RCP'])
+    return {'models': [ 'INM-CM4'], 'realms': ['atmos'], 'variables': ['tas'], 'time_frequencies': ['mon'],
+           'tables': [ 'Amon'], 'experiments': ['rcp85'], 'attributes': ['variable'], 'families': ['RCP']}
 
 @pytest.fixture(scope="module")
 def c5_keys(request):

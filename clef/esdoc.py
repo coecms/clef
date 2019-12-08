@@ -13,13 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#from .db import connect, Session
-#from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
-#from .exception import ClefException
-#from .esgf import esgf_query
+
+
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
+
+from bs4 import BeautifulSoup
 
 
 def esdoc_urls(dataset_ids):
