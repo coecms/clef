@@ -207,17 +207,13 @@ def check_values(args, project, vocabularies):
     Returns:
 
     """
-    # load dictionaries to check arguments values are valid
-    #if project == 'CMIP5':
-    #    model, realm, variable, frequency, table, experiment, experiment_family, attributes = vocabularies
-    #elif project == 'CMIP6':
-    #    source_id, realm, variable_id, frequency, table_id, experiment_id, activity_id, source_type, attributes = vocabularies
     if project not in ['CMIP5', 'CMIP6']:
-        #raise NotImplementedError(f'Search for {project} not yet implemented')
         raise ClefException(f'Search for {project} not yet implemented')
-    facets = [k for k in vocabularies.keys()]
+    facets = [v for v in get_facets(project).values() if v is not None]
     for k,v in args.items():
-        if k in facets and v not in vocabularies[k]:
+        if k not in facets:
+            raise ClefException(f'"{k}" is not a valid facet for project {project}')
+        elif k in vocabularies.keys() and v not in vocabularies[k]:
             raise ClefException(f'"{v}" is not a valid value for the facet "{k}" in project {project}')
     return True
 
@@ -239,20 +235,6 @@ def load_vocabularies(project):
     with open(vfile, 'r') as f:
          data = f.read()
          vocab = json.loads(data)
-        # models = json.loads(data)['models']
-        # realms = json.loads(data)['realms']
-        # variables = json.loads(data)['variables']
-        # frequencies = json.loads(data)['frequencies']
-        # tables = json.loads(data)['tables']
-        # experiments = json.loads(data)['experiments']
-        # attributes = json.loads(data)['attributes']
-        # if project == 'CMIP5':
-        #     families = json.loads(data)['families']
-        # if project == 'CMIP6':
-        #     activities = json.loads(data)['activities']
-        #     stypes = json.loads(data)['source_types']
-        #     return models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes
-    #return models, realms, variables, frequencies, tables, experiments, families, attributes
     return vocab
 
 
@@ -301,32 +283,3 @@ def fix_path(path, latest):
         return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
     else:
         return path
-
-
-def ids_dict(dids):
-    """Gets a list of dataset_ids and return a list of dictionaries in same style as local query results
-
-    Args:
-
-      dids (list): list of dataset_ids
-
-    Returns:
-        results (list): list of dictionary, one for id listing simulation attributes
-
-    """
-    results = []
-    project = dids[0].split(".")[0]
-    if project == 'CMIP6':
-        facets_list = ['project', 'activity_id', 'institution_id', 'source_id',
-                  'experiment_id', 'member_id', 'table_id', 'variable_id',
-                  'grid_label', 'version']
-    elif project == 'cmip5':
-        facets_list = ['project', 'product', 'institute', 'model', 'experiment',
-                       'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
-    else:
-        print(f'Warning: project {project} not available')
-        return results 
-    for did in dids:
-        results.append({k:v for k,v in zip(facets_list,did.split("."))})
-    return results
-

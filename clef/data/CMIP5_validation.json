@@ -78,7 +78,7 @@
 "COSMOS-ASO",
 "KCM1-2-2"
 ],
-"variables": [
+"variable": [
 "abs550aer",
 "ageice",
 "agessc",
@@ -772,7 +772,7 @@
 "zsatarag",
 "zsatcalc"
 ], 
-"frequencies": [
+"time_frequency": [
 "mon",
 "day",
 "3hr",
@@ -782,7 +782,7 @@
 "monClim",
 "subhr"
 ],
-"realms": [
+"realm": [
 "atmos", 
 "ocean",
 "land",
@@ -792,7 +792,7 @@
 "atmosChem", 
 "ocnBgchem"
 ],
-"tables": [
+"cmor_table": [
 "Amon",
 "Omon",
 "OImon",
@@ -928,7 +928,7 @@
  "model",
  "ensemble"
 ],
-"families":  [
+"experiment_family":  [
  "Atmos-only",
  "Control",
  "Decadal",

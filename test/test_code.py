@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clef.code import *
-#from code_fixtures import session
-from code_fixtures import *
 import pytest
+
+from clef.code import *
+from code_fixtures import *
 
 # Tests for the functions defined in code.py
 
@@ -230,5 +230,5 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
 
 def test_ids_dict(dids6, results6, dids5, results5):
-    assert ids_dict(dids6) == results6
-    assert ids_dict(dids5) == results5
+    assert ids_dict(dids6).equals(results6)
+    assert ids_dict(dids5).equals(results5)

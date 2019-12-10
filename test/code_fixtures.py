@@ -44,13 +44,16 @@ def empty(request):
 
 @pytest.fixture(scope="module")
 def c5_kwargs(request):
-    return {'model': 'INM-CM4', 'e': 'rcp85', 'variable': 'tas', 'table': 'Amon', 'f': 'mon',
+    kwa1 = {'model': 'INM-CM4', 'e': 'rcp85', 'variable': 'tas', 'table': 'Amon', 'f': 'mon',
             'institute': 'MIROC', 'experiment_family': 'RCP', 'member': 'r1i1p1'}
+    kwa2 = {'model': 'INM-CM4', 'experiment': 'rcp85', 'variable': 'tas', 'cmor_table': 'Amon', 'time_frequency': 'mon',
+            'institute': 'MIROC', 'experiment_family': 'RCP', 'ensemble': 'r1i1p1'}
+    return kwa1, kwa2
 
 @pytest.fixture(scope="module")
 def c5_vocab(request):
-    return {'models': [ 'INM-CM4'], 'realms': ['atmos'], 'variables': ['tas'], 'time_frequencies': ['mon'],
-           'tables': [ 'Amon'], 'experiments': ['rcp85'], 'attributes': ['variable'], 'families': ['RCP']}
+    return {'model': [ 'INM-CM4'], 'realm': ['atmos'], 'variable': ['tas'], 'time_frequency': ['mon'],
+           'cmor_table': [ 'Amon'], 'experiment': ['rcp85'], 'attributes': ['variable'], 'experiment_family': ['RCP']}
 
 @pytest.fixture(scope="module")
 def c5_keys(request):
@@ -195,14 +198,14 @@ def dids6():
 def results6():
     '''Corresponding list of results for dids6
     '''
-    return [{'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NCC',
+    return pandas.DataFrame([{'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NCC',
               'source_id': 'NorESM2-LM', 'experiment_id': 'historical',
               'member_id': 'r3i1p1f1', 'table_id': 'day',
               'variable_id': 'tas', 'grid_label': 'gn', 'version': 'v20190920'},
             {'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NUIST',
               'source_id': 'NESM3', 'experiment_id': 'historical',
               'member_id': 'r2i1p1f1', 'table_id': 'day',
-              'variable_id': 'tas', 'grid_label': 'gn', 'version': 'v20190812'}]
+              'variable_id': 'tas', 'grid_label': 'gn', 'version': 'v20190812'}])
 
 
 @pytest.fixture(scope="module")
@@ -216,11 +219,11 @@ def dids5():
 def results5():
     '''Corresponding list of results for dids5
     '''
-    return [{'project': 'cmip5', 'product': 'output1', 'institute': 'ICHEC',
+    return pandas.DataFrame([{'project': 'cmip5', 'product': 'output1', 'institute': 'ICHEC',
               'model': 'EC-EARTH', 'experiment': 'historical', 'time_frequency': 'day',
               'realm': 'atmos', 'cmor_table': 'day', 'ensemble': 'r5i1p1',
               'version': 'v1'},
             {'project': 'cmip5', 'product': 'output', 'institute': 'MIROC',
               'model': 'MIROC5', 'experiment': 'historical', 'time_frequency': 'day',
               'realm': 'atmos', 'cmor_table': 'day', 'ensemble': 'r2i1p1',
-              'version': 'v20120101'}]
+              'version': 'v20120101'}])

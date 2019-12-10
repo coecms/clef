@@ -69,6 +69,135 @@ def search(session, project='CMIP5', latest=True, **kwargs):
     return results
 
 
+def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **kwargs):
+    """Call and_filter after executing local or remote query of passed constraints
+      
+    This function is called by the command line with the 'and' argument.
+    Can also be imported and used to performed a query and apply a filter interactively. 
+
+    Args:
+        session (SQLAlchemy session obj): database session
+        cols (list): attributes for which all values should be present
+        fixed (list): attributes used to define a simulation (i.e. model/ensemble/version)
+        project (string): project, i.e. CMIP5 (default)/CMIP6
+        local (boolean): default local query (True) or remote query (False)
+        latest (boolean): default True returns only latest version
+        kwargs (dictionary): query constraints
+
+    Returns:
+        output of and_filter (pandas.dataFrame): query results and  filter results
+
+    """
+
+    results = pd.DataFrame() 
+    try:
+        # use local search
+        if local:
+            msg = "There are no simulations stored locally"
+            # perform the query for each variable separately and concatenate the results
+            combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+            for c in combs:
+                results = results.append(search(session,project=project.upper(),latest=latest, **c),
+                               ignore_index=True)
+        # use ESGF search
+        else:
+            msg = "There are no simulations currently available on the ESGF nodes"
+            kwquery = {k:tuple(v) for k,v in kwargs.items()}
+            kwquery['project']=project.upper()
+            if project == 'CMIP5':
+                fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
+            else:
+                fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
+                                   'activity_id','table_id','version','grid_label','source_type',
+                                   'frequency','member_id','sub_experiment_id'])
+            query=None
+            response = esgf_query(query, fields, latest=latest, **kwquery)
+            for row in response['response']['docs']:
+                version = row['dataset_id'].split("|")[0].split(".")[-1]
+                results.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
+                results[-1]['version'] = version
+
+    except Exception as e:
+        print('ERROR',str(e))
+        return None
+
+    # if nothing turned by query print warning and return
+    if len(results.index) == 0:
+        print(f'{msg} for {kwargs}')
+        return None, None
+    return and_filter(results, cols, fixed, **kwargs)
+
+
+def call_local_query(s, project, oformat, latest, **kwargs):
+    """Call local_query for each combination of constraints passed as argument
+
+    Args:
+        s (SQLAlchemy session obj): database session
+        project (string): project, i.e. CMIP5/CMIP6
+        oformat (string): output format 'dataset' or 'file'
+        latest (boolean): True returns only latest version
+        kwargs (dictionary): query constraints
+
+    Returns:
+        datasets (pandas.DataFrame): the full query results
+        paths (list): directory/file paths depending on format chosen
+
+    """
+
+    datasets = pd.DataFrame() 
+    paths = []
+    combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+    for c in combs:
+         datasets = datasets.append(local_query(s,project=project, latest=latest, **c), ignore_index=True)
+    if oformat == 'dataset':
+        paths = datasets['path'].tolist()
+    elif oformat == 'file':
+        for d in datasets:
+            paths.extend([d['path']+"/" + x for x in d['filename']])
+    return datasets, paths
+
+
+def local_query(session, project='CMIP5', latest=True, **kwargs):
+    """Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
+
+    Args:
+        session (SQLAlchemy session obj): database session
+        project (string): project, i.e. CMIP5 (default)/CMIP6
+        latest (boolean): True (default) returns only latest version
+        kwargs (dictionary): query constraints
+
+    Returns:
+      results (pandas.DataFrame): each row describe one simulation matching the constraints
+
+    """ 
+
+    # make sure project is upper case 
+    project = project.upper()
+    r = build_query(session, project, **kwargs)
+
+    # run the sql using pandas read_sql,index data using path, returns a dataframe
+    df = pd.read_sql(r.selectable, con=session.connection())
+    df = df.rename(columns={'path': 'opath'})
+
+    # fix path by substituing output1/2 with combined, separate path from filenames
+    fix_paths = df['opath'].apply(fix_path, latest=latest)
+    df['path'] = fix_paths.map(os.path.dirname)
+    df['filename'] = df['opath'].map(os.path.basename)
+
+    # group by path
+    mcols = ['filename','period']
+    agg_dict = {k: ('first' if k not in mcols else list) for k in list(df)}
+    res = df.groupby(['path']).agg(agg_dict)
+
+    # apply postprocessing function to each row
+    res.apply(post_local, axis=1)
+    # remove unuseful columns
+    todel = ['opath','r','i','p','f','period']
+    cols = [c for c in todel if c in res.columns]
+    res = res.drop(columns=cols)
+    return res
+
+
 def build_query(session, project, **kwargs):
     """Build local query syntax.
 
@@ -114,6 +243,7 @@ def build_query(session, project, **kwargs):
 def post_local(row):
     """Postprocess local query results row by row 
     """ 
+
     row['periods'] = convert_periods(row['period'])
     row['fdate'], row['tdate'] = get_range(row['periods'])
     row['time_complete'] = time_axis(row['periods'],row['fdate'],row['tdate'])
@@ -123,101 +253,42 @@ def post_local(row):
     return row
 
 
-def local_query(session, project='CMIP5', latest=True, **kwargs):
-    """Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
+
+def and_filter(df, cols, fixed, **kwargs):
+    """AND filter query results
+
+    Find simulations that have all the values passed for each attribute listed by cols.
+    A simulation is defined by the attributes passed in the list fixed.
 
     Args:
+        df (pandas.DataFrame): query results to filter
+        cols (list): attributes for which we want all values to be present
+        fixed (list): attributes used to define a simulation (i.e. model/ensemble/version)
+        kwargs (dictionary): query constraints
 
-      session the db session
-      project 'CMIP5' by default
-      latest True by default
-      kwargs a dictionary with the query constraints
     Returns:
-      results (pandas.DataFrame): each row describe one simulation matching the constraints
+        rows (pandas.DataFrame): subset of original results that satisfy filter
+        selection (pandas.DataFrame): filtered rows grouped by possible combination
 
-    """ 
-
-    # make sure project is upper case 
-    project = project.upper()
-    r = build_query(session, project, **kwargs)
-
-
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', -1)
-    # run the sql using pandas read_sql,index data using path, returns a dataframe
-    df = pd.read_sql(r.selectable, con=session.connection())
-    df = df.rename(columns={'path': 'opath'})
-    # temporary(?) fix to substitute output1/2 with combined
-    fix_paths = df['opath'].apply(fix_path, latest=latest)
-    df['path'] = fix_paths.map(os.path.dirname)
-    df['filename'] = df['opath'].map(os.path.basename)
-    mcols = ['filename','period']
-    agg_dict = {k: ('first' if k not in mcols else list) for k in list(df)}
-    res = df.groupby(['path']).agg(agg_dict)
-    res.apply(post_local, axis=1)
-
-    #res['periods'] = res.period.apply(convert_periods)
-    #res['fdate'], res['tdate'] = zip(*res['periods'].map(get_range))
-    #res['time_complete'] = res.apply(lambda x: time_axis(x['periods'],x['fdate'],x['tdate']), axis=1)
-    # make sure a version is available even for CMIP6 where is usually None
-    #mask = res['version'].isnull()
-    #res.loc[mask, 'version'] = res.loc[mask, 'path'].apply(get_version)
-    # remove unuseful columns
-    todel = ['opath','r','i','p','f','period']
-    cols = [c for c in todel if c in res.columns]
-    res = res.drop(columns=cols)
-    return res
-
-
-def call_local_query(s, project, oformat, latest, **kwargs):
-    """Call local_query for each combination of constraints passed as argument, return datasets/files paths
     """
 
-    datasets = pd.DataFrame() 
-    paths = []
-    combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
-    for c in combs:
-         datasets = datasets.append(local_query(s,project=project, latest=latest, **c), ignore_index=True)
-    if oformat == 'dataset':
-        for d in datasets:
-            paths.append(d['path'])
-    elif oformat == 'file':
-        for d in datasets:
-            paths.extend([d['path']+"/" + x for x in d['filename']])
-    return datasets, paths
-
-
-def and_filter(tab, cols, fixed, **kwargs):
-    """Filter query results to find all the simulations that have
-        all the different values passed for the attributes listed in cols.
-        A simulation is defined by the attributes passed in the list fixed.
-          tab (dataframe) the results of the query
-          cols (list) the attributes for which we want all values to be present
-          fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
-          kwargs (dictionary) are the query constraints
-        Returns:
- query results and a list of dictionaries each representing a 'simulation'
-                 that has all the requested values for "cols"
-    """
-    # if you want to select all the values for two or more columns
-    # create a new column with their values paired to use for the aggregation
+    # create a new column with pairs of values for the 'cols' attributes
     if len(cols) >= 1:
-        tab['comb'] = list(zip(*[tab[c] for c in cols]))
-    # list all combinations of cols attributes
+        df['comb'] = list(zip(*[df[c] for c in cols]))
+    # list all possible combinations of values for 'cols' attributes
         comb = list(itertools.product(*[kwargs[c] for c in cols]))
-    # define the aggregation dictionary first
-    # useful is a list of fields to retain in the table, the values
-    # get added to final fields list only if in results.keys
+    else:
+        raise ClefException('List of attributes to apply filter to is empty')
+
+    # useful is a list of fields to retain in the table
     useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
               'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
-    fields = ['comb'] + [f for f in useful if f in [c for c in tab.columns.values]]
+    fields = ['comb'] + [f for f in useful if f in [c for c in df.columns.values]]
+    # define the aggregation dictionary
     agg_dict = {k: set for k in fields}
-    # group table data by the columns listed in fix_col i.e. model and ensemble
+    # group table data by the columns listed in 'fixed' i.e. model and ensemble
     # and aggregate rows with matching values creating a set for each including path and version
-    # reset the table indexes
-    d = (tab.groupby(fixed)
+    d = (df.groupby(fixed)
        .agg(agg_dict))
        #.reset_index())
     # create a filter to select the rows where the lenght of the simulation combinations is
@@ -226,7 +297,7 @@ def and_filter(tab, cols, fixed, **kwargs):
     # to subset results based on selection, create a list of tuple with the fixed attributes for selection (sel_fixed)
     # then do the same for each results and append them to a new list only if they are in sel_fixed
     print("I am here before sel")
-    fullrow = tab[tab.index.isin(selection.index)]
+    fullrow = df[df.index.isin(selection.index)]
     print("I am here after sel")
     #sel_attrs = []
     #sel_fixed = []
@@ -238,58 +309,6 @@ def and_filter(tab, cols, fixed, **kwargs):
     #        sel_attrs.append(sim)
     return fullrow, selection
 
-
-def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **kwargs):
-    """Call and_filter after executing local or remote query of passed constraints
-        :session: database session
-        :project: ESGF project to search (CMIP5/CMIP6)
-          cols (list) the attributes for which we want all values to be present
-          fixed (list) are the attributes used to define a simulation (i.e. model/ensemble/version)
-          project (string) the project, i.e. CMIP5 (default)/CMIP6
-          local (boolean) if local query (default) or remote query (False)
-          latest (boolean) if True (default) returns only latest version
-          kwargs (dictionary) are the query constraints
-        Returns:
- output of and_filter: query results and a filter selection lists
-    """
-
-    results = pd.DataFrame() 
-    try:
-        # use local search
-        if local:
-            msg = "There are no simulations stored locally"
-            # perform the query for each variable separately and concatenate the results
-            combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
-            for c in combs:
-                results = results.append(search(session,project=project.upper(),latest=latest, **c),
-                               ignore_index=True)
-        # use ESGF search
-        else:
-            msg = "There are no simulations currently available on the ESGF nodes"
-            kwquery = {k:tuple(v) for k,v in kwargs.items()}
-            kwquery['project']=project.upper()
-            if project == 'CMIP5':
-                fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
-            else:
-                fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
-                                   'activity_id','table_id','version','grid_label','source_type',
-                                   'frequency','member_id','sub_experiment_id'])
-            query=None
-            response = esgf_query(query, fields, latest=latest, **kwquery)
-            for row in response['response']['docs']:
-                version = row['dataset_id'].split("|")[0].split(".")[-1]
-                results.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
-                results[-1]['version'] = version
-
-    except Exception as e:
-        print('ERROR',str(e))
-        return None
-
-    # if nothing turned by query print warning and return
-    if len(results.index) == 0:
-        print(f'{msg} for {kwargs}')
-        return None, None
-    return and_filter(results, cols, fixed, **kwargs)
 
 def write_csv(list_dicts):
     """Write query results to csv file
@@ -309,28 +328,41 @@ def write_csv(list_dicts):
     except IOError:
         print("I/O error")
 
+
 def stats(results):
-    """ Return some stats on search results
-      results a list of dictonaries containing results
+    """Return some stats on query results
+
+    Args:
+        results (pandas.DataFrame): each row describes one simulation matching the constraints
+    
     Returns:
- stats_dict a dictionary containing the stats to print
+        stats_dict (dict) stats to print
+
     """
+
     stats_dict = {}
-    attrs = get_facets(results[0]['project'].upper())
+    attrs = get_facets(results.loc[0,'project'].upper())
     # get number of unique models
-    stats_dict['models'] = set(x[attrs['m']] for x in results)
+    #stats_dict['models'] = set(x[attrs['m']] for x in results)
+    stats_dict['models'] = results[attrs['m']].unique().tolist()
     # get number of unique models/ensembles
-    stats_dict['model_member'] = set((x[attrs['m']], x[attrs['en']]) for x in results)
+    #stats_dict['model_member'] = set((x[attrs['m']], x[attrs['en']]) for x in results)
+    stats_dict['model_member'] = results.groupby(attrs['m'], attrs['en']).values
     # get number of unique ensembles for each model
-    stats_dict['members'] = {m:[] for m in stats_dict['models']}
-    for m,en in stats_dict['model_member']:
-        stats_dict['members'][m].append(en)
+    #stats_dict['members'] = {m:[] for m in stats_dict['models']}
+    #for m,en in stats_dict['model_member']:
+    #    stats_dict['members'][m].append(en)
     return stats_dict
 
 
 def print_stats(results):
-    """ call stats function and then print out query statistics """
-    if len(results) == 0:
+    """Call stats function and then print out query statistics
+
+    Args:
+        results (pandas.DataFrame): each row describes one simulation matching the constraints
+
+    """
+    if len(results.index) == 0:
         print('No results are available for this query')
         return
     stats_dict = stats(results)
@@ -353,28 +385,34 @@ def print_stats(results):
 
 def local_latest(results):
     """Sift through local query results dataframe and return only the latest versions
+ 
+    Args:
+        results (pandas.DataFrame): each row describes one simulation matching the constraints
+
+    Returns:
+        results (pandas.DataFrame): same but only latest versions
+
     """
+
     if len(results.index) <= 1:
         return results
     # separate all the attributes which could be different between two versions
     separate = ['path', 'version', 'time_complete', 'filename','fdate', 'tdate', 'periods']
     cols = [k for k in results.columns if k not in separate]
-    results = results.sort_values('version').drop_duplicates(subset=cols, keep='last')#.sort_index()
+    results = results.sort_values('version').drop_duplicates(subset=cols, keep='last')
     return results
 
 
 def ids_dict(dids):
-    """Gets a list of dataset_ids and return a list of dictionaries in same style as local query results
+    """Convert dataset_ids in DataFrame in same style as query results
 
     Args:
-
       dids (list): list of dataset_ids
 
     Returns:
-        results (list): list of dictionary, one for id listing simulation attributes
+        results (pandas.DataFrame): each row describes one simulation matching the constraints
 
     """
-    results = []
     project = dids[0].split(".")[0]
     if project == 'CMIP6':
         facets_list = ['project', 'activity_id', 'institution_id', 'source_id',
@@ -386,7 +424,9 @@ def ids_dict(dids):
     else:
         print(f'Warning: project {project} not available')
         return results 
+    results = pd.DataFrame(columns=facets_list) 
     for did in dids:
-        results.append({k:v for k,v in zip(facets_list,did.split("."))})
+        results = results.append({k:v for k,v in zip(facets_list,did.split("."))},
+                                 ignore_index=True)
     return results
 

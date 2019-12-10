@@ -14,41 +14,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clef.helpers import check_values, load_vocabularies, check_keys, get_version, time_axis, \
-                         get_keys, fix_model, fix_path, get_range, convert_periods, ids_dict
+import pytest
+
 from clef.exception import ClefException
-                          
+from clef.helpers import check_values, load_vocabularies, check_keys, get_version, time_axis, \
+                         get_keys, fix_model, fix_path, get_range, convert_periods
 from code_fixtures import c5_kwargs, c5_vocab, c5_keys, nranges, periods, empty, dids6, dids5, \
                           results5, results6
-import pytest
 
 # Tests for the functions defined in code.py
 
 def test_check_values(c5_kwargs, c5_vocab):
-    assert check_values(c5_kwargs, 'CMIP5', c5_vocab) is True
-    bad_arg=c5_kwargs.copy()
-    bad_arg['experiment'] = 'dummy'
+    # first remove invalid keys from fixture arguments
+    assert check_values(c5_kwargs[1], 'CMIP5', c5_vocab) is True
+    c5_kwargs[1]['experiment'] = 'dummy'
     with pytest.raises(ClefException):
-        check_values(bad_arg, 'CMIP5', c5_vocab)
+        check_values(c5_kwargs[1], 'CMIP5', c5_vocab)
 
 def test_check_load_vocabularies():
     project = 'CMIP5'
     vocab = load_vocabularies(project)
-    assert 'variables' in vocab.keys()
-    assert 'stypes' not in vocab.keys()
+    assert 'variable' in vocab.keys()
+    assert 'source_type' not in vocab.keys()
 
     project = 'CMIP6'
     vocab = load_vocabularies(project)
-    assert 'variables' in vocab.keys()
-    assert 'families' not in vocab.keys()
+    assert 'variable_id' in vocab.keys()
+    assert 'experiment_family' not in vocab.keys()
 
 
 def test_check_keys(c5_kwargs,c5_keys):
-    args = check_keys(c5_keys, c5_kwargs)
+    args = check_keys(c5_keys, c5_kwargs[0])
     assert args == {'model': 'INM-CM4', 'experiment': 'rcp85', 'variable': 'tas',
                     'cmor_table': 'Amon', 'time_frequency': 'mon', 'institute': 'MIROC',
                     'experiment_family': 'RCP', 'ensemble': 'r1i1p1'}
-    bad_arg=c5_kwargs.copy()
+    bad_arg=c5_kwargs[0].copy()
     bad_arg['activity_id'] = 'dummy'
     with pytest.raises(ClefException):
         args = check_keys(c5_keys, bad_arg)
@@ -113,7 +113,3 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/files/tas_20110518') == '20110518'
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
 
-
-def test_ids_dict(dids6, results6, dids5, results5):
-    assert ids_dict(dids6) == results6
-    assert ids_dict(dids5) == results5
