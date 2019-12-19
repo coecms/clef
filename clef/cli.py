@@ -26,10 +26,10 @@ from datetime import datetime
 
 from .db import connect, Session
 from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
-from .download import write_request 
+from .download import write_request, search_queue_csv 
 from . import collections as colls
 from .exception import ClefException
-from .code import call_local_query, matching, write_csv, print_stats, ids_dict
+from .code import call_local_query, matching, write_csv, print_stats, ids_df
 from .helpers import load_vocabularies, fix_model, fix_path
 
 
@@ -370,7 +370,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
                 ids=sorted(set(x.dataset_id for x in s.query(q)))
 # when stats or csvf are True first extract attributes from dataset_ids
                 if stats or csvf:
-                    results = ids_dict(ids)
+                    results = ids_df(ids)
                 for did in ids:
                     print(did)
         if stats:

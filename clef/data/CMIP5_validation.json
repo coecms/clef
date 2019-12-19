@@ -1,4 +1,4 @@
-{ "models":  [
+{ "model": [
 "ACCESS1.0",
 "ACCESS1-0",
 "ACCESS1.3",
@@ -813,7 +813,7 @@
 "fx",
 "grids"
 ],
-"experiments":  [
+"experiment": [
  "1pctCO2", 
  "abrupt4xCO2", 
  "amip", 
@@ -928,7 +928,7 @@
  "model",
  "ensemble"
 ],
-"experiment_family":  [
+"experiment_family": [
  "Atmos-only",
  "Control",
  "Decadal",

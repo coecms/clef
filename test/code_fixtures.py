@@ -66,7 +66,7 @@ def c5_keys(request):
 @pytest.fixture(scope="module")
 def local_results():
     """
-    A successful local CMIP5 MAS query returning a list of dictionaries
+    A successful local CMIP5 MAS query returning a pandas DataFrame
     """
     results =  [
 # mod1 has both pr and tas for r1 but not for r2 version is always v1
@@ -115,7 +115,7 @@ def local_results():
 @pytest.fixture(scope="module")
 def remote_results():
     """
-    A successful remote CMIP6 ESGF query reorganised as a list of dictionaries
+    A successful remote CMIP6 ESGF query reorganised as a pandas DataFrame
     """
     results =  [
 # mod1 has both pr and tas for r1 but not for r2 version is always v1
@@ -159,7 +159,7 @@ def remote_results():
      'table_id': 'Amon', 'version': 'v1', 'variable_id': 'pr',
      'dataset_id': 'mod3.exp1.Amon.r1i1p1f1.pr.v1'},
             ]
-    return results
+    return pandas.DataFrame(results)
 
 @pytest.fixture(scope="module")
 def mversions():

@@ -18,7 +18,6 @@
 import sys
 import os
 import pandas as pd
-import csv
 import json
 import re
 import pkg_resources
@@ -280,51 +279,41 @@ def and_filter(df, cols, fixed, **kwargs):
     else:
         raise ClefException('List of attributes to apply filter to is empty')
 
+    # reset index so index is available as column
+    df =df.reset_index()
     # useful is a list of fields to retain in the table
     useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
               'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in [c for c in df.columns.values]]
     # define the aggregation dictionary
     agg_dict = {k: set for k in fields}
+    agg_dict['index'] = lambda x: tuple(x)
     # group table data by the columns listed in 'fixed' i.e. model and ensemble
     # and aggregate rows with matching values creating a set for each including path and version
     d = (df.groupby(fixed)
        .agg(agg_dict))
-       #.reset_index())
     # create a filter to select the rows where the lenght of the simulation combinations is
     # is equal to the number of "cols" combinations and apply to table
+    #selection = d[d['comb'].map(len) == len(comb)]
     selection = d[d['comb'].map(len) == len(comb)]
-    # to subset results based on selection, create a list of tuple with the fixed attributes for selection (sel_fixed)
-    # then do the same for each results and append them to a new list only if they are in sel_fixed
-    print("I am here before sel")
-    fullrow = df[df.index.isin(selection.index)]
-    print("I am here after sel")
-    #sel_attrs = []
-    #sel_fixed = []
-    #selection['fixed'] = "-".join(selection[a] for a in fixed
-    #for sim in selection:
-    #    sel_fixed.append(tuple([sim[a] for a in fixed]))
-    #for sim in results:
-    #    if (tuple([sim[a] for a in fixed])) in sel_fixed:
-    #        sel_attrs.append(sim)
+    # select full rows from original dataframe using original index 
+    fullrow = df[df.index.isin(selection['index'].sum())]
     return fullrow, selection
 
 
-def write_csv(list_dicts):
+def write_csv(df):
     """Write query results to csv file
     """
-    if len(list_dicts) == 0:
+    if len(df.index) == 0:
         print(f'Nothing to write to csv file')
         return
-    project = list_dicts[0].get("project", "result")
-    csv_file = f'{project.upper()}_query.csv'
+    project = df['project'][0]
+    csv_file = f"{project.upper()}_query.csv"
     ignore = ['periods', 'filename', 'institute', 'project', 'institution_id','realm', 'product']
-    columns = [x for x in list_dicts[0].keys() if x not in ignore]
+    columns = [x for x in df.columns if x not in ignore]
     try:
         with open(csv_file, 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, extrasaction='ignore', fieldnames=columns)
-            writer.writeheader()
-            writer.writerows(list_dicts)
+            csvfile.write(df[columns].to_csv())
     except IOError:
         print("I/O error")
 
@@ -336,23 +325,16 @@ def stats(results):
         results (pandas.DataFrame): each row describes one simulation matching the constraints
     
     Returns:
-        stats_dict (dict) stats to print
+        member_by_model (pandas.DataFrame): results rearranged as model: members list, members number
 
     """
 
-    stats_dict = {}
     attrs = get_facets(results.loc[0,'project'].upper())
-    # get number of unique models
-    #stats_dict['models'] = set(x[attrs['m']] for x in results)
-    stats_dict['models'] = results[attrs['m']].unique().tolist()
-    # get number of unique models/ensembles
-    #stats_dict['model_member'] = set((x[attrs['m']], x[attrs['en']]) for x in results)
-    stats_dict['model_member'] = results.groupby(attrs['m'], attrs['en']).values
-    # get number of unique ensembles for each model
-    #stats_dict['members'] = {m:[] for m in stats_dict['models']}
-    #for m,en in stats_dict['model_member']:
-    #    stats_dict['members'][m].append(en)
-    return stats_dict
+    # group results by model and create members list, finally count memebrs number for each model
+    member_by_model = results.groupby(attrs['m'])[attrs['en']] \
+                        .agg(members='unique', count='nunique') #\
+                        #.sort_values(['count'], ascending=False)
+    return member_by_model 
 
 
 def print_stats(results):
@@ -365,22 +347,22 @@ def print_stats(results):
     if len(results.index) == 0:
         print('No results are available for this query')
         return
-    stats_dict = stats(results)
-    print('\nQuery summary')
-    print(f'\n{len(stats_dict["models"])} model/s are available:')
-    for m in sorted(stats_dict["models"]):
-        print(m, end=' ')
+    sdf = stats(results)
+
+    print("\nQuery summary")
+    # print total number of models and their names
+    print(f"\n{sdf.index.nunique()} model/s are available:")
+    for m in sorted(sdf.index):
+        print(m, end=" ")
     print()
-    print(f'\nA total of {len(stats_dict["model_member"])} unique model-member combinations are available.')
-    member_num = {k: len(v) for k,v in stats_dict['members'].items()}
-    member_num = {len(v): [] for v in stats_dict['members'].values()}
-    for k,v in stats_dict['members'].items():
-        member_num[len(v)].append(k)
-    for num in sorted(member_num.keys()):
-        print(f'\n{len(member_num[num])} model/s have {num} member/s:')
-        for m in sorted(member_num[num]):
-            print(m, end=' ')
-        print()
+    print(f"\nA total of {sdf['count'].sum()} unique model-member combinations are available.")
+    
+    # print models and their members, grouped by number of members
+    for key, item in sdf.groupby('count'):
+        print(f"\n  {len(item.index)} model/s have {key} member/s:\n")
+        for m in item.index.values:
+            print(f"     {m}: {', '.join(item.loc[m,'members'])}")
+    print("\n")
 
 
 def local_latest(results):
@@ -403,7 +385,7 @@ def local_latest(results):
     return results
 
 
-def ids_dict(dids):
+def ids_df(dids):
     """Convert dataset_ids in DataFrame in same style as query results
 
     Args:
