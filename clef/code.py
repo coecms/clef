@@ -328,7 +328,8 @@ def stats(results):
 
     """
 
-    attrs = get_facets(results.loc[0,'project'].upper())
+    project = results.loc[0,'dataset_id'].split('.')[0].upper()
+    attrs = get_facets(project)
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \
                         .agg(members='unique', count='nunique')

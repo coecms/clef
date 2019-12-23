@@ -1770,7 +1770,8 @@
         "source_id",
         "source_type",
         "activity_id",
-        "grib_label",
+        "grid",
+        "grid_label",
         "nominal_resolution",
         "sub_experiment_id"
 ],
