@@ -30,6 +30,7 @@ database
 import requests
 import sys
 import sqlalchemy as sa
+import pandas as pd
 
 from sqlalchemy.sql import column
 from sqlalchemy import String, Float, Integer, or_, func
@@ -86,8 +87,7 @@ def esgf_query(query, fields, otype='File', limit=10000, offset=0,  distrib=True
           }
     params.update(kwargs)
     if otype == 'Dataset': params.pop('type')
-    #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
-    #                 params = params )
+
     try:
         r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
@@ -97,8 +97,7 @@ def esgf_query(query, fields, otype='File', limit=10000, offset=0,  distrib=True
                      params = params )
         r.raise_for_status()
     except Exception as err:
-        raise ClefException(f'Currently is not possible to contact one of the ESGF nodes try again later or use --local option') 
-    #r.raise_for_status()
+        raise ESGFException(f'Currently is not possible to contact one of the ESGF nodes try again later or use --local option') 
     return r.json()
 
 
@@ -132,8 +131,6 @@ def link_to_esgf(query, **kwargs):
             }
     params.update(constraints)
 
-
-
     #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
     #r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
     r = requests.Request('GET','https://esgf.nci.org.au/search/esgf-nci',
@@ -160,19 +157,15 @@ def find_checksum_id(query, **kwargs):
          * version
         This table can be joined against the MAS database tables
     """
+
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
 
     if response['response']['numFound'] == 0:
-        #raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
-        print(f'No matches found on ESGF, check at {link_to_esgf(query, **constraints)}')
-        sys.exit()
+        raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        #raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
-        print(f"Too many results {response['response']['numFound']}, try limiting your search:\n ",
-              link_to_esgf(query, **constraints))
-        sys.exit()
+        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
     # separate records that do not have checksum in response (nosums list) from others (records list)
     # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
     nosums=[]

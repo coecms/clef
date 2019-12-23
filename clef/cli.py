@@ -350,8 +350,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=False, latest=latest, **terms)
-            for row in selection:
-                print(*[row[x] for x in matching_fixed[project]], row['version'])
+            for row in selection.itertuples():
+                print(f"{row.Index[0]}-{row.Index[1]}:  {', '.join([v[0] for v in row.version])}")
         else:
             q = find_checksum_id(' '.join(query),
                 distrib=distrib,
@@ -384,8 +384,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=True, latest=latest, **terms)
-            for row in selection:
-                print(*[row[x] for x in matching_fixed[project]], row['version'])
+            for row in selection.itertuples():
+                print(f"{row.Index[0]}-{row.Index[1]}:  version {str(row.version)[1:-1]}")
         else:
             results, paths = call_local_query(s, project, oformat, latest, **terms)
             if not stats:

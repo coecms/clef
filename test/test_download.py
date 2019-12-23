@@ -28,13 +28,15 @@ def test_helpdesk(tmp_path):
     request.write_text("Dummy Request")
 
     with patch('clef.download.smtplib.SMTP') as smtp:
-        helpdesk('dummy_user', tmp_path, 'request', 'dummy_project')
+        #helpdesk('dummy_user', tmp_path + '/request', 'dummy_project')
+        helpdesk('dummy_user', request, 'dummy_project')
         smtp.assert_called_once()
         smtp.reset_mock()
 
         inst = smtp.return_value
         inst.sendmail.side_effect = SMTPException
-        helpdesk('dummy_user', tmp_path, 'request', 'dummy_project')
+        #helpdesk('dummy_user', tmp_path + '/request', 'dummy_project')
+        helpdesk('dummy_user', request, 'dummy_project')
         smtp.assert_called_once()
         inst.sendmail.assert_called_once()
 

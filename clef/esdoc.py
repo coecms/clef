@@ -106,6 +106,10 @@ def get_doc(dtype, name, project='CMIP6'):
         print_doc(tables, dtype)
     return service
 
+def handle():
+    # https://handle-esgf.dkrz.de/lp/21.14100/77c14e4c-572c-3585-8f4e-dfa9da3223db
+    return
+
 def errata(tracking_id):
     '''Return errata uids connected to a tracking id
     '''

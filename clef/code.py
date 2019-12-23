@@ -96,25 +96,24 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
             # perform the query for each variable separately and concatenate the results
             combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
             for c in combs:
-                results = results.append(search(session,project=project.upper(),latest=latest, **c),
-                               ignore_index=True)
+                results = results.append(search(session,project=project.upper(),
+                                                latest=latest, **c),
+                                         ignore_index=True)
         # use ESGF search
         else:
             msg = "There are no simulations currently available on the ESGF nodes"
             kwquery = {k:tuple(v) for k,v in kwargs.items()}
             kwquery['project']=project.upper()
-            if project == 'CMIP5':
-                fields = 'dataset_id,model,experiment,variable,ensemble,cmor_table,version'
-            else:
-                fields = ",".join(['dataset_id','source_id','experiment_id','variable_id',
-                                   'activity_id','table_id','version','grid_label','source_type',
-                                   'frequency','member_id','sub_experiment_id'])
+            attrs = ['dataset_id', 'version'] # datetime_start, datetime_stop
+            attrs.extend( load_vocabularies(project)['attributes'])
             query=None
-            response = esgf_query(query, fields, latest=latest, **kwquery)
+            response = esgf_query(query, ','.join(attrs), latest=latest, **kwquery)
+            # can't create dataframe in one go because many values are unidimensional lists
+            res_list = []
             for row in response['response']['docs']:
-                version = row['dataset_id'].split("|")[0].split(".")[-1]
-                results.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
-                results[-1]['version'] = version
+                row['version'] = row['dataset_id'].split("|")[0].split(".")[-1],
+                res_list.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
+            results = pd.DataFrame(res_list)
 
     except Exception as e:
         print('ERROR',str(e))
@@ -332,8 +331,7 @@ def stats(results):
     attrs = get_facets(results.loc[0,'project'].upper())
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \
-                        .agg(members='unique', count='nunique') #\
-                        #.sort_values(['count'], ascending=False)
+                        .agg(members='unique', count='nunique')
     return member_by_model 
 
 
