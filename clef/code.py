@@ -273,8 +273,8 @@ def load_vocabularies(project):
          if project == 'CMIP6':
              activities = json.loads(data)['activities']
              stypes = json.loads(data)['source_types']
-             return models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes
-    return models, realms, variables, frequencies, tables, experiments, families, attributes
+             return models, realms, variables, frequencies, tables, experiments, attributes, activities, stypes
+    return models, realms, variables, frequencies, tables, experiments, attributes, families
 
 
 def fix_model(project, models, invert=False):
