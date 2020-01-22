@@ -234,67 +234,45 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
 
-def find_local_path(session, subq, oformat='file'):
+def find_local_path(session, subq):
     """Find the filesystem paths of ESGF matches
 
     Converts the results of :func:`match_query` to local filesystem paths,
     either to the file itself or to the containing dataset.
 
     Args:
-        format ('file' or 'dataset'): Return the path to the file or the dataset directory
         subq: result of func:`esgf_query`
 
     Returns:
         Iterable of strings with the paths to either paths or datasets
     """
 
-    if oformat == 'file':
-        return (session
-                 .query('esgf_paths.path')
-                 .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id != None)
-                .filter(sa.not_(sa.and_(
-                    subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
-                    sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
-                )))
-                )
-    elif oformat == 'dataset':
-        return (session
-                .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
-                .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id != None)
-                .filter(sa.not_(sa.and_(
-                    subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
-                    sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
-                )))
-                .distinct())
-    else:
-        raise NotImplementedError
+    return (session
+            .query(func.regexp_replace(subq.c.esgf_paths_path, '[^//]*$', ''))
+            .select_from(subq)
+            .filter(subq.c.esgf_paths_file_id != None)
+            .filter(sa.not_(sa.and_(
+                subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
+                sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
+            )))
+            .distinct())
 
-def find_missing_id(session, subq, oformat='file'):
+
+def find_missing_id(session, subq):
     """
     Returns the ESGF id for each file in the ESGF query that doesn't have a
     local match
 
     Args:
-        format ('file' or 'dataset'): Return the path to the file or the dataset directory
         subq: result of func:`esgf_query`
 
     Returns:
         Iterable of strings with the ESGF file or dataset id
     """
 
-    if oformat == 'file':
-        return (session
-                .query('esgf_query.id')
-                .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id == None))
-    elif oformat == 'dataset':
-        return (session
-                .query('esgf_query.dataset_id')
-                .select_from(subq)
-                .filter(subq.c.esgf_paths_file_id == None)
-                .distinct())
-    else:
-        raise NotImplementedError
+    return (session
+            .query('esgf_query.dataset_id')
+            .select_from(subq)
+            .filter(subq.c.esgf_paths_file_id == None)
+            .distinct())
 

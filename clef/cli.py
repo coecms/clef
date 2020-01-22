@@ -136,8 +136,6 @@ def common_args(f):
     constraints = [
         click.argument('query', nargs=-1),
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
-        click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
-                     help="Return output for datasets (default) or individual files"),
         click.option('--latest/--all-versions', 'latest', default=True,
                      help="Return only the latest version or all of them. Default: --latest"),
         click.option('--replica/--no-replica', default=False,
@@ -224,7 +222,7 @@ def ds_args(f):
 @cmip5_args
 @common_args
 @click.pass_context
-def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
+def cmip5(ctx, query, debug, distrib, replica, latest, csvf, stats,
         cf_standard_name,
         ensemble,
         experiment,
@@ -264,14 +262,14 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
         'variable': variable,
         'experiment_family': experiment_family
         }
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, cf_standard_name, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
 @cmip6_args
 @common_args
 @click.pass_context
-def cmip6(ctx,query, debug, distrib, replica, latest, oformat, csvf, stats,
+def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         cf_standard_name,
         variant_label,
         member_id,
@@ -315,11 +313,11 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat, csvf, stats,
         'variant_label': variant_label,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
+    common_esgf_cli(ctx, project, query, cf_standard_name, latest,
         replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
+def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
                replica, distrib, csvf, stats, debug, constraints, and_attr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -362,17 +360,12 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
                 **constraints,
                 )
 
-            if oformat == 'file':
-                for result in s.query(q):
-                    print(result.id)
-                return
-            else:
-                ids=sorted(set(x.dataset_id for x in s.query(q)))
+            ids=sorted(set(x.dataset_id for x in s.query(q)))
 # when stats or csvf are True first extract attributes from dataset_ids
-                if stats or csvf:
-                    results = ids_df(ids)
-                for did in ids:
-                    print(did)
+            if stats or csvf:
+                results = ids_df(ids)
+            for did in ids:
+                print(did)
         if stats:
             print_stats(results)
         if csvf:
@@ -387,7 +380,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
             for row in selection.itertuples():
                 print(f"{row.Index[0]}-{row.Index[1]}:  version {str(row.version)[1:-1]}")
         else:
-            results, paths = call_local_query(s, project, oformat, latest, **terms)
+            results, paths = call_local_query(s, project, latest, **terms)
             if not stats:
                 for p in paths:
                     print(p)
@@ -410,7 +403,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
     # Make sure that if find_local_path does an all-version search using the
     # filename, the resulting project is still CMIP6 (and not say a PMIP file
     # with the same name)
-    ql = find_local_path(s, subq, oformat=oformat)
+    ql = find_local_path(s, subq)
 
     if not ctx.obj['flow'] == 'missing':
         if project == 'CMIP5':
@@ -422,7 +415,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
             for result in ql:
                 print(result[0])
 
-    qm = find_missing_id(s, subq, oformat=oformat)
+    qm = find_missing_id(s, subq)
 
     # if there are missing datasets, search for dataset_id in synda queue,
     #  update list and print result

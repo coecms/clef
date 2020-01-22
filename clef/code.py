@@ -126,13 +126,12 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
     return and_filter(results, cols, fixed, **kwargs)
 
 
-def call_local_query(s, project, oformat, latest, **kwargs):
+def call_local_query(s, project, latest, **kwargs):
     """Call local_query for each combination of constraints passed as argument
 
     Args:
         s (SQLAlchemy session obj): database session
         project (string): project, i.e. CMIP5/CMIP6
-        oformat (string): output format 'dataset' or 'file'
         latest (boolean): True returns only latest version
         kwargs (dictionary): query constraints
 
@@ -147,11 +146,7 @@ def call_local_query(s, project, oformat, latest, **kwargs):
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
          datasets = datasets.append(local_query(s,project=project, latest=latest, **c), ignore_index=True)
-    if oformat == 'dataset':
-        paths = datasets['path'].tolist()
-    elif oformat == 'file':
-        for d in datasets:
-            paths.extend([d['path']+"/" + x for x in d['filename']])
+    paths = datasets['path'].tolist()
     return datasets, paths
 
 
