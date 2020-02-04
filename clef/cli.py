@@ -103,7 +103,7 @@ def warning(message):
 
 
 def cmip5_args(f):
-    models, realms, variables, frequencies, tables, experiments, families, attributes = load_vocabularies('CMIP5')
+    models, realms, variables, frequencies, tables, experiments, attributes, families = load_vocabularies('CMIP5')
     constraints = [
         click.option('--experiment', '-e', multiple=True, type=click.Choice(experiments), metavar='x',
                       help="CMIP5 experiment: piControl, rcp85, amip ..."),
@@ -150,7 +150,7 @@ def common_args(f):
 
 def cmip6_args(f):
     #
-    models, realms, variables, frequencies, tables, experiments, activities, stypes, attributes = load_vocabularies('CMIP6')
+    models, realms, variables, frequencies, tables, experiments, attributes, activities, stypes = load_vocabularies('CMIP6')
     constraints = [
         click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
         click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(experiments), metavar='x',
