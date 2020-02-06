@@ -88,7 +88,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
     FROM oi10.paths
     WHERE
         pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1b/oi10/replicas')::uuid
+    AND pa_parents[4] = md5('/g/data/oi10/replicas')::uuid
     AND pa_path LIKE '%.nc'
     UNION ALL
     SELECT
@@ -98,7 +98,7 @@ CREATE OR REPLACE VIEW esgf_filter AS
     FROM al33.paths
     WHERE
         pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1b/al33/replicas')::uuid
+    AND pa_parents[4] = md5('/g/data/al33/replicas')::uuid
     -- AND split_part(pa_path, '/', 7) = 'combined'
     AND pa_path LIKE '%.nc';
 
