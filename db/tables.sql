@@ -4,44 +4,29 @@ CREATE OR REPLACE VIEW metadata AS
         md_ingested,
         md_type,
         md_json
-    FROM rr3.metadata
+    FROM dataset_cmip5.metadata
     UNION ALL
     SELECT
         md_hash,
         md_ingested,
         md_type,
         md_json
-    FROM al33.metadata
-    UNION ALL
-    SELECT
-        md_hash,
-        md_ingested,
-        md_type,
-        md_json
-    FROM oi10.metadata;
-
+    FROM dataset_cmip6.metadata;
 
 CREATE OR REPLACE VIEW paths AS
     SELECT
         pa_hash,
-        pa_type,
+        pa_type::path_type,
         pa_path,
         pa_parents
-    FROM rr3.paths
+    FROM dataset_cmip5.paths
     UNION ALL
     SELECT
         pa_hash,
-        pa_type,
+        pa_type::path_type,
         pa_path,
         pa_parents
-    FROM al33.paths
-    UNION ALL
-    SELECT
-        pa_hash,
-        pa_type,
-        pa_path,
-        pa_parents
-    FROM oi10.paths;
+    FROM dataset_cmip6.paths;
 
 /*
 CREATE OR REPLACE VIEW checksums AS
@@ -72,34 +57,18 @@ CREATE OR REPLACE VIEW esgf_filter AS
         pa_hash AS file_id,
         5 AS cmip_era,
         pa_path AS path
-    FROM rr3.paths
+    FROM dataset_cmip5.paths
     WHERE
         pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
-    --AND split_part(pa_path, '/', 6) != 'CMIP5RT'        
-    --AND split_part(pa_path, '/', 15) != 'files'       
-    --AND split_part(pa_path, '/', 17) != 'files'
     AND pa_path LIKE '%.nc'
     UNION ALL
     SELECT
         pa_hash AS file_id,
         6 AS cmip_era,
         pa_path AS path
-    FROM oi10.paths
+    FROM dataset_cmip6.paths
     WHERE
         pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data/oi10/replicas')::uuid
-    AND pa_path LIKE '%.nc'
-    UNION ALL
-    SELECT
-        pa_hash AS file_id,
-        5 AS cmip_era,
-        pa_path AS path
-    FROM al33.paths
-    WHERE
-        pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data/al33/replicas')::uuid
-    -- AND split_part(pa_path, '/', 7) = 'combined'
     AND pa_path LIKE '%.nc';
 
 
