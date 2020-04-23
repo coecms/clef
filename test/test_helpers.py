@@ -18,7 +18,7 @@ import pytest
 
 from clef.exception import ClefException
 from clef.helpers import check_values, load_vocabularies, check_keys, get_version, time_axis, \
-                         get_keys, fix_model, fix_path, get_range, convert_periods
+                         get_keys, fix_model, fix_path, get_range, convert_periods, get_facets
 from code_fixtures import c5_kwargs, c5_vocab, c5_keys, nranges, periods, empty, dids6, dids5, \
                           results5, results6
 
@@ -113,3 +113,10 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/files/tas_20110518') == '20110518'
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
 
+def test_get_facets():
+    facets6 = get_facets('CMIP6')
+    assert facets6['e'] == 'experiment_id'
+    facets6 = get_facets('cmip6')
+    assert facets6['gr'] == 'grid_label'
+    facets5 = get_facets('CMIP5')
+    assert facets5['t'] == 'cmor_table'

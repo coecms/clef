@@ -54,3 +54,9 @@ def test_error():
  'createdDate': '2019-10-11 20:19:37.255166', 'closedBy': None, 'project': 'cmip6',
  'updatedDate': '2019-10-17 16:18:09.159330', 'materials': [], 'createdBy': 'phillips-ad', 'updatedBy': 'phillips-ad',
  'uid': 'ce889690-1ef3-6f46-9152-ccb27fc42490', 'severity': 'critical'} }
+
+
+@pytest.fixture(scope="module")
+def citations():
+    return ['Seland, Øyvind; Bentsen, Mats; Oliviè, Dirk Jan Leo; Toniazzo, Thomas; Gjermundsen, Ada; Graff, Lise Seland; Debernard, Jens Boldingh; Gupta, Alok Kumar; He, Yanchun; Kirkevåg, Alf; Schwinger, Jörg; Tjiputra, Jerry; Aas, Kjetil Schanke; Bethke, Ingo; Fan, Yuanchao; Griesfeller, Jan; Grini, Alf; Guo, Chuncheng; Ilicak, Mehmet; Karset, Inger Helene Hafsahl; Landgren, Oskar Andreas; Liakka, Johan; Moseid, Kine Onsum; Nummelin, Aleksi; Spensberger, Clemens; Tang, Hui; Zhang, Zhongshi; Heinze, Christoph; Iversen, Trond; Schulz, Michael (2019). NCC NorESM2-LM model output prepared for CMIP6 CMIP historical. Version v20190920.Earth System Grid Federation. https://doi.org/10.22033/ESGF/CMIP6.8036',
+            'Cao, Jian; Wang, Bin (2019). NUIST NESMv3 model output prepared for CMIP6 CMIP historical. Version v20190812.Earth System Grid Federation. https://doi.org/10.22033/ESGF/CMIP6.8769']

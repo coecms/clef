@@ -147,16 +147,15 @@ def print_error(uid):
 def cite(dids):
     '''Retrieve citations for a list of CMIP6 dataset ids'''
     citations = []
-    url = 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cmip6?input=CMIP6.' #ScenarioMIP.CCCma.CanESM5.ssp126'
-    fexp = pkg_resources.resource_filename(__name__, 'data/CMIP6_exp_act.json')
-    with open(fexp, 'r') as f:
-         data = json.loads(f.read())
+    url = 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cmip6?input=' 
+    #fexp = pkg_resources.resource_filename(__name__, 'data/CMIP6_exp_act.json')
+    #with open(fexp, 'r') as f:
+    #     data = json.loads(f.read())
     for did in dids:
 # get facets from did to build correct url
-        a,inst,mod,exp,version = did.split(".")[0:5]
-        activity = data[exp]
-        newdid = ".".join([activity,inst,mod,exp])
-        print(url+newdid)
+        did_bits = did.split(".")
+        version = did_bits[9]
+        newdid = ".".join(did_bits[0:5])
         response = requests.get(url+newdid, headers={"User-Agent": "Requests"})
         soup = BeautifulSoup(response.content, 'lxml')
         el = soup.find('dt', text="Citation")
@@ -167,5 +166,3 @@ def cite(dids):
         else:
             citations.append(cite.replace("YYYYMMDD[1]",version))
     return citations
-        
-          

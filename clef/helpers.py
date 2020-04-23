@@ -155,6 +155,7 @@ def get_facets(project):
         facets (dictionary): project facets
 
     """
+    project = project.upper()
     facets =  {'CMIP6': {}, 'CMIP5': {}}
     ffacets = pkg_resources.resource_filename(__name__, 'data/facets.json')
     with open(ffacets, 'r') as f:
