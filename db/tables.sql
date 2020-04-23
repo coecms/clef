@@ -4,21 +4,14 @@ CREATE OR REPLACE VIEW metadata AS
         md_ingested,
         md_type,
         md_json
-    FROM rr3.metadata
+    FROM cmip5_dataset.metadata
     UNION ALL
     SELECT
         md_hash,
         md_ingested,
         md_type,
         md_json
-    FROM al33.metadata
-    UNION ALL
-    SELECT
-        md_hash,
-        md_ingested,
-        md_type,
-        md_json
-    FROM oi10.metadata;
+    FROM cmip6_dataset.metadata;
 
 
 CREATE OR REPLACE VIEW paths AS
@@ -27,21 +20,14 @@ CREATE OR REPLACE VIEW paths AS
         pa_type,
         pa_path,
         pa_parents
-    FROM rr3.paths
+    FROM cmip5_dataset.paths
     UNION ALL
     SELECT
         pa_hash,
         pa_type,
         pa_path,
         pa_parents
-    FROM al33.paths
-    UNION ALL
-    SELECT
-        pa_hash,
-        pa_type,
-        pa_path,
-        pa_parents
-    FROM oi10.paths;
+    FROM cmip6_dataset.paths;
 
 /*
 CREATE OR REPLACE VIEW checksums AS
@@ -68,39 +54,17 @@ CREATE OR REPLACE VIEW checksums AS
 /* Filter to unify the schemas and only return CMIP data files
  */
 CREATE OR REPLACE VIEW esgf_filter AS
-    SELECT
-        pa_hash AS file_id,
+    SELECT paths.pa_hash AS file_id,
         5 AS cmip_era,
-        pa_path AS path
-    FROM rr3.paths
-    WHERE
-        pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1/rr3/publications')::uuid
-    --AND split_part(pa_path, '/', 6) != 'CMIP5RT'        
-    --AND split_part(pa_path, '/', 15) != 'files'       
-    --AND split_part(pa_path, '/', 17) != 'files'
-    AND pa_path LIKE '%.nc'
+        paths.pa_path AS path
+        FROM cmip5_dataset.paths
+        WHERE (paths.pa_type = ANY (ARRAY['file'::path_type, 'link'::path_type])) 
     UNION ALL
-    SELECT
-        pa_hash AS file_id,
+    SELECT paths.pa_hash AS file_id,
         6 AS cmip_era,
-        pa_path AS path
-    FROM oi10.paths
-    WHERE
-        pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1b/oi10/replicas')::uuid
-    AND pa_path LIKE '%.nc'
-    UNION ALL
-    SELECT
-        pa_hash AS file_id,
-        5 AS cmip_era,
-        pa_path AS path
-    FROM al33.paths
-    WHERE
-        pa_type in ('file', 'link')
-    AND pa_parents[4] = md5('/g/data1b/al33/replicas')::uuid
-    -- AND split_part(pa_path, '/', 7) = 'combined'
-    AND pa_path LIKE '%.nc';
+        paths.pa_path AS path
+        FROM cmip6_dataset.paths
+        WHERE (paths.pa_type = ANY (ARRAY['file'::path_type, 'link'::path_type])); 
 
 
 /* Materialize the filter
