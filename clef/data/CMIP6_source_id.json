@@ -740,7 +740,7 @@
             "release_year":"2016",
             "source_id":"CAMS-CSM1-0"
         },
-        "CAS-ESM1-0":{
+        "CAS-ESM2-0":{
             "activity_participation":[
                 "AerChemMIP",
                 "C4MIP",
@@ -768,8 +768,8 @@
             "institution_id":[
                 "CAS"
             ],
-            "label":"CAS-ESM 1.0",
-            "label_extended":"CAS-ESM 1.0 (Chinese Academy of Sciences Earth System Model version 1.0)",
+            "label":"CAS-ESM 2.0",
+            "label_extended":"CAS-ESM 2.0 (Chinese Academy of Sciences Earth System Model version 2.0)",
             "model_component":{
                 "aerosol":{
                     "description":"IAP AACM",
@@ -805,7 +805,7 @@
                 }
             },
             "release_year":"2015",
-            "source_id":"CAS-ESM1-0"
+            "source_id":"CAS-ESM2-0"
         },
         "CESM1-1-CAM5-CMIP5":{
             "activity_participation":[
