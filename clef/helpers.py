@@ -282,5 +282,9 @@ def fix_path(path, latest):
         dirs=path.split("/")
         var = dirs[-2].split("_")[0]
         return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
+    elif '/fs38/publications/CMIP6/' in path and latest:
+        dirs=path.split("/")
+        var = dirs[-2].split("_")[0]
+        return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
     else:
         return path

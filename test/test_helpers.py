@@ -93,7 +93,7 @@ def test_fix_path():
     dir2 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/more/files/tas_20110518/'
     dir3 = '/g/data/al33/replicas/CMIP5/output1/more/v20120316/tas/'
     dir4 =  dir3.replace('output1', 'unsolicited')
-    dir5 = '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
+    dir5 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
     fname = 'name.nc'
     latest=True
     assert fix_path(dir1, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/'
@@ -102,9 +102,9 @@ def test_fix_path():
     assert fix_path(dir3, latest) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
     assert fix_path(dir3+fname, latest) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/name.nc'
     assert fix_path(dir4, latest) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
-    assert fix_path(dir5, latest) == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/pr/'
+    assert fix_path(dir5, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/pr/'
     latest=False
-    assert fix_path(dir5, latest) == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
+    assert fix_path(dir5, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
 
 
 def test_get_version():

@@ -2705,6 +2705,35 @@
             ],
             "tier":"2"
         },
+        "esm-past1000":{
+            "activity_id":[
+                "PMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM"
+            ],
+            "description":"Parallel experiment to past1000, but for model set-ups with interactive carbon cycle. Main forcings: trace gases, volcanoes, solar variability, land-use",
+            "end_year":"1849",
+            "experiment":"last millennium experiment with interactive carbon cycle",
+            "experiment_id":"esm-past1000",
+            "min_number_yrs_per_sim":"1000",
+            "parent_activity_id":[
+                "no parent"
+            ],
+            "parent_experiment_id":[
+                "no parent"
+            ],
+            "required_model_components":[
+                "AOGCM",
+                "BGC"
+            ],
+            "start_year":"850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
         "esm-pi-CO2pulse":{
             "activity_id":[
                 "CDRMIP"
@@ -3625,7 +3654,7 @@
             "additional_allowed_model_components":[
                 "AER"
             ],
-            "description":"Coupled integrationswith historic external forcings (as in highresSST-present)",
+            "description":"Coupled integrations with historic external forcings (as in highresSST-present)",
             "end_year":"2014",
             "experiment":"coupled historical 1950-2014",
             "experiment_id":"hist-1950",
@@ -3732,6 +3761,35 @@
             ],
             "tier":"1"
         },
+        "hist-GHG-cmip5":{
+            "activity_id":[
+                "DAMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"historical well-mixed GHG-only run. Models with interactive chemistry schemes should either turn off the chemistry or use a preindustrial climatology of stratospheric and tropospheric ozone in their radiation schemes. This will ensure that ozone is fixed in all these simulations, and simulated responses in models with and without coupled chemistry are comparable (CMIP5-era historical [1850-2005] and RCP4.5 [2006-2020] forcing)",
+            "end_year":"2020",
+            "experiment":"historical well-mixed GHG-only run (CMIP5-era historical [1850-2005] and RCP4.5 [2006-2020] forcing)",
+            "experiment_id":"hist-GHG-cmip5",
+            "min_number_yrs_per_sim":"171",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "piControl-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"1850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
         "hist-aer":{
             "activity_id":[
                 "DAMIP"
@@ -3741,7 +3799,7 @@
                 "CHEM",
                 "BGC"
             ],
-            "description":"Historical anthropogenic-Aerosols-only run",
+            "description":"historical anthropogenic aerosols-only run",
             "end_year":"2020",
             "experiment":"historical anthropogenic aerosols-only run",
             "experiment_id":"hist-aer",
@@ -3760,6 +3818,35 @@
                 "none"
             ],
             "tier":"1"
+        },
+        "hist-aer-cmip5":{
+            "activity_id":[
+                "DAMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"historical anthropogenic aerosols-only run (CMIP5-era historical [1850-2005] and RCP4.5 [2006-2020] forcing)",
+            "end_year":"2020",
+            "experiment":"historical anthropogenic aerosols-only run (CMIP5-era historical [1850-2005] and RCP4.5 [2006-2020] forcing)",
+            "experiment_id":"hist-aer-cmip5",
+            "min_number_yrs_per_sim":"171",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "piControl-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"1850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
         },
         "hist-all-aer2":{
             "activity_id":[
@@ -3876,6 +3963,35 @@
                 "none"
             ],
             "tier":"1"
+        },
+        "hist-nat-cmip5":{
+            "activity_id":[
+                "DAMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"historical natural-only run (CMIP5-era historical [1850-2005] and RCP4.5 [2006-2020] forcing)",
+            "end_year":"2020",
+            "experiment":"historical natural-only run (CMIP5-era historical [1850-2005] and RCP4.5 [2006-2020] forcing)",
+            "experiment_id":"hist-nat-cmip5",
+            "min_number_yrs_per_sim":"171",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "piControl-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"1850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
         },
         "hist-noLu":{
             "activity_id":[
@@ -4115,9 +4231,9 @@
                 "AER",
                 "BGC"
             ],
-            "description":"Historical stratospheric-ozone-only. In models with coupled chemistry, the chemistry scheme should be turned off, and the simulated ensemble mean monthly mean 3D stratospheric ozone concentrations from the CMIP6 historical simulations should be prescribed. Tropospheric ozone should be fixed at 3D long-term monthly mean piControl values, with a value of 100 ppbv ozone concentration in this piControl climatology used to separate the troposphere from the stratosphere. In models without coupled chemistry the same stratospheric ozone prescribed in the CMIP6 historical simulations should be prescribed. Stratospheric ozone concentrations will be provided by CCMI",
+            "description":"Historical stratospheric ozone-only. In models with coupled chemistry, the chemistry scheme should be turned off, and the simulated ensemble mean monthly mean 3D stratospheric ozone concentrations from the CMIP6 historical simulations should be prescribed. Tropospheric ozone should be fixed at 3D long-term monthly mean piControl values, with a value of 100 ppbv ozone concentration in this piControl climatology used to separate the troposphere from the stratosphere. In models without coupled chemistry the same stratospheric ozone prescribed in the CMIP6 historical simulations should be prescribed. Stratospheric ozone concentrations will be provided by CCMI",
             "end_year":"2020",
-            "experiment":"historical stratospheric-ozone-only run",
+            "experiment":"historical stratospheric ozone-only run",
             "experiment_id":"hist-stratO3",
             "min_number_yrs_per_sim":"171",
             "parent_activity_id":[
@@ -4134,6 +4250,34 @@
                 "none"
             ],
             "tier":"2"
+        },
+        "hist-totalO3":{
+            "activity_id":[
+                "DAMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "BGC"
+            ],
+            "description":"Historical total ozone-only. In models with coupled chemistry, the chemistry scheme should be turned off, and the simulated ensemble mean monthly mean 3D ozone concentrations from the CMIP6 historical simulations should be prescribed through the depth of the atmosphere. In models without coupled chemistry the same ozone prescribed in the CMIP6 historical simulations should be prescribed",
+            "end_year":"2020",
+            "experiment":"historical total ozone-only run",
+            "experiment_id":"hist-totalO3",
+            "min_number_yrs_per_sim":"171",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "piControl"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"1850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
         },
         "hist-volc":{
             "activity_id":[
@@ -4243,7 +4387,7 @@
                 "piControl"
             ],
             "required_model_components":[
-                "AOGCM"
+                "AGCM"
             ],
             "start_year":"1850",
             "sub_experiment_id":[
@@ -4424,6 +4568,35 @@
                 "none"
             ],
             "tier":"1"
+        },
+        "historical-cmip5":{
+            "activity_id":[
+                "CMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"CMIP5 historical experiment, using CMIP5-era [1850-2005] forcing",
+            "end_year":"2005",
+            "experiment":"all-forcing simulation of the recent past (CMIP5-era [1850-2005] forcing)",
+            "experiment_id":"historical-cmip5",
+            "min_number_yrs_per_sim":"156",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "piControl-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"1850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"2"
         },
         "historical-ext":{
             "activity_id":[
@@ -6218,6 +6391,93 @@
             ],
             "tier":"1"
         },
+        "past1000-solaronly":{
+            "activity_id":[
+                "PMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"Parallel experiment to past1000. Instead of the complete forcing set, only solar (TSI, SSI) forcing is considered",
+            "end_year":"1849",
+            "experiment":"last millennium experiment using only solar forcing",
+            "experiment_id":"past1000-solaronly",
+            "min_number_yrs_per_sim":"1000",
+            "parent_activity_id":[
+                "no parent"
+            ],
+            "parent_experiment_id":[
+                "no parent"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"2"
+        },
+        "past1000-volconly":{
+            "activity_id":[
+                "PMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"Parallel experiment to past1000. Instead of the complete forcing set, only volcanic forcing is considered",
+            "end_year":"1849",
+            "experiment":"last millennium experiment using only volcanic forcing",
+            "experiment_id":"past1000-volconly",
+            "min_number_yrs_per_sim":"1000",
+            "parent_activity_id":[
+                "no parent"
+            ],
+            "parent_experiment_id":[
+                "no parent"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"850",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"2"
+        },
+        "past2k":{
+            "activity_id":[
+                "PMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"Experiment extending the past1000 simulation back in time to include the first millennium CE. Main forcings: trace gases, volcanoes, solar variability, land-use. past1000 forcings data sets include the first millennium, except for land-use. For the latter, a linear ramp-up to 850CE values is recommended",
+            "end_year":"1849",
+            "experiment":"last two millennia experiment",
+            "experiment_id":"past2k",
+            "min_number_yrs_per_sim":"1849",
+            "parent_activity_id":[
+                "no parent"
+            ],
+            "parent_experiment_id":[
+                "no parent"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"1",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
         "pdSST-futAntSIC":{
             "activity_id":[
                 "PAMIP"
@@ -7399,6 +7659,35 @@
             ],
             "tier":"1"
         },
+        "piControl-cmip5":{
+            "activity_id":[
+                "CMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"DECK: control (CMIP5-era pre-industrial forcing)",
+            "end_year":"",
+            "experiment":"pre-industrial control (CMIP5-era [1850-2005] forcing)",
+            "experiment_id":"piControl-cmip5",
+            "min_number_yrs_per_sim":"500",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "piControl-spinup-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"2"
+        },
         "piControl-spinup":{
             "activity_id":[
                 "CMIP"
@@ -7415,6 +7704,35 @@
             "min_number_yrs_per_sim":"100",
             "parent_activity_id":[
                 "no parent"
+            ],
+            "parent_experiment_id":[
+                "no parent"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"2"
+        },
+        "piControl-spinup-cmip5":{
+            "activity_id":[
+                "CMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"DECK: spin-up portion of the control (CMIP5-era pre-industrial forcing)",
+            "end_year":"",
+            "experiment":"pre-industrial control (spin-up; CMIP5-era [1850-2005] forcing)",
+            "experiment_id":"piControl-spinup-cmip5",
+            "min_number_yrs_per_sim":"100",
+            "parent_activity_id":[
+                "CMIP"
             ],
             "parent_experiment_id":[
                 "no parent"
@@ -7683,6 +8001,122 @@
             ],
             "tier":"1"
         },
+        "rcp26-cmip5":{
+            "activity_id":[
+                "ScenarioMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"future scenario with low radiative forcing by the end of century. Following RCP2.6 global forcing pathway. Concentration-driven (CMIP5-era [2006-2100] forcing)",
+            "end_year":"2100 or 2300",
+            "experiment":"future projection based on CMIP5-era RCP2.6 scenario (CMIP5-era [2006-2100] forcing)",
+            "experiment_id":"rcp26-cmip5",
+            "min_number_yrs_per_sim":"95",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "historical-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"2006",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
+        "rcp45-cmip5":{
+            "activity_id":[
+                "ScenarioMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"future scenario with low-medium radiative forcing by the end of century. Following RCP4.5 global forcing pathway. Concentration-driven (CMIP5-era [2006-2100] forcing)",
+            "end_year":"2100 or 2300",
+            "experiment":"future projection based on CMIP5-era RCP4.5 scenario (CMIP5-era [2006-2100] forcing)",
+            "experiment_id":"rcp45-cmip5",
+            "min_number_yrs_per_sim":"95",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "historical-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"2006",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
+        "rcp60-cmip5":{
+            "activity_id":[
+                "ScenarioMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"future scenario with medium radiative forcing by the end of century. Following RCP6.0 global forcing pathway. Concentration-driven (CMIP5-era [2006-2100] forcing)",
+            "end_year":"2100 or 2300",
+            "experiment":"future projection based on CMIP5-era RCP6.0 scenario (CMIP5-era [2006-2100] forcing)",
+            "experiment_id":"rcp60-cmip5",
+            "min_number_yrs_per_sim":"95",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "historical-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"2006",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
+        "rcp85-cmip5":{
+            "activity_id":[
+                "ScenarioMIP"
+            ],
+            "additional_allowed_model_components":[
+                "AER",
+                "CHEM",
+                "BGC"
+            ],
+            "description":"future scenario with high radiative forcing by the end of century. Following RCP8.5 global forcing pathway. Concentration-driven (CMIP5-era [2006-2100] forcing)",
+            "end_year":"2100 or 2300",
+            "experiment":"future projection based on CMIP5-era RCP8.5 scenario (CMIP5-era [2006-2100] forcing)",
+            "experiment_id":"rcp85-cmip5",
+            "min_number_yrs_per_sim":"95",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "historical-cmip5"
+            ],
+            "required_model_components":[
+                "AOGCM"
+            ],
+            "start_year":"2006",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
         "spinup-1950":{
             "activity_id":[
                 "HighResMIP"
@@ -7921,9 +8355,9 @@
                 "AER",
                 "BGC"
             ],
-            "description":"Extension of stratospheric-ozone-only run under SSP2-4.5. In models with coupled chemistry, the chemistry scheme should be turned off, and the simulated ensemble mean monthly mean 3D stratospheric ozone concentrations from the SSP2-4.5 simulations should be prescribed. Tropospheric ozone should be fixed at 3D long-term monthly mean piControl values, with a value of 100 ppbv ozone concentration in this piControl climatology used to separate the troposphere from the stratosphere. In models without coupled chemistry the same stratospheric ozone prescribed in SSP2-4.5 should be prescribed. Stratospheric ozone concentrations will be provided by CCMI",
+            "description":"Extension of stratospheric ozone-only run under SSP2-4.5 (ssp245). In models with coupled chemistry, the chemistry scheme should be turned off, and the simulated ensemble mean monthly mean 3D stratospheric ozone concentrations from the SSP2-4.5 simulations should be prescribed. Tropospheric ozone should be fixed at 3D long-term monthly mean piControl values, with a value of 100 ppbv ozone concentration in this piControl climatology used to separate the troposphere from the stratosphere. In models without coupled chemistry the same stratospheric ozone prescribed in SSP2-4.5 should be prescribed. Stratospheric ozone concentrations will be provided by CCMI",
             "end_year":"2100",
-            "experiment":"stratospheric-ozone-only SSP2-4.5 run",
+            "experiment":"stratospheric ozone-only SSP2-4.5 (ssp245) run",
             "experiment_id":"ssp245-stratO3",
             "min_number_yrs_per_sim":"80",
             "parent_activity_id":[
@@ -7980,10 +8414,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with reduced NTCF emissions",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, with low NTCF emissions",
             "experiment_id":"ssp370-lowNTCF",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -7999,6 +8433,35 @@
                 "none"
             ],
             "tier":"1"
+        },
+        "ssp370-lowNTCFCH4":{
+            "activity_id":[
+                "AerChemMIP"
+            ],
+            "additional_allowed_model_components":[
+                "CHEM",
+                "BGC"
+            ],
+            "description":"This experiment is identical to ssp370-lowNTCF except that the methane concentrations also follow the \"low\" scenario from SSP3-7.0_lowNTCF",
+            "end_year":"2100",
+            "experiment":"SSP3-7.0, with low NTCF emissions and methane concentrations",
+            "experiment_id":"ssp370-lowNTCFCH4",
+            "min_number_yrs_per_sim":"86",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "historical"
+            ],
+            "required_model_components":[
+                "AOGCM",
+                "AER"
+            ],
+            "start_year":"2015",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
         },
         "ssp370-ssp126Lu":{
             "activity_id":[
@@ -8067,10 +8530,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with reduced aerosol emissions (from ssp370-lowNTCF), prescribed SSTs",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, prescribed SSTs, with low aerosol emissions",
             "experiment_id":"ssp370SST-lowAer",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -8096,10 +8559,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with reduced black carbon emissions, prescribed SSTs",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, prescribed SSTs, with low black carbon emissions",
             "experiment_id":"ssp370SST-lowBC",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -8124,10 +8587,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with reduced CH4 concentrations, prescribed SSTs",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, prescribed SSTs, with low methane concentrations",
             "experiment_id":"ssp370SST-lowCH4",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -8154,10 +8617,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with reduced NTCF emissions, prescribed SSTs",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, prescribed SSTs, with low NTCF emissions",
             "experiment_id":"ssp370SST-lowNTCF",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -8174,6 +8637,35 @@
             ],
             "tier":"1"
         },
+        "ssp370SST-lowNTCFCH4":{
+            "activity_id":[
+                "AerChemMIP"
+            ],
+            "additional_allowed_model_components":[
+                "CHEM",
+                "BGC"
+            ],
+            "description":"This experiment is identical to ssp370SST-lowNTCF except that the methane concentrations also follow the \"low\" scenario from SSP3-7.0_lowNTCF",
+            "end_year":"2100",
+            "experiment":"SSP3-7.0, prescribed SSTs, with low NTCF emissions and methane concentrations",
+            "experiment_id":"ssp370SST-lowNTCFCH4",
+            "min_number_yrs_per_sim":"86",
+            "parent_activity_id":[
+                "CMIP"
+            ],
+            "parent_experiment_id":[
+                "historical"
+            ],
+            "required_model_components":[
+                "AGCM",
+                "AER"
+            ],
+            "start_year":"2015",
+            "sub_experiment_id":[
+                "none"
+            ],
+            "tier":"3"
+        },
         "ssp370SST-lowO3":{
             "activity_id":[
                 "AerChemMIP"
@@ -8182,10 +8674,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with reduced ozone precursor emissions (from ssp370-lowNTCF), prescribed SSTs",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, prescribed SSTs, with low ozone precursor emissions",
             "experiment_id":"ssp370SST-lowO3",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -8212,10 +8704,10 @@
                 "BGC"
             ],
             "description":"Future SSP3-7.0 with low land use change (from ssp126), prescribed SSTs",
-            "end_year":"2055",
+            "end_year":"2100",
             "experiment":"SSP3-7.0, prescribed SSTs, with SSP1-2.6 land use",
             "experiment_id":"ssp370SST-ssp126Lu",
-            "min_number_yrs_per_sim":"41",
+            "min_number_yrs_per_sim":"86",
             "parent_activity_id":[
                 "CMIP"
             ],
@@ -8787,13 +9279,13 @@
         }
     },
     "version_metadata":{
-        "CV_collection_modified":"Tue Nov  5 16:25:12 2019 -0800",
-        "CV_collection_version":"6.2.39.8",
+        "CV_collection_modified":"Wed May 20 16:39:54 2020 -0700",
+        "CV_collection_version":"6.2.53.0",
         "author":"Paul J. Durack <durack1@llnl.gov>",
-        "experiment_id_CV_modified":"Thu Oct  3 10:54:58 2019 -0700",
-        "experiment_id_CV_note":"Register 3 new FAFMIP experiment_ids",
+        "experiment_id_CV_modified":"Thu May  7 09:08:24 2020 -0700",
+        "experiment_id_CV_note":"Revise experiment_id ssp370-lowNTCFCH4",
         "institution_id":"PCMDI",
-        "previous_commit":"9fdd1b5b82b4ea82e0ed05fe44be85a0d356f5b7",
+        "previous_commit":"284fc5e798e19f44d3c81682f1719c5fa462ad86",
         "specs_doc":"v6.2.7 (10th September 2018; https://goo.gl/v1drZl)"
     }
 }

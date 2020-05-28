@@ -136,7 +136,7 @@ def test_search_results(session):
 
     r3 = search(session, project='cmip6', model='AWI-CM-1-1-MR',
                 experiment='historical', variable='uas', cmor_table='3hr')
-    assert r3[0]['pdir'] == '/g/data1b/oi10/replicas/CMIP6/CMIP/AWI/AWI-CM-1-1-MR/historical/r1i1p1f1/3hr/uas/gn/v20181218'
+    assert r3[0]['pdir'] == '/g/data/oi10/replicas/CMIP6/CMIP/AWI/AWI-CM-1-1-MR/historical/r1i1p1f1/3hr/uas/gn/v20181218'
 
 def test_matching(session):
     facets = {

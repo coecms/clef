@@ -252,8 +252,11 @@ def find_local_path(session, subq):
             .select_from(subq)
             .filter(subq.c.esgf_paths_file_id != None)
             .filter(sa.not_(sa.and_(
-                subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%'),
-                sa.not_(subq.c.esgf_paths_path.like('/g/data1/rr3/publications/CMIP5/%/files/%'))
+                subq.c.esgf_paths_path.like('/g/data/rr3/publications/CMIP5/%'),
+                sa.not_(subq.c.esgf_paths_path.like('/g/data/rr3/publications/CMIP5/%/files/%')))))
+            .filter(sa.not_(sa.and_(
+                subq.c.esgf_paths_path.like('/g/data/fs38/publications/CMIP6/%'),
+                sa.not_(subq.c.esgf_paths_path.like('/g/data/fs38/publications/CMIP6/%/files/%'))
             )))
             .distinct())
 
