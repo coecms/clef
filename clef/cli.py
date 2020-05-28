@@ -406,14 +406,10 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
     ql = find_local_path(s, subq)
 
     if not ctx.obj['flow'] == 'missing':
-        if project == 'CMIP5':
-            # temporary fix to return only one combined path instead of 1 or 2 output ones
-            cpaths = sorted(set(map(fix_path, [p[0] for p in ql], repeat(latest))))
-            for p in cpaths:
-                print(p)
-        else:
-            for result in ql:
-                print(result[0])
+        # temporary fix to return only one combined path instead of 1 or 2 output ones
+        cpaths = sorted(set(map(fix_path, [p[0] for p in ql], repeat(latest))))
+        for p in cpaths:
+            print(p)
 
     qm = find_missing_id(s, subq)
 
