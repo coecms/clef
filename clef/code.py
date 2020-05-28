@@ -246,7 +246,6 @@ def post_local(row):
     return row
 
 
-
 def and_filter(df, cols, fixed, **kwargs):
     """AND filter query results
 

@@ -4,30 +4,29 @@ CREATE OR REPLACE VIEW metadata AS
         md_ingested,
         md_type,
         md_json
-    FROM cmip5_dataset.metadata
+    FROM dataset_cmip5.metadata
     UNION ALL
     SELECT
         md_hash,
         md_ingested,
         md_type,
         md_json
-    FROM cmip6_dataset.metadata;
-
+    FROM dataset_cmip6.metadata;
 
 CREATE OR REPLACE VIEW paths AS
     SELECT
         pa_hash,
-        pa_type,
+        pa_type::path_type,
         pa_path,
         pa_parents
-    FROM cmip5_dataset.paths
+    FROM dataset_cmip5.paths
     UNION ALL
     SELECT
         pa_hash,
-        pa_type,
+        pa_type::path_type,
         pa_path,
         pa_parents
-    FROM cmip6_dataset.paths;
+    FROM dataset_cmip6.paths;
 
 /*
 CREATE OR REPLACE VIEW checksums AS
@@ -54,17 +53,23 @@ CREATE OR REPLACE VIEW checksums AS
 /* Filter to unify the schemas and only return CMIP data files
  */
 CREATE OR REPLACE VIEW esgf_filter AS
-    SELECT paths.pa_hash AS file_id,
+    SELECT
+        pa_hash AS file_id,
         5 AS cmip_era,
-        paths.pa_path AS path
-        FROM cmip5_dataset.paths
-        WHERE (paths.pa_type = ANY (ARRAY['file'::path_type, 'link'::path_type])) 
+        pa_path AS path
+    FROM dataset_cmip5.paths
+    WHERE
+        pa_type in ('file', 'link')
+    AND pa_path LIKE '%.nc'
     UNION ALL
-    SELECT paths.pa_hash AS file_id,
+    SELECT
+        pa_hash AS file_id,
         6 AS cmip_era,
-        paths.pa_path AS path
-        FROM cmip6_dataset.paths
-        WHERE (paths.pa_type = ANY (ARRAY['file'::path_type, 'link'::path_type])); 
+        pa_path AS path
+    FROM dataset_cmip6.paths
+    WHERE
+        pa_type in ('file', 'link')
+    AND pa_path LIKE '%.nc';
 
 
 /* Materialize the filter

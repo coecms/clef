@@ -1,8 +1,12 @@
 Getting Started
 ===============
 
-CleF is presently installed in an anaconda environment, which must be
-loaded before use (on either VDI or Raijin)::
+CleF is presently installed in an anaconda environment under the hh5 project.
+First you will need to get access to this project via https://my.nci.org.au/mancini/project/hh5.
+Once you have confirmation of your membership, you will need to log out and log back into Gadi for the changes to take effect. 
+If you have issues joining this project, please contact us at cws_help@nci.org.au.
+
+Once you have access to hh5, you must load the anaconda environment before use (on either VDI or Gadi)::
 
     $ module use /g/data3/hh5/public/modules
     $ module load conda/analysis3-unstable
