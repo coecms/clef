@@ -2,7 +2,7 @@
 𝄞 `clef <https://clef.readthedocs.io/en/stable>`_
 =============================
 
-CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://climateextremes.org.au>`_ `CMS <https://climate-cms.org>`_ team, powered by `ESGF <https://esgf-node.llnl.gov/>`_ and the `NCI <https://nci.org.au>`_ MAS database
+CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://climateextremes.org.au>`_ `CMS <https://climate-cms.org>`_ team, powered by `ESGF <https://esgf-node.llnl.gov/>`_ and `NCI <https://nci.org.au>`_
 
 .. image:: https://readthedocs.org/projects/clef/badge/?version=latest
   :target: https://clef.readthedocs.io/en/stable/
@@ -49,7 +49,7 @@ You can install it to your own environment with::
 
     conda install -c coecms -c conda-forge clef
 
-But note that the MAS database necessary for running ``clef`` can only be accessed
+But note that the database necessary for running ``clef`` can only be accessed
 from NCI systems
 
 ---

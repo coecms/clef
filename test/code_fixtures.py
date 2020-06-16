@@ -62,7 +62,7 @@ def c5_keys(request):
 @pytest.fixture(scope="module")
 def local_results():
     """
-    A successful local CMIP5 MAS query returning a list of dictionaries
+    A successful local CMIP5 database query returning a list of dictionaries
     """
     results =  [
 # mod1 has both pr and tas for r1 but not for r2 version is always v1

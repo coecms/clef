@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Functions for searching the ESGF and matching the results against the MAS
+Functions for searching the ESGF and matching the results against the CLEF
 database
 
 * :func:`esgf_query` performs a query against the ESGF web API.
@@ -155,7 +155,7 @@ def find_checksum_id(query, **kwargs):
          * dataset_id
          * title
          * version
-        This table can be joined against the MAS database tables
+        This table can be joined against the CLEF database tables
     """
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)

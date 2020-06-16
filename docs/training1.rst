@@ -24,7 +24,7 @@ Command syntax
     
     Options:
       --remote   returns only ESGF search results
-      --local    returns only local files matching arguments in MAS database
+      --local    returns only local files matching arguments in the CLEF database
       --missing  returns only missing files matching ESGF search
       --request  send NCI request to download missing files matching ESGF search
       --debug    Show debug info

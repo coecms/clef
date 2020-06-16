@@ -49,7 +49,7 @@ def search(session, project='CMIP5', latest=True, **kwargs):
 
 
 def local_query(session, project='CMIP5', latest=True, **kwargs):
-    '''Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
+    '''Query CLEF DB matching directly the constraints to the file attributes instead of querying first the ESGF
     :input: session the db session
     :input: project 'CMIP5' by default
     :input: latest True by default
@@ -113,7 +113,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     return results
 
 def get_version(path):
-    '''Retrieve version from path if not available in MAS
+    '''Retrieve version from path if not available in CLEF DB
     '''
     mo = re.search(r'v\d{8}', path)
     if mo:

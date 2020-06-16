@@ -5,7 +5,7 @@ The **code** sub-module contains functions which are used to run *--local* optio
 
     from clef.code import *
 
-After importing them you need to open a connection with the NCI MAS database to be able to run your queries::
+After importing them you need to open a connection with the CLEF database to be able to run your queries::
 
     db = connect()
     s = Session()

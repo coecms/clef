@@ -85,7 +85,7 @@ grid. This doesn’t indicate a grid common to all the CMIP6 output only
 to the model itself, the same is true for member_id and other
 attributes.
 
-*–local* is actually executing the query directly on the NCI MAS
+*–local* is actually executing the query directly on the CLEF
 database, which is different from the default query where the search is
 executed first on the ESGF and then its results are matched locally. In
 the example above the final result is exactly the same, whichever way we
