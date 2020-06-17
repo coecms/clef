@@ -2,13 +2,13 @@ run_conda: &run_conda
     docker:
         - image: circleci/python
           environment:
-              ARCCSSIVE_DB: postgresql://postgres:@localhost/postgres
+              ARCCSSIVE_DB: postgresql://postgres:password@localhost/postgres
               LC_ALL: C.UTF-8
         - image: circleci/postgres:9.6
           environment:
               POSTGRES_USER: postgres
               POSTGRES_DB: postgres
-              POSTGRES_PASSWORD: ''
+              POSTGRES_PASSWORD: password
     steps:
         - checkout
         - run:
