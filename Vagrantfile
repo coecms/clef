@@ -65,7 +65,7 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     set -x
-    sudo yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm epel-release
+    sudo yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm epel-release
     sudo yum install -y postgresql96-server postgresql96-contrib
     sudo /usr/pgsql-9.6/bin/postgresql96-setup initdb
     echo "host all all 0.0.0.0/0 trust" | sudo tee -a /var/lib/pgsql/9.6/data/pg_hba.conf
