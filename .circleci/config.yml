@@ -36,7 +36,7 @@ run_conda: &run_conda
             name: report-coverage
             when: always
             command: |
-                bash <(curl -Ls https://coverage.codacy.com/get.sh) -r /tmp/artefacts/tests/pytest/coverage.xml
+                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r /tmp/artefacts/tests/pytest/coverage.xml
                 bash <(curl -s https://codecov.io/bash) -f /tmp/artefacts/tests/pytest/coverage.xml
         - persist_to_workspace:
             root: /tmp/artefacts/persist
