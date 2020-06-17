@@ -42,7 +42,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query=None, fields=[], otype='File', limit=10000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
+def esgf_query(query=None, fields=None, otype='File', limit=10000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
