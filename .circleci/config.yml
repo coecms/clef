@@ -32,12 +32,15 @@ run_conda: &run_conda
                 mv conda/run_test_coverage.sh conda/run_test.sh
                 conda build conda -c conda-forge --python=${PYTHON_VER} --output-folder /tmp/artefacts
                 cp /tmp/artefacts/*/*.tar.bz2 /tmp/artefacts/persist
+                find /tmp/artefacts
         - run:
             name: report-coverage
             when: always
             command: |
                 source ~/miniconda/bin/activate
                 pip install codacy-coverage
+                find /tmp/artefacts
+                cat /tmp/artefacts/tests/pytest/coverage.xml
                 python-codacy-coverage -r /tmp/artefacts/tests/pytest/coverage.xml
                 bash <(curl -s https://codecov.io/bash) -f /tmp/artefacts/tests/pytest/coverage.xml
         - persist_to_workspace:
