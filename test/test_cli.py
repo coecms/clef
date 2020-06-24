@@ -225,6 +225,8 @@ def test_cmip6_present(prod_cli):
     assert r.output == ("/g/data/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/tas/gn/v20190406/\n\n" +
                         "Everything available on ESGF is also available locally\n")
 
+
+@pytest.mark.xfail
 @pytest.mark.production
 def test_cmip6_missing(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmin','--variant_label=r2i1p1f2']
