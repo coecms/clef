@@ -38,7 +38,7 @@ def search(session, project='CMIP5', latest=True, **kwargs):
 
     Can be used when in python script, first checks that the arguments names
        and values are correct, changes model name where necessary. Then calls local_query
-       to run the query on MAS.
+       to run the query on DB.
 
     Args:
         session (SQLAlchemy obj): the db session
@@ -145,13 +145,17 @@ def call_local_query(s, project, latest, **kwargs):
     paths = []
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
+         #clef_log.debug(f'comb: {c}')
+         print(f'comb: {c}')
          datasets = datasets.append(local_query(s,project=project, latest=latest, **c), ignore_index=True)
+         #clef_log.debug(f"paths list: {datasets['path']}")
+         print(f"paths list: {datasets['path']}")
     paths = datasets['path'].tolist()
     return datasets, paths
 
 
 def local_query(session, project='CMIP5', latest=True, **kwargs):
-    """Query MAS matching directly the constraints to the file attributes instead of querying first the ESGF
+    """Query DB matching directly the constraints to the file attributes instead of querying first the ESGF
 
     Args:
         session (SQLAlchemy session obj): database session
@@ -171,6 +175,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pd.read_sql(r.selectable, con=session.connection())
     df = df.rename(columns={'path': 'opath'})
+    print(f"first dataframe {df}")
 
     # fix path by substituing output1/2 with combined, separate path from filenames
     fix_paths = df['opath'].apply(fix_path, latest=latest)
@@ -187,7 +192,9 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     # remove unuseful columns
     todel = ['opath','r','i','p','f','period']
     cols = [c for c in todel if c in res.columns]
+    print(f"columns {cols}")
     res = res.drop(columns=cols)
+    print(f"last dataframe {res}")
     return res
 
 
@@ -209,6 +216,8 @@ def build_query(session, project, **kwargs):
         var = kwargs.pop('variable')
     if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')
+    if project == 'CMIP6' and 'activity_id' in kwargs.keys():
+        activity = kwargs.pop('activity_id')
     ctables={'CMIP5': [C5Dataset, Path.c5dataset],
           'CMIP6': [C6Dataset, Path.c6dataset]}
     family_dict = {'RCP': ['%rcp%'],
@@ -230,6 +239,8 @@ def build_query(session, project, **kwargs):
           r =r.filter(C5Dataset.experiment.like(any_(family_dict[family])))
     if 'var' in locals(): 
         r = r.filter(ExtendedMetadata.variable == var)
+    if 'activity' in locals():
+          r =r.filter(C6Dataset.activity_id.like("%"+activity+"%"))
     return r
 
 

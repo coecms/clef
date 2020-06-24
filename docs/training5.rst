@@ -15,7 +15,7 @@ results in a csv file. rather than getting only the files path, it will
 list all the available attributes. This currently works only with the
 *–local* option, it doesn’t yet work for the standard search or remote.
 These last both perform an ESGF query rather than searching directly the
-MAS database as *local* so they need to be treated differently. We are
+local database as *local* so they need to be treated differently. We are
 still working on this.::
 
     !clef --local cmip6 -v pr -v mrso -e piControl  -mi r1i1p1f1 --frequency mon --and variable_id --csv

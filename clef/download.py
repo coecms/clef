@@ -31,7 +31,7 @@ def write_request(project, missing):
  
     Args:
         project (string): project, i.e. CMIP5/CMIP6
-        missing (list): dataset_id not yet on MAS or in the download queue 
+        missing (list): dataset_id not yet on local db or in the download queue 
     """
 
     user = os.environ.get('USER', 'unknown')

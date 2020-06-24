@@ -48,7 +48,7 @@ def clef_catch():
 @click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote',
                help="returns only ESGF search results")
 @click.option('--local', 'flow', is_flag=True, default=False, flag_value='local',
-               help="returns only local files matching arguments in MAS database")
+               help="returns only local files matching arguments in local database")
 
 @click.option('--missing', 'flow', is_flag=True, default=False, flag_value='missing',
                help="returns only missing files matching ESGF search")
@@ -372,7 +372,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             write_csv(results)
         return
 
-    # if local query MAS based on attributes not checksums
+    # if local, query DB based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
@@ -390,7 +390,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             print_stats(results)
         return
 
-    # if not local, query ESGF first and then MAS based on checksums
+    # if not local, query ESGF first and then DB based on checksums
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
             replica=replica,

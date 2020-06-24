@@ -26,7 +26,7 @@ from .exception import ClefException
 
 
 def get_version(path):
-    """Retrieve version from path if not available in MAS
+    """Retrieve version from path if not available in local database 
 
     Args:
         path (str): data directory path

@@ -15,9 +15,9 @@
 # limitations under the License.
 
 """
-Model of NCI's MAS database
+Model of NCI's clef.nci.org.au database
 
-The MAS database has two main tables - ``path`` and ``metadata``. These base
+The database has two main tables - ``path`` and ``metadata``. These base
 tables are available in the model as :class:`Path` and :class:`Metadata`, they
 have a SQLAlchemy relationship so that the two table can be joined in queries.
 

@@ -19,7 +19,7 @@ Database connection functions
 
 .. class:: clef.db.Session
 
-    :class:`sqlalchemy.orm.session.Session` connected to the MAS database
+    :class:`sqlalchemy.orm.session.Session` connected to the clef.nci.org.au database
 
     :func:`connect()` must be called before creating any new sessions
 """
@@ -41,7 +41,7 @@ Session = sessionmaker()
 
 
 def connect(url=default_url, user=None, debug=False):
-    """Connect to the MAS database and sets up the session
+    """Connect to the local database and sets up the session
 
     Args:
         url: Database URL
@@ -67,7 +67,7 @@ def connect(url=default_url, user=None, debug=False):
         c = engine.connect()
         c.close()
     except sqlalchemy.exc.OperationalError:
-        raise ClefException('Failed to authenticate with NCI MAS database\n'+
+        raise ClefException('Failed to authenticate with NCI clef.nci.org.au database\n'+
                             'You need to be part of one of the CMIP groups: oi10, al33, rr3.\n'+
                             'If you are already please contact the NCI helpdesk')
 

@@ -5,7 +5,7 @@ Four optional flags are available for the **cmip5** and **cmip6** commands to ch
 
  * :code:`clef --remote cmip5` returns all the ESGF CMIP5/CMIP6 datasets  matching the constraints, it is the equivalent of doing a search online on an ESGF node 
 
- * :code:`clef --local cmip5` finds local files accessing directly the NCI's MAS database so it will also return older versions or datasets that might be temporarily offline.
+ * :code:`clef --local cmip5` finds local files accessing directly the NCI's clef.nci.org.au database so it will also return older versions or datasets that might be temporarily offline.
 
  * :code:`clef --missing cmip6` finds files on ESGF that haven't been downloaded to NCI
 

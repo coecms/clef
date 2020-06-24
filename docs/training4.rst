@@ -138,7 +138,7 @@ AND filter applied to remote ESGF query
 You can of course do the same query for CMIP5, in that case you can omit
 *project* when calling the function since its default value is ‘CMIP5’.
 Another default option is *local=True*, this says the function to perfom
-this query directly on MAS if you want you can perform the same query on
+this query directly on the local database if you want you can perform the same query on
 the ESGF database, so you can see what has been published.::
 
     constraints = {'variable': ['tasmin','tasmax'], 'cmor_table': ['Amon'], 'experiment': ['historical','rcp26', 'rcp85']}
