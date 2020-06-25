@@ -13,22 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
-from .db import connect, Session
-from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
-from .download import *
-from . import collections as colls
-from .exception import ClefException
-from .code import load_vocabularies, call_local_query, fix_model, fix_path, matching, write_csv, print_stats, ids_dict
+
+
 import click
 import logging
-from datetime import datetime
 import sys
-import six
 import os
 import stat
-import pkg_resources
+
 from itertools import repeat
+from datetime import datetime
+
+from .db import connect, Session
+from .esgf import match_query, find_local_path, find_missing_id, find_checksum_id
+from .download import write_request, search_queue_csv 
+from . import collections as colls
+from .exception import ClefException
+from .code import call_local_query, matching, write_csv, print_stats, ids_df
+from .helpers import load_vocabularies, fix_model, fix_path
+
 
 def clef_catch():
     debug_logger = logging.getLogger('clef_debug')
@@ -45,7 +48,7 @@ def clef_catch():
 @click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote',
                help="returns only ESGF search results")
 @click.option('--local', 'flow', is_flag=True, default=False, flag_value='local',
-               help="returns only local files matching arguments in MAS database")
+               help="returns only local files matching arguments in local database")
 
 @click.option('--missing', 'flow', is_flag=True, default=False, flag_value='missing',
                help="returns only missing files matching ESGF search")
@@ -103,21 +106,23 @@ def warning(message):
 
 
 def cmip5_args(f):
-    models, realms, variables, frequencies, tables, experiments, attributes, families = load_vocabularies('CMIP5')
+    """Define CMIP5 only click arguments
+    """
+    vocab = load_vocabularies('CMIP5')
     constraints = [
-        click.option('--experiment', '-e', multiple=True, type=click.Choice(experiments), metavar='x',
+        click.option('--experiment', '-e', multiple=True, type=click.Choice(vocab['experiment']), metavar='x',
                       help="CMIP5 experiment: piControl, rcp85, amip ..."),
-        click.option('--experiment_family',multiple=False, type=click.Choice(families),
+        click.option('--experiment_family',multiple=False, type=click.Choice(vocab['experiment_family']),
                       help="CMIP5 experiment family: Decadal, RCP ..."),
-        click.option('--model', '-m', multiple=True, type=click.Choice(models),  metavar='x',
+        click.option('--model', '-m', multiple=True, type=click.Choice(vocab['model']),  metavar='x',
                       help="CMIP5 model acronym: ACCESS1.3, MIROC5 ..."),
-        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(tables) ),
-        click.option('--variable', '-v', multiple=True, type=click.Choice(variables), metavar='x',
+        click.option('--table', '--mip', '-t', 'cmor_table', multiple=True, type=click.Choice(vocab['cmor_table']) ),
+        click.option('--variable', '-v', multiple=True, type=click.Choice(vocab['variable']), metavar='x',
                       help="Variable name as shown in filanames: tas, pr, sic ... "),
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
-        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(frequencies) ),
-        click.option('--realm', multiple=True, type=click.Choice(realms) ),
-        click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
+        click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(vocab['time_frequency']) ),
+        click.option('--realm', multiple=True, type=click.Choice(vocab['realm']) ),
+        click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values")),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
     ]
@@ -126,11 +131,11 @@ def cmip5_args(f):
     return f
 
 def common_args(f):
+    """Define common click arguments
+    """
     constraints = [
         click.argument('query', nargs=-1),
         click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
-        click.option('--format', 'oformat', type=click.Choice(['file','dataset']), default='dataset',
-                     help="Return output for datasets (default) or individual files"),
         click.option('--latest/--all-versions', 'latest', default=True,
                      help="Return only the latest version or all of them. Default: --latest"),
         click.option('--replica/--no-replica', default=False,
@@ -149,30 +154,31 @@ def common_args(f):
     return f
 
 def cmip6_args(f):
-    #
-    models, realms, variables, frequencies, tables, experiments, attributes, activities, stypes = load_vocabularies('CMIP6')
+    """Define CMIP6 only click arguments
+    """
+    vocab = load_vocabularies('CMIP6')
     constraints = [
-        click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(activities) ) ,
-        click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(experiments), metavar='x',
-                     help="CMIP6 experiment, list of available depends on activity"),
-        click.option('--source_type',multiple=True, type=click.Choice(stypes) ),
-        click.option('--table', '-t', 'table_id', multiple=True, type=click.Choice(tables), metavar='x',
+        click.option('--activity', '-mip', 'activity_id', multiple=True, type=click.Choice(vocab['activity_id']) ) ,
+        click.option('--experiment', '-e', 'experiment_id', multiple=True, type=click.Choice(vocab['experiment_id']),
+                     metavar='x', help="CMIP6 experiment, list of available depends on activity"),
+        click.option('--source_type',multiple=True, type=click.Choice(vocab['source_type']) ),
+        click.option('--table', '-t', 'table_id', multiple=True, type=click.Choice(vocab['table_id']), metavar='x',
                      help="CMIP6 CMOR table: Amon, SIday, Oday ..."),
-        click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(models),  metavar='x',
-                     help="CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ..."),
-        click.option('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(variables),  metavar='x',
-                     help="CMIP6 variable name as in filenames"),
+        click.option('--model', '--source_id','-m', 'source_id', multiple=True, type=click.Choice(vocab['source_id']),
+                     metavar='x', help="CMIP6 model id: GFDL-AM4, CNRM-CM6-1 ..."),
+        click.option('--variable', 'variable_id', '-v', multiple=True, type=click.Choice(vocab['variable_id']),
+                     metavar='x', help="CMIP6 variable name as in filenames"),
         click.option('--member', '-mi', 'member_id', multiple=True, help="CMIP6 member id: <sub-exp-id>-r#i#p#f#"),
         click.option('--grid', '--grid_label', '-g', 'grid_label', multiple=True,
                      help="CMIP6 grid label: i.e. gn for the model native grid"),
         click.option('--resolution', '--nominal_resolution','-nr' , 'nominal_resolution', multiple=True,
                      help="Approximate resolution: '250 km', pass in quotes"),
-        click.option('--frequency',multiple=True, type=click.Choice(frequencies) ),
-        click.option('--realm', multiple=True, type=click.Choice(realms) ),
+        click.option('--frequency',multiple=True, type=click.Choice(vocab['frequency']) ),
+        click.option('--realm', multiple=True, type=click.Choice(vocab['realm']) ),
         click.option('--sub_experiment_id', '-se', multiple=True,
                      help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
-        click.option('--and', 'and_attr', multiple=True, type=click.Choice(attributes),
+        click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
         click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
@@ -216,7 +222,7 @@ def ds_args(f):
 @cmip5_args
 @common_args
 @click.pass_context
-def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
+def cmip5(ctx, query, debug, distrib, replica, latest, csvf, stats,
         cf_standard_name,
         ensemble,
         experiment,
@@ -256,14 +262,14 @@ def cmip5(ctx, query, debug, distrib, replica, latest, oformat, csvf, stats,
         'variable': variable,
         'experiment_family': experiment_family
         }
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, cf_standard_name, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
 @cmip6_args
 @common_args
 @click.pass_context
-def cmip6(ctx,query, debug, distrib, replica, latest, oformat, csvf, stats,
+def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         cf_standard_name,
         variant_label,
         member_id,
@@ -307,11 +313,11 @@ def cmip6(ctx,query, debug, distrib, replica, latest, oformat, csvf, stats,
         'variant_label': variant_label,
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
+    common_esgf_cli(ctx, project, query, cf_standard_name, latest,
         replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
+def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
                replica, distrib, csvf, stats, debug, constraints, and_attr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -334,7 +340,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
 
     terms = {}
     # Add filters
-    for key, value in six.iteritems(constraints):
+    for key, value in constraints.items():
         if value is not None and len(value) > 0:
             terms[key] = value
 
@@ -342,8 +348,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=False, latest=latest, **terms)
-            for row in selection:
-                print(*[row[x] for x in matching_fixed[project]], row['version'])
+            for row in selection.itertuples():
+                print(f"{row.Index[0]}-{row.Index[1]}:  {', '.join([v[0] for v in row.version])}")
         else:
             q = find_checksum_id(' '.join(query),
                 distrib=distrib,
@@ -354,32 +360,27 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
                 **constraints,
                 )
 
-            if oformat == 'file':
-                for result in s.query(q):
-                    print(result.id)
-                return
-            else:
-                ids=sorted(set(x.dataset_id for x in s.query(q)))
+            ids=sorted(set(x.dataset_id for x in s.query(q)))
 # when stats or csvf are True first extract attributes from dataset_ids
-                if stats or csvf:
-                    results = ids_dict(ids)
-                for did in ids:
-                    print(did)
+            if stats or csvf:
+                results = ids_df(ids)
+            for did in ids:
+                print(did)
         if stats:
             print_stats(results)
         if csvf:
             write_csv(results)
         return
 
-    # if local query MAS based on attributes not checksums
+    # if local, query DB based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=True, latest=latest, **terms)
-            for row in selection:
-                print(*[row[x] for x in matching_fixed[project]], row['version'])
+            for row in selection.itertuples():
+                print(f"{row.Index[0]}-{row.Index[1]}:  version {str(row.version)[1:-1]}")
         else:
-            results, paths = call_local_query(s, project, oformat, latest, **terms)
+            results, paths = call_local_query(s, project, latest, **terms)
             if not stats:
                 for p in paths:
                     print(p)
@@ -389,7 +390,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
             print_stats(results)
         return
 
-    # if not local, query ESGF first and then MAS based on checksums
+    # if not local, query ESGF first and then DB based on checksums
     subq = match_query(s, query=' '.join(query),
             distrib=distrib,
             replica=replica,
@@ -402,19 +403,15 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, oformat, latest,
     # Make sure that if find_local_path does an all-version search using the
     # filename, the resulting project is still CMIP6 (and not say a PMIP file
     # with the same name)
-    ql = find_local_path(s, subq, oformat=oformat)
+    ql = find_local_path(s, subq)
 
     if not ctx.obj['flow'] == 'missing':
-        if project == 'CMIP5':
-            # temporary fix to return only one combined path instead of 1 or 2 output ones
-            cpaths = sorted(set(map(fix_path, [p[0] for p in ql], repeat(latest))))
-            for p in cpaths:
-                print(p)
-        else:
-            for result in ql:
-                print(result[0])
+        # temporary fix to return only one combined path instead of 1 or 2 output ones
+        cpaths = sorted(set(map(fix_path, [p[0] for p in ql], repeat(latest))))
+        for p in cpaths:
+            print(p)
 
-    qm = find_missing_id(s, subq, oformat=oformat)
+    qm = find_missing_id(s, subq)
 
     # if there are missing datasets, search for dataset_id in synda queue,
     #  update list and print result

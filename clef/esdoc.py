@@ -13,13 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#from .db import connect, Session
-#from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
-#from .exception import ClefException
-#from .esgf import esgf_query
+
+
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
+import pkg_resources
+import json
+
+from bs4 import BeautifulSoup
+from datetime import date
 
 
 def esdoc_urls(dataset_ids):
@@ -52,13 +54,14 @@ def get_wdcc(dataset_id):
         entry="*".join(dataset_id.split(".")[0:4])
         wdcc_url = wdcc_root + f'solr/{settings}&q=entry_name_s:{entry}'
     elif project == 'CMIP6':
-        entry=".".join(dataset_id.split(".")[0:4])
-        wdcc_url = wdcc_root + f'cerarest/exportcmip6?input={entry}'
+        entry=".".join(dataset_id.split(".")[0:5])
+        #wdcc_url = wdcc_root + f'cerarest/exportcmip6?input={entry}'
+        wdcc_url = wdcc_root + f'cerarest/cmip6?input={entry}'
     else:
         print('No wdcc documents available for this project')
         return None, None
     r = requests.get(wdcc_url)
-    return wdcc_url, r.json()
+    return wdcc_url, r
 
 
 def print_model(tables):
@@ -107,6 +110,7 @@ def get_doc(dtype, name, project='CMIP6'):
         print_doc(tables, dtype)
     return service
 
+
 def errata(tracking_id):
     '''Return errata uids connected to a tracking id
     '''
@@ -140,6 +144,25 @@ def print_error(uid):
         print(f'Status: {error[k]["status"]}')
         print(f'Description: {error[k]["description"]}')
 
-
-#url, data = get_wdcc('CMIP5.output1.MIROC.MIROC5.historical.r1i1p1')
-#print(data)
+def cite(dids):
+    '''Retrieve citations for a list of CMIP6 dataset ids'''
+    citations = []
+    url = 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cmip6?input=' 
+    #fexp = pkg_resources.resource_filename(__name__, 'data/CMIP6_exp_act.json')
+    #with open(fexp, 'r') as f:
+    #     data = json.loads(f.read())
+    for did in dids:
+# get facets from did to build correct url
+        did_bits = did.split(".")
+        version = did_bits[9]
+        newdid = ".".join(did_bits[0:5])
+        response = requests.get(url+newdid, headers={"User-Agent": "Requests"})
+        soup = BeautifulSoup(response.content, 'lxml')
+        el = soup.find('dt', text="Citation")
+        cite = el.next_sibling.text.replace(" BibTeX  RIS","")
+        if version == 'none':
+            now = date.today()
+            citations.append(cite.replace("Version YYYYMMDD[1]",f'Accessed on {now}'))
+        else:
+            citations.append(cite.replace("YYYYMMDD[1]",version))
+    return citations

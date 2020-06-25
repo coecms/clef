@@ -2,13 +2,13 @@ run_conda: &run_conda
     docker:
         - image: circleci/python
           environment:
-              ARCCSSIVE_DB: postgresql://postgres:@localhost/postgres
+              ARCCSSIVE_DB: postgresql://postgres:password@localhost/postgres
               LC_ALL: C.UTF-8
         - image: circleci/postgres:9.6
           environment:
               POSTGRES_USER: postgres
               POSTGRES_DB: postgres
-              POSTGRES_PASSWORD: ''
+              POSTGRES_PASSWORD: password
     steps:
         - checkout
         - run:
@@ -36,15 +36,15 @@ run_conda: &run_conda
             name: report-coverage
             when: always
             command: |
-                source ~/miniconda/bin/activate
-                pip install codacy-coverage
-                python-codacy-coverage -r /tmp/artefacts/tests/pytest/coverage.xml
+                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r /tmp/artefacts/tests/pytest/coverage.xml
                 bash <(curl -s https://codecov.io/bash) -f /tmp/artefacts/tests/pytest/coverage.xml
         - persist_to_workspace:
             root: /tmp/artefacts/persist
             paths: '*'
+            when: always
         - store_test_results:
             path: /tmp/artefacts/tests
+            when: always
 
 version: 2
 jobs:

@@ -130,7 +130,7 @@ def test_checksum_id_empty(session):
     Raise an exception if not matches found on ESGF
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=empty_query):
-        with pytest.raises(SystemExit):
+        with pytest.raises(ClefException):
             table = find_checksum_id('')
 
 def test_checksum_id_missing(session):
@@ -221,16 +221,16 @@ def test_find_local_path_updated_latest(session):
 def test_find_missing_id_dataset(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         subq = match_query(session, '')
-        results = find_missing_id(session, subq, oformat='dataset')
+        results = find_missing_id(session, subq)
         assert results.count() == 1
         assert results[0][0] == 'dataset_bar'
 
 def test_find_local_path_dataset(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         subq = match_query(session, '')
-        results = find_local_path(session, subq, oformat='dataset')
+        results = find_local_path(session, subq)
         assert results.count() == 1
-        assert results[0][0] == '/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/files/clt_20121011/'
+        assert results[0][0] == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/files/clt_20121011/'
 
 def test_find_partial_dataset(session):
     """
@@ -239,7 +239,7 @@ def test_find_partial_dataset(session):
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         subq = match_query(session, '')
-        results = find_local_path(session, subq, oformat='dataset')
+        results = find_local_path(session, subq)
         assert results.count() == 0
 
 

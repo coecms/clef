@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2017 ARC Centre of Excellence for Climate Systems Science
+# Copyright 2017 ARC Centre of Excellence for Climate Extremes 
 # author: Scott Wales <scott.wales@unimelb.edu.au>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,9 @@
 # limitations under the License.
 
 """
-Model of NCI's MAS database
+Model of NCI's clef.nci.org.au database
 
-The MAS database has two main tables - ``path`` and ``metadata``. These base
+The database has two main tables - ``path`` and ``metadata``. These base
 tables are available in the model as :class:`Path` and :class:`Metadata`, they
 have a SQLAlchemy relationship so that the two table can be joined in queries.
 
@@ -34,13 +34,13 @@ database from a ``DISTINCT`` view of the NetCDF attributes, and can be used to
 group paths on the filesystem into datasets.
 """
 
-from __future__ import print_function
 
 from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
 from sqlalchemy.orm import relationship
+
 
 Base = declarative_base()
 

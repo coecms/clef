@@ -21,8 +21,10 @@ import pytest
 import os
 import sqlalchemy as sa
 
-raijin_only = pytest.mark.skipif(not os.environ.get('HOSTNAME', '').startswith('raijin'),
-        reason="Test only available on Raijin")
+#raijin_only = pytest.mark.skipif(not os.environ.get('HOSTNAME', '').startswith('raijin'),
+#        reason="Test only available on Raijin")
+gadi_only = pytest.mark.skipif(not os.environ.get('HOSTNAME', '').startswith('gadi'),
+        reason="Test only available on Gadi")
 
 
 @pytest.fixture(scope='session')

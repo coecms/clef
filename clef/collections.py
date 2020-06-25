@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+
 import os
 
 from sqlalchemy import create_engine
@@ -118,7 +119,7 @@ class Session(object):
         return datasets, variables, True
 
 # Default collections database
-default_db = 'sqlite:////g/data1/ua8/Download/clef.db'
+default_db = 'sqlite:////g/data/ua8/Download/clef.db'
 
 def connect(path = None):
     """Connect to the not-ESGF datasets catalog

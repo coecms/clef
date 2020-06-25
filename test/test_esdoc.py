@@ -16,6 +16,7 @@
 
 from clef.esdoc import *
 from esdoc_fixtures import *
+from code_fixtures import dids6
 #import pytest
 
 def test_esdoc_urls():
@@ -36,11 +37,13 @@ def test_get_doc():
 
 def test_get_wdcc():
     did='CMIP6.CMIP.MRI.MRI-ESM2-0.historical.none.r1i1p1f1'
-    url, json6 = get_wdcc(did)
-    assert url == 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cerarest/exportcmip6?input=CMIP6.CMIP.MRI.MRI-ESM2-0'
-    assert json6['identifier']['id'] == '10.22033/ESGF/CMIP6.621'
+    url, res6 = get_wdcc(did)
+    json6 = res6.json()
+    assert url == 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cerarest/cmip6?input=CMIP6.CMIP.MRI.MRI-ESM2-0.historical'
+    assert json6['identifier']['id'] == '10.22033/ESGF/CMIP6.6842'
     did='cmip5.output1.MIROC.MIROC5.historical.mon.atmos.Amon.r1i1p1.v20111028'
-    url, json5 = get_wdcc(did)
+    url, res5 = get_wdcc(did)
+    json5 = res5.json()
     assert url == ("https://cera-www.dkrz.de/WDCC/ui/cerasearch/solr/select?" +
                    "rows=1&wt=json&q=entry_name_s:cmip5*output1*MIROC*MIROC5")
     assert json5['response']['docs'][0]['entry_name_s'] == "cmip5 output1 MIROC MIROC5"
@@ -56,4 +59,5 @@ def test_errata():
 def test_retrieve_error(test_error):
     assert retrieve_error('ce889690-1ef3-6f46-9152-ccb27fc42490') ==  test_error
 
-
+def test_cite(dids6, citations):
+    assert cite(dids6) == citations

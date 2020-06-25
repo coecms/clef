@@ -1,5 +1,5 @@
 {
-    "models": [
+    "source_id": [
         "4AOP-v1-5",
         "ACCESS-CM2",
         "ACCESS-ESM1-5",
@@ -135,7 +135,7 @@
         "UofT-CCSM4",
         "VRESM-1-0"
     ],
-    "realms": [
+    "realm": [
         "aerosol",
         "atmos",
         "atmosChem",
@@ -145,7 +145,7 @@
         "ocnBgchem",
         "seaIce"
     ],
-    "variables": [
+    "variable_id": [
         "abs550aer",
         "acabf",
         "acabfIs",
@@ -1418,7 +1418,7 @@
         "zvelbase",
         "zvelsurf"
     ],
-    "frequencies": [
+    "frequency": [
         "1hr",
         "1hrCM",
         "1hrPt",
@@ -1436,7 +1436,7 @@
         "yr",
         "yrPt"
     ],
-    "tables": [
+    "table_id": [
         "3hr",
         "6hrLev",
         "6hrPlev",
@@ -1481,7 +1481,7 @@
         "day",
         "fx"
     ],
-    "experiments": [
+    "experiment_id": [
         "1pctCO2",
         "1pctCO2-4xext",
         "1pctCO2-bgc",
@@ -1814,7 +1814,7 @@
         "nominal_resolution",
         "sub_experiment_id"
     ],
-    "activities": [
+    "activity_id": [
         "AerChemMIP",
         "C4MIP",
         "CDRMIP",
@@ -1840,7 +1840,7 @@
         "VIACSAB",
         "VolMIP"
     ],
-    "source_types": [
+    "source_type": [
         "AER",
         "AGCM",
         "AOGCM",
