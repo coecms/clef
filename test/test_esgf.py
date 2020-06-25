@@ -130,7 +130,7 @@ def test_checksum_id_empty(session):
     Raise an exception if not matches found on ESGF
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=empty_query):
-        with pytest.raises(SystemExit):
+        with pytest.raises(ClefException):
             table = find_checksum_id('')
 
 def test_checksum_id_missing(session):

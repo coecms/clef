@@ -95,6 +95,8 @@ def test_fix_path():
     dir4 =  dir3.replace('output1', 'unsolicited')
     dir5 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
     dir6 = '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/files/d20191115/'
+    dir7 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/mon/atmos/Amon/r2i1p1/v20120323/ta/'
+    dir8 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/day/atmos/day/r10i1p1/files/tasmax_20110518/'
     fname = 'name.nc'
     latest=True
     assert fix_path(dir1, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/'
@@ -105,10 +107,12 @@ def test_fix_path():
     assert fix_path(dir4, latest) == '/g/data/al33/replicas/CMIP5/combined/more/v20120316/tas/'
     assert fix_path(dir5, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/pr/'
     assert fix_path(dir6, latest) == '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/v20191115/'
+    assert fix_path(dir8, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/day/atmos/day/r10i1p1/files/tasmax_20110518/'
     latest=False
     assert fix_path(dir5, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
     assert fix_path(dir6, latest) == '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/v20191115/'
     assert fix_path(dir6+fname, latest) == '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/v20191115/'
+    assert fix_path(dir7, latest) == '/path/todelete/'
 
 
 def test_get_version():

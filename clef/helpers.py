@@ -268,8 +268,11 @@ def fix_model(project, models, invert=False):
 
 
 def fix_path(path, latest):
-    """Get path from query results and replace al33 output1/2 dirs to combined
-        and rr3 ACCESS "/files/" path to "/latest/"
+    """Get path from query results and replace:
+       - al33 output1/2 dirs to combined
+       - rr3 ACCESS "/files/" path to "/latest/"
+       - rr3 Mk3.6 remove version dir leaves  files
+       - fs38 replace d+date with v+date
 
     Args:
 
@@ -282,6 +285,9 @@ def fix_path(path, latest):
         dirs=path.split("/")
         var = dirs[-2].split("_")[0]
         return "/".join(dirs[0:-3]+['latest',var,dirs[-1]])
+    # added to eliminate wrong paths for mk3.6.0 once that is fixed might be removed
+    elif '/rr3/publications/CMIP5/output1/CSIRO-QCCCE' in path and 'files' not in path:
+        return '/path/todelete/' 
     elif '/fs38/publications/CMIP6/' in path and '/d20' in path:
         dirs=path.split("/")
         vdir = dirs[-2].replace('d','v')

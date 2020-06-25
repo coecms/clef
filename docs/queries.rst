@@ -27,8 +27,18 @@ Finally we call *matching*::
 
     results, selection = matching(s, allvalues, fixed, **constraints)
 
-The function returns two lists, the first *results* contains a dictionary for each simulation that has either tasmin or tasmax for {rcp85, day}.
-The second *selection* has only the simulations that has both *tasmin* and *tasmax*. 
+The function returns two pandas dataframe, in the first *results* each row is a simulation that has either tasmin or tasmax for {rcp85, day}.
+The second *selection* has only the simulations that has both *tasmin* and *tasmax*::
+
+    model         ensemble                          ...
+    ACCESS1.0     r1i1p1    {(tasmax,), (tasmin,)}  ...  (41, 125)
+    ACCESS1.3     r1i1p1    {(tasmax,), (tasmin,)}  ...  (53, 108)
+    BCC-CSM1.1    r1i1p1    {(tasmax,), (tasmin,)}  ...  (33, 116)
+    BCC-CSM1.1(m) r1i1p1    {(tasmax,), (tasmin,)}  ...  (45, 127)
+    BNU-ESM       r1i1p1    {(tasmax,), (tasmin,)}  ...  (28, 111)
+    ...                                        ...  ...        ...
+    [75 rows x 5 columns]
+  
 
 Other examples
 --------------

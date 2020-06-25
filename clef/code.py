@@ -145,11 +145,7 @@ def call_local_query(s, project, latest, **kwargs):
     paths = []
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
-         #clef_log.debug(f'comb: {c}')
-         print(f'comb: {c}')
          datasets = datasets.append(local_query(s,project=project, latest=latest, **c), ignore_index=True)
-         #clef_log.debug(f"paths list: {datasets['path']}")
-         print(f"paths list: {datasets['path']}")
     paths = datasets['path'].tolist()
     return datasets, paths
 
@@ -175,11 +171,12 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     # run the sql using pandas read_sql,index data using path, returns a dataframe
     df = pd.read_sql(r.selectable, con=session.connection())
     df = df.rename(columns={'path': 'opath'})
-    print(f"first dataframe {df}")
 
     # fix path by substituing output1/2 with combined, separate path from filenames
     fix_paths = df['opath'].apply(fix_path, latest=latest)
     df['path'] = fix_paths.map(os.path.dirname)
+    # added to eliminate wrong paths for mk3.6.0 once that is fixed might be removed
+    df = df[df.path != '/path/todelete']
     df['filename'] = df['opath'].map(os.path.basename)
 
     # group by path
@@ -192,9 +189,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     # remove unuseful columns
     todel = ['opath','r','i','p','f','period']
     cols = [c for c in todel if c in res.columns]
-    print(f"columns {cols}")
     res = res.drop(columns=cols)
-    print(f"last dataframe {res}")
     return res
 
 
