@@ -160,7 +160,7 @@ def test_find_local_path_present(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=present_query):
         subq = match_query(session, '')
         results = find_local_path(session, subq)
-        assert results.count() == 1
+        assert set(results.all()) == set([('/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/files/clt_20121011/',)])
 
 def test_find_missing_id_missing(session):
     """
@@ -169,7 +169,7 @@ def test_find_missing_id_missing(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
         subq = match_query(session, '')
         results = find_missing_id(session, subq)
-        assert results.count() == 1
+        assert set(results.all()) == set([('dataset_bar',)])
 
 def test_find_missing_id_present(session):
     """
@@ -196,7 +196,7 @@ def test_find_local_path_updated(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
         subq = match_query(session, '')
         results = find_local_path(session, subq)
-        assert results.count() == 1
+        assert set(results.all()) == set([('/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-3/1pctCO2/3hr/atmos/3hr/r1i1p1/files/clt_20121011/',)])
 
 def test_find_missing_id_updated_latest(session):
     """
@@ -206,7 +206,7 @@ def test_find_missing_id_updated_latest(session):
     with mock.patch('clef.esgf.esgf_query', side_effect=updated_query):
         subq = match_query(session, '', latest=True)
         results = find_missing_id(session, subq)
-        assert results.count() == 1
+        assert set(results.all()) == set([('dataset_bar',)])
 
 def test_find_local_path_updated_latest(session):
     """
