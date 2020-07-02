@@ -181,7 +181,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
 
     # group by path
     mcols = ['filename','period']
-    agg_dict = {k: ('first' if k not in mcols else list) for k in list(df)}
+    agg_dict = {k: ('first' if k not in mcols else set) for k in list(df)}
     res = df.groupby(['path']).agg(agg_dict)
 
     # apply postprocessing function to each row
