@@ -11,6 +11,7 @@ CleF is currently installed in the CMS conda module analysis3. This is
 managed by the CMS and is available simply by running::
   $ module use /g/data3/hh5/public/modules
   $ module load conda/analysis3
+NB Use "module load conda/analysis3-unstable" for the latest version
 
 You could use the module interactively, for the moment we will use its
 command line options. Let’s start!
