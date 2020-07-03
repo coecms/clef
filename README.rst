@@ -158,4 +158,6 @@ Build the documentation using Sphinx::
 New releases are packaged and uploaded to anaconda.org by CircleCI when a new
 Github release is made
 
-Documentation is available on ReadTheDocs, both for `stable <https://clef.readthedocs.io/en/stable/>`_ and `latest <https://clef.readthedocs.io/en/latest/>`_ versions.
+Documentation is available on ReadTheDocs, both for `stable
+<https://clef.readthedocs.io/en/stable/>`_ and `latest
+<https://clef.readthedocs.io/en/latest/>`_ versions.
