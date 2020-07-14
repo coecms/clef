@@ -185,7 +185,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     res = df.groupby(['path']).agg(agg_dict)
 
     # apply postprocessing function to each row
-    res.apply(post_local, axis=1)
+    res = res.apply(post_local, axis=1)
     # remove unuseful columns
     todel = ['opath','r','i','p','f','period']
     cols = [c for c in todel if c in res.columns]
@@ -247,7 +247,8 @@ def post_local(row):
     row['fdate'], row['tdate'] = get_range(row['periods'])
     row['time_complete'] = time_axis(row['periods'],row['fdate'],row['tdate'])
     # make sure a version is available even for CMIP6 where is usually None
-    if row['version'] is None:
+    # might have to change this once tbles are updated it might become string!
+    if pd.isna(row['version']):
         row['version'] = get_version(row['path'])
     return row
 
