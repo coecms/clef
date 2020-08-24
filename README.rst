@@ -14,9 +14,8 @@ CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://clim
   :target: https://www.codacy.com/app/ScottWales/clef
 .. image:: https://img.shields.io/conda/v/coecms/clef.svg
   :target: https://anaconda.org/coecms/clef
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3567138.svg
-  :target: https://doi.org/10.5281/zenodo.3567138
-
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3998723.svg
+   :target: https://doi.org/10.5281/zenodo.3998723
 
 .. content-marker-for-sphinx
 
