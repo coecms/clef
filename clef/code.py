@@ -89,35 +89,32 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
     """
 
     results = pd.DataFrame() 
-    try:
-        # use local search
-        if local:
-            msg = "There are no simulations stored locally"
-            # perform the query for each variable separately and concatenate the results
-            combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
-            for c in combs:
-                results = results.append(search(session,project=project.upper(),
-                                                latest=latest, **c),
-                                         ignore_index=True)
-        # use ESGF search
-        else:
-            msg = "There are no simulations currently available on the ESGF nodes"
-            kwquery = {k:tuple(v) for k,v in kwargs.items()}
-            kwquery['project']=project.upper()
-            attrs = ['dataset_id', 'version'] # datetime_start, datetime_stop
-            attrs.extend( load_vocabularies(project)['attributes'])
-            query=None
-            response = esgf_query(query, ','.join(attrs), latest=latest, **kwquery)
-            # can't create dataframe in one go because many values are unidimensional lists
-            res_list = []
-            for row in response['response']['docs']:
-                row['version'] = row['dataset_id'].split("|")[0].split(".")[-1],
-                res_list.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
-            results = pd.DataFrame(res_list)
 
-    except Exception as e:
-        print('ERROR',str(e))
-        return None
+    # use local search
+    if local:
+        msg = "There are no simulations stored locally"
+        # perform the query for each variable separately and concatenate the results
+        combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
+        for c in combs:
+            results = results.append(search(session,project=project.upper(),
+                                            latest=latest, **c),
+                                     ignore_index=True)
+    # use ESGF search
+    else:
+        msg = "There are no simulations currently available on the ESGF nodes"
+        kwquery = {k:tuple(v) for k,v in kwargs.items()}
+        kwquery['project']=project.upper()
+        attrs = ['dataset_id', 'version'] # datetime_start, datetime_stop
+        attrs.extend( load_vocabularies(project)['attributes'])
+        query=None
+        response = esgf_query(query, ','.join(attrs), latest=latest, **kwquery)
+        # can't create dataframe in one go because many values are unidimensional lists
+        res_list = []
+        for row in response['response']['docs']:
+            row['version'] = row['dataset_id'].split("|")[0].split(".")[-1],
+            res_list.append({k:(v[0] if isinstance(v,list) else v) for k,v in row.items()})
+        results = pd.DataFrame(res_list)
+
 
     # if nothing turned by query print warning and return
     if len(results.index) == 0:
