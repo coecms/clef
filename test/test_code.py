@@ -41,6 +41,13 @@ def test_and_filter(local_results, remote_results):
     assert len(selection.index) == 1 
     assert len(rows.index) == 4
 
+    # test no match returned, used sam eexmaple as above but remove from results all models apart from mod1 first
+    limited = local_results[local_results['model'] == 'mod1']
+    rows, selection = and_filter(limited, ['variable','experiment'],
+                ['model','ensemble'], **kwargs)
+    assert len(selection.index) == 0 
+    assert len(rows.index) == 0 
+
     # test remote CMIP6 query results apply AND to variables and model, member, experiment to identify run
     kwargs = {'experiment_id': ['exp1','exp2'], 'variable_id': ['tas','pr'],
               'table_id': ['Amon'], 'member_id': ['r1i1p1f1','r2i1p1f1']}
