@@ -296,7 +296,10 @@ def and_filter(df, cols, fixed, **kwargs):
     #selection = d[d['comb'].map(len) == len(comb)]
     selection = d[d['comb'].map(len) == len(comb)]
     # select full rows from original dataframe using original index 
-    fullrow = df[df.index.isin(selection['index'].sum())]
+    if len(selection.index) > 0 :
+        fullrow = df[df.index.isin(selection['index'].sum())]
+    else:
+        fullrow = pd.DataFrame(columns=df.columns)
     return fullrow, selection
 
 
