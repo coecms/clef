@@ -84,5 +84,5 @@ You can now call this function also from the command line::
    MRI-ESM2-0 r1i1p1f1 {'v20190222'}
    SAM0-UNICON r1i1p1f1 {'v20190323'}
 
-You use the *--and* option to pass the *fixed* arguments, it assumes that *model* and *ensemble* define a simulation.
+You use the *--and* option to pass the *allvalues* arguments, it assumes that *model* and *ensemble* define a simulation.
 
