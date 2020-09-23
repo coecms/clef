@@ -309,8 +309,11 @@ def write_csv(df):
     if len(df.index) == 0:
         print(f'Nothing to write to csv file')
         return
-    project = df['project'][0]
-    csv_file = f"{project.upper()}_query.csv"
+    if 'experiment_id' in df.columns:
+        project = 'CMIP6'
+    else:
+        project = 'CMIP5'
+    csv_file = f"{project}_query.csv"
     ignore = ['periods', 'filename', 'institute', 'project', 'institution_id','realm', 'product']
     columns = [x for x in df.columns if x not in ignore]
     try:

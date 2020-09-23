@@ -4099,6 +4099,8 @@
                 "DAMIP",
                 "FAFMIP",
                 "HighResMIP",
+                "LS3MIP",
+                "LUMIP",
                 "PMIP",
                 "RFMIP",
                 "ScenarioMIP"
@@ -4283,104 +4285,6 @@
                 "land":{
                     "description":"JULES-HadGEM3-GL7.1",
                     "native_nominal_resolution":"100 km"
-                },
-                "landIce":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "ocean":{
-                    "description":"NEMO-HadGEM3-GO6.0 (eORCA025 tripolar primarily 0.25 deg; 1440 x 1205 longitude/latitude; 75 levels; top grid cell 0-1 m)",
-                    "native_nominal_resolution":"25 km"
-                },
-                "ocnBgchem":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "seaIce":{
-                    "description":"CICE-HadGEM3-GSI8 (eORCA025 tripolar primarily 0.25 deg; 1440 x 1205 longitude/latitude)",
-                    "native_nominal_resolution":"25 km"
-                }
-            },
-            "release_year":"2016",
-            "source_id":"HadGEM3-GC31-MM"
-        },
-        "HiRAM-SIT-HR":{
-            "activity_participation":[
-                "HighResMIP"
-            ],
-            "cohort":[
-                "Registered"
-            ],
-            "institution_id":[
-                "AS-RCEC"
-            ],
-            "label":"HiRAM-SIT-HR",
-            "label_extended":"HiRAM Coupling 1-D SIT (25 km atmosphere and 25 km ocean)",
-            "model_component":{
-                "aerosol":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "atmos":{
-                    "description":"GFDL-HiRAM (Cubed-sphere (c384) - 0.25 degree nominal horizontal resolution; 1536 x 768 longitude/latitude; 32 levels; top level 1 hPa)",
-                    "native_nominal_resolution":"25 km"
-                },
-                "atmosChem":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "land":{
-                    "description":"GFDL-LM3 (same grid as atmos)",
-                    "native_nominal_resolution":"25 km"
-                },
-                "landIce":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "ocean":{
-                    "description":"SIT (1-D, tripolar - nominal 0.25 deg; 1440 x 1080 longitude/latitude; 50 levels with skin layer and 1 m resolution for uppermost 10 m)",
-                    "native_nominal_resolution":"25 km"
-                },
-                "ocnBgchem":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "seaIce":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                }
-            },
-            "release_year":"2018",
-            "source_id":"HiRAM-SIT-HR"
-        },
-        "HiRAM-SIT-LR":{
-            "activity_participation":[
-                "HighResMIP"
-            ],
-            "cohort":[
-                "Registered"
-            ],
-            "institution_id":[
-                "AS-RCEC"
-            ],
-            "label":"HiRAM-SIT-LR",
-            "label_extended":"HiRAM Coupling 1-D SIT (50 km atmosphere and 25 km ocean)",
-            "model_component":{
-                "aerosol":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "atmos":{
-                    "description":"GFDL-HiRAM (Cubed-sphere (c192) - 0.5 degree nominal horizontal resolution; 768 x 384 longitude/latitude; 32 levels; top level 1 hPa)",
-                    "native_nominal_resolution":"50 km"
-                },
-                "atmosChem":{
-                    "description":"none",
-                    "native_nominal_resolution":"none"
-                },
-                "land":{
-                    "description":"GFDL-LM3 (same grid as atmos)",
-                    "native_nominal_resolution":"50 km"
                 },
                 "landIce":{
                     "description":"none",
@@ -4917,7 +4821,8 @@
         },
         "IPSL-CM6A-LR-INCA":{
             "activity_participation":[
-                "AerChemMIP"
+                "AerChemMIP",
+                "RFMIP"
             ],
             "cohort":[
                 "Registered"
@@ -6928,6 +6833,7 @@
                 "CDRMIP",
                 "CMIP",
                 "GeoMIP",
+                "LS3MIP",
                 "LUMIP",
                 "OMIP",
                 "PMIP",
@@ -7191,13 +7097,13 @@
         }
     },
     "version_metadata":{
-        "CV_collection_modified":"Thu Jun 18 11:07:42 2020 -0700",
-        "CV_collection_version":"6.2.53.5",
+        "CV_collection_modified":"Fri Aug 28 10:26:45 2020 -0700",
+        "CV_collection_version":"6.2.53.7",
         "author":"Paul J. Durack <durack1@llnl.gov>",
         "institution_id":"PCMDI",
-        "previous_commit":"79f2a86bbd5348a5981dbc668615c20dcec1ee72",
-        "source_id_CV_modified":"Thu Jun 18 11:01:02 2020 -0700",
-        "source_id_CV_note":"Revise source_id ACCESS-CM2",
+        "previous_commit":"13920afe8faaceac1dcd150f9afd5a8245d98fc1",
+        "source_id_CV_modified":"Wed Jul 29 12:59:55 2020 -0700",
+        "source_id_CV_note":"Revise source_id IPSL-CM6A-LR-INCA",
         "specs_doc":"v6.2.7 (10th September 2018; https://goo.gl/v1drZl)"
     }
 }
