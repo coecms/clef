@@ -334,7 +334,7 @@ def stats(results):
 
     """
 
-    project = results.loc[0,'project']
+    project = results['project'].iloc[0]
     attrs = get_facets(project)
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \

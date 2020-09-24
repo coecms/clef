@@ -143,9 +143,9 @@ def common_args(f):
         click.option('--distrib/--no-distrib', 'distrib', default=True,
                      help="Distribute search across all ESGF nodes. Default: --distrib"),
         click.option('--csv/--no-csv', 'csvf', default=False,
-                     help="Send output to csv file including extra information. Default: --no-csv"),
+                     help="Send output to csv file including extra information. Works only with --local and --remote. Default: --no-csv"),
         click.option('--stats/--no-stats',  default=False,
-                     help="Write summary of query results, works only with --local option. Default: --no-stats"),
+                     help="Write summary of query results. Works only with --local and --remote. Default: --no-stats"),
         click.option('--debug/--no-debug', default=False,
                      help="Show debug output. Default: --no-debug")
     ]
@@ -180,6 +180,8 @@ def cmip6_args(f):
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
+        click.option('--cite',  default=False,
+                     help="Write list of citations for query results, works only with --local option. Default: False"),
         click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
     for c in reversed(constraints):
@@ -285,7 +287,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         activity_id,
         grid_label,
         nominal_resolution,
-        and_attr
+        and_attr,
+        cite
         ):
     """
     Search ESGF and local database for CMIP6 files
