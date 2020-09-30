@@ -144,7 +144,7 @@ def print_error(uid):
         print(f'Status: {error[k]["status"]}')
         print(f'Description: {error[k]["description"]}')
 
-def cite(dids):
+def citation(dids):
     '''Retrieve citations for a list of CMIP6 dataset ids'''
     citations = []
     url = 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cmip6?input=' 
@@ -164,5 +164,19 @@ def cite(dids):
             now = date.today()
             citations.append(cite.replace("Version YYYYMMDD[1]",f'Accessed on {now}'))
         else:
-            citations.append(cite.replace("YYYYMMDD[1]",version))
+            citations.append(cite.replace("YYYYMMDD[1].",f"{version}. "))
     return citations
+
+def write_cite(citations):
+    """Write citations to file
+    """
+    if len(citations) == 0:
+        print(f'Nothing to write to file')
+        return
+    out_file = "cmip_citations.txt"
+    try:
+        with open(out_file, 'w') as f:
+            f.write('\n'.join(citations))
+    except IOError:
+        print("I/O error")
+

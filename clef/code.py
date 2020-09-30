@@ -185,7 +185,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     res = df.groupby(['path']).agg(agg_dict)
 
     # apply postprocessing function to each row
-    res.apply(post_local, axis=1)
+    res = res.apply(post_local, axis=1)
     # remove unuseful columns
     todel = ['opath','r','i','p','f','period']
     cols = [c for c in todel if c in res.columns]
@@ -321,7 +321,6 @@ def write_csv(df):
             csvfile.write(df[columns].to_csv())
     except IOError:
         print("I/O error")
-
 
 def stats(results):
     """Return some stats on query results

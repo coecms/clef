@@ -37,7 +37,7 @@ def get_version(path):
     """
     mo = re.search(r'\d{8}', path)
     if mo:
-        return  mo.group()
+        return  "v" + mo.group()
     else:
         return  None 
 
@@ -294,3 +294,21 @@ def fix_path(path, latest):
         return "/".join(dirs[:-3]+[vdir, ""])
     else:
         return path
+
+
+def get_id(r):
+    ''' Build dataset_id for CMIP6 starting from dataframe row
+    '''
+    # CMIP6.ScenarioMIP.MIROC.MIROC6.ssp585.r1i1p1f1.Amon.pr.gn.v20190627
+    version = r.version if not None else 'none'
+    return '.'.join(['CMIP6', r.activity_id, r.institution_id, r.source_id, r.experiment_id,
+                     r.member_id, r.table_id, r.variable_id, r.grid_label, version])
+
+def get_ids(df):
+    ''' Build dataset_id starting from dataframe
+        Calls get_id for each row
+    '''
+    if 'dataset_id' in df.columns:
+        return df['dataset_id'].to_list()
+    else:
+        return df.apply(get_id, axis=1).to_list() 
