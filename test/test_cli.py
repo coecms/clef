@@ -229,30 +229,30 @@ def test_cmip6_present(prod_cli):
 @pytest.mark.xfail
 @pytest.mark.production
 def test_cmip6_missing(prod_cli):
-    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmin','--variant_label=r2i1p1f2']
+    facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=sitempbot','--variant_label=r2i1p1f2']
 
     r = prod_cli(['cmip6', *facets])
     assert r.output == ("\nAvailable on ESGF but not locally:\n"+
-        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708\n")
+        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.SImon.sitempbot.gn.v20200309\n")
 
     r = prod_cli(['--local', 'cmip6', *facets])
     assert r.output == ""
 
     r = prod_cli(['--remote', 'cmip6', *facets])
-    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708\n"
+    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.SImon.sitempbot.gn.v20200309\n"
 
     with mock.patch('clef.cli.write_request') as write_request:
         r = prod_cli(['--request', 'cmip6', *facets])
-        write_request.assert_called_with('CMIP6', ['CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.Amon.tasmin.gn.v20190708'])
+        write_request.assert_called_with('CMIP6', ['CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r2i1p1f2.SImon.sitempbot.gn.v20200309'])
 
 @pytest.mark.production
 def test_cmip6_and(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--variable=tasmin','--variable=tasmax','--variant_label=r1i1p1f2']
     r = prod_cli(['--local', 'cmip6', *facets, '--and=variable_id'])
-    assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"
+    assert r.output == "UKESM1-0-LL / r1i1p1f2 versions: v20190627\n"
 
     r = prod_cli(['--remote', 'cmip6', *facets, '--and=variable_id'])
-    assert r.output == "UKESM1-0-LL r1i1p1f2 {'v20190627'}\n"
+    assert r.output == "UKESM1-0-LL / r1i1p1f2 versions: v20190627\n"
 
 @pytest.mark.production
 def test_csv_stats(prod_cli):
@@ -284,3 +284,18 @@ def test_fs38_present(prod_cli):
 
     r = prod_cli(['--local', 'cmip6', *facets])
     assert r.output == "/g/data/fs38/publications/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/historical/r1i1p1f1/Amon/tas/gn/v20191108\n"
+
+
+@pytest.mark.production
+def test_cite(runner, prod_cli):
+    # cite argument should always be false with default query
+    # still working on this
+    facets = ['--model=NESM3', '--experiment=historical', '--variant_label=r2i1p1f1',
+              '--table=day', '--variable=tas', '--grid_label=gn', '--cite']
+    # check that write_cite is called when cite passed with --local and --remote for CMIP6 
+    c = 'Cao, Jian; Wang, Bin (2019). NUIST NESMv3 model output prepared for CMIP6 CMIP historical. Version v20190812. Earth System Grid Federation. https://doi.org/10.22033/ESGF/CMIP6.8769'
+    with mock.patch('clef.cli.write_cite') as write_cite:
+        r = prod_cli(['--local', 'cmip6', *facets])
+        write_cite.assert_called_with([c])
+        r = prod_cli(['--remote', 'cmip6', *facets])
+        write_cite.assert_called_with([c])

@@ -18,6 +18,7 @@ import pytest
 
 from clef.code import and_filter, matching, local_latest, search, stats, ids_df
 from code_fixtures import *
+from clef.exception import ClefException
 
 # Tests for the functions defined in code.py
 
@@ -130,11 +131,11 @@ def test_search_results(session):
 
     r0 = search(session, project='cmip5', model='ACCESS1.0', **facets)
     assert len(r0) == 1, "Only one result"
-    assert r0[0]['model'] == 'ACCESS1.0', "Model matches input"
+    assert r0.iloc[0]['model'] == 'ACCESS1.0', "Model matches input"
 
     r1 = search(session, project='cmip5', model='ACCESS1-0', **facets)
     assert len(r1) == len(r0), "Same result with filtered name"
-    assert r1[0]['model'] == 'ACCESS1.0', "Model is cleaned"
+    assert r1.iloc[0]['model'] == 'ACCESS1.0', "Model is cleaned"
 
     # No variable constraint
     facets.pop('variable')
@@ -143,7 +144,7 @@ def test_search_results(session):
 
     r3 = search(session, project='cmip6', model='AWI-CM-1-1-MR',
                 experiment='historical', variable='uas', cmor_table='3hr')
-    assert r3[0]['pdir'] == '/g/data/oi10/replicas/CMIP6/CMIP/AWI/AWI-CM-1-1-MR/historical/r1i1p1f1/3hr/uas/gn/v20181218'
+    assert r3.iloc[0]['path'] == '/g/data/oi10/replicas/CMIP6/CMIP/AWI/AWI-CM-1-1-MR/historical/r1i1p1f1/3hr/uas/gn/v20181218'
 
 def test_matching(session):
     facets = {
