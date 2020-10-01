@@ -185,7 +185,7 @@ def local_query(session, project='CMIP5', latest=True, **kwargs):
     res = df.groupby(['path']).agg(agg_dict)
 
     # apply postprocessing function to each row
-    res.apply(post_local, axis=1)
+    res = res.apply(post_local, axis=1)
     # remove unuseful columns
     todel = ['opath','r','i','p','f','period']
     cols = [c for c in todel if c in res.columns]
@@ -322,7 +322,6 @@ def write_csv(df):
     except IOError:
         print("I/O error")
 
-
 def stats(results):
     """Return some stats on query results
 
@@ -334,7 +333,7 @@ def stats(results):
 
     """
 
-    project = results.loc[0,'project']
+    project = results['project'].iloc[0]
     attrs = get_facets(project)
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \

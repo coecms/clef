@@ -30,7 +30,8 @@ from .download import write_request, search_queue_csv
 from . import collections as colls
 from .exception import ClefException
 from .code import call_local_query, matching, write_csv, print_stats, ids_df
-from .helpers import load_vocabularies, fix_model, fix_path
+from .helpers import load_vocabularies, fix_model, fix_path, get_ids
+from .esdoc import citation, write_cite
 
 
 def clef_catch():
@@ -88,7 +89,7 @@ def config_log():
     # the messagges will be appended to the same file
     # create a new log file every month
     month = datetime.now().strftime("%Y%m")
-    logname = '/g/data/ua8/Download/CMIP6/clef_log_' + month + '.txt'
+    logname = '/g/data/hh5/tmp/clef/logs/clef_log_' + month + '.txt'
     flog = logging.FileHandler(logname)
     try:
         os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
@@ -143,9 +144,9 @@ def common_args(f):
         click.option('--distrib/--no-distrib', 'distrib', default=True,
                      help="Distribute search across all ESGF nodes. Default: --distrib"),
         click.option('--csv/--no-csv', 'csvf', default=False,
-                     help="Send output to csv file including extra information. Default: --no-csv"),
+                     help="Send output to csv file including extra information. Works only with --local and --remote. Default: --no-csv"),
         click.option('--stats/--no-stats',  default=False,
-                     help="Write summary of query results, works only with --local option. Default: --no-stats"),
+                     help="Write summary of query results. Works only with --local and --remote. Default: --no-stats"),
         click.option('--debug/--no-debug', default=False,
                      help="Show debug output. Default: --no-debug")
     ]
@@ -180,6 +181,8 @@ def cmip6_args(f):
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
+        click.option('--cite', 'cite', is_flag=True, default=False,
+                     help="Write list of citations for query results, works only with --remote and --local options. Default: False"),
         click.option('--institution', 'institution_id', multiple=True, help="Modelling group institution id: IPSL, NOAA-GFDL ...")
     ]
     for c in reversed(constraints):
@@ -285,7 +288,8 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         activity_id,
         grid_label,
         nominal_resolution,
-        and_attr
+        and_attr,
+        cite
         ):
     """
     Search ESGF and local database for CMIP6 files
@@ -314,11 +318,11 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         }
 
     common_esgf_cli(ctx, project, query, cf_standard_name, latest,
-        replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
+        replica, distrib, csvf, stats, debug, dataset_constraints, and_attr, cite)
 
 
 def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
-               replica, distrib, csvf, stats, debug, constraints, and_attr):
+               replica, distrib, csvf, stats, debug, constraints, and_attr, cite=False):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
@@ -349,7 +353,8 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=False, latest=latest, **terms)
             for row in selection.itertuples():
-                print(f"{row.Index[0]}-{row.Index[1]}:  {', '.join([v[0] for v in row.version])}")
+                print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join([v[0] for v in row.version])}")
+            ids = get_ids(results) 
         else:
             q = find_checksum_id(' '.join(query),
                 distrib=distrib,
@@ -370,6 +375,9 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             print_stats(results)
         if csvf:
             write_csv(results)
+        if cite:
+            citations = citation(ids)
+            write_cite(citations)
         return
 
     # if local, query DB based on attributes not checksums
@@ -378,7 +386,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=True, latest=latest, **terms)
             for row in selection.itertuples():
-                print(f"{row.Index[0]}-{row.Index[1]}:  version {str(row.version)[1:-1]}")
+                print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join(row.version)}")
         else:
             results, paths = call_local_query(s, project, latest, **terms)
             if not stats:
@@ -388,6 +396,10 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             write_csv(results)
         if stats:
             print_stats(results)
+        if cite:
+            ids = get_ids(results) 
+            citations = citation(ids)
+            write_cite(citations)
         return
 
     # if not local, query ESGF first and then DB based on checksums

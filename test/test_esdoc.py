@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clef.esdoc import *
+from clef.esdoc import get_doc, get_wdcc, errata, retrieve_error, citation  
 from esdoc_fixtures import *
 from code_fixtures import dids6
 #import pytest
@@ -59,5 +59,5 @@ def test_errata():
 def test_retrieve_error(test_error):
     assert retrieve_error('ce889690-1ef3-6f46-9152-ccb27fc42490') ==  test_error
 
-def test_cite(dids6, citations):
-    assert cite(dids6) == citations
+def test_citation(dids6, citations):
+    assert citation(dids6) == citations

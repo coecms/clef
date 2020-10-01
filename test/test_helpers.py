@@ -18,9 +18,9 @@ import pytest
 
 from clef.exception import ClefException
 from clef.helpers import check_values, load_vocabularies, check_keys, get_version, time_axis, \
-                         get_keys, fix_model, fix_path, get_range, convert_periods, get_facets
+                         get_keys, fix_model, fix_path, get_range, convert_periods, get_facets, get_id, get_ids
 from code_fixtures import c5_kwargs, c5_vocab, c5_keys, nranges, periods, empty, dids6, dids5, \
-                          results5, results6
+                          results5, results6, remote_results
 
 # Tests for the functions defined in code.py
 
@@ -116,9 +116,9 @@ def test_fix_path():
 
 
 def test_get_version():
-    assert get_version('/g/data/inst/model/var/v20130405') == '20130405'
-    assert get_version('/g/data/inst/model/var/v20130405/tas/files') == '20130405'
-    assert get_version('/g/data/inst/model/var/files/tas_20110518') == '20110518'
+    assert get_version('/g/data/inst/model/var/v20130405') == 'v20130405'
+    assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
+    assert get_version('/g/data/inst/model/var/files/tas_20110518') == 'v20110518'
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
 
 def test_get_facets():
@@ -128,3 +128,12 @@ def test_get_facets():
     assert facets6['gr'] == 'grid_label'
     facets5 = get_facets('CMIP5')
     assert facets5['t'] == 'cmor_table'
+
+def test_get_id(results6, dids6):
+    assert get_id(results6.iloc[0]) == dids6[0]
+
+def test_get_ids(results6, dids6, remote_results):
+    ids =  get_ids(results6)
+    assert ids[:] == dids6[:]
+    ids =  get_ids(remote_results)
+    assert 'mod1.exp1.Amon.r1i1p1f1.tas.v1' in ids
