@@ -160,3 +160,11 @@ Github release is made
 Documentation is available on ReadTheDocs, both for `stable
 <https://clef.readthedocs.io/en/stable/>`_ and `latest
 <https://clef.readthedocs.io/en/latest/>`_ versions.
+
+Disclaimer
+----------
+CleF can only return datasets which are listed in the ESGF database system for remote results and on the NCI clef database for local results. This means that potentially some of the datasets might not be returned in the following cases:
+ * One or more of the ESGF nodes are offline: this can affect clef returning results for the models which are hostedworks which are offline. It is usually easy to verify if this is the case since a query on the browser should show a reduced list of models. In such cases using the *--local* flag will use a query method completely independent and will return at least what is available locally.
+ * The NCI ESGF node is offline then nothing will be returned by the default or remote queries, again using *--local* should work. 
+ * The checksums stored in the ESGF database are different from the actual file checksums. CleF uses the checksums to match the files available remotely if even one file does not match it will flag the dataset as missing. Using the *--local* flag should still return the datasets regardless because it doesn't compare them to what is available remotely. 
+ * A dataset has been recently donwloaded (up to a week before) and hasn't yet been added to the NCI clef database. In such case it might not show locally even if it has been downloaded. The NCI clef database is updated weekly so we cannot guarantee for clef to find data which is more recent than that. NCI also provides us with a list of datasets recently queued or downloaded. The default query will show this data as "queued" or "downloaded", rather than missing. While this list aims to cover the gap in between database updates, we have no control on its frequency and it might not capture all the data.

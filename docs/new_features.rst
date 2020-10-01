@@ -21,6 +21,11 @@ the query results Currently it prints the following:
 
 *--stats* works when *--local* or *--remote* are specified but not with the default query
 
+Citations list option
+---------------------
+The *--cite* option added to the command line will create a file containing the citations of all the datasets returned by the query. It retrieves the citation information from the DKRZ WDCC server (https://cera-www.dkrz.de/WDCC). This provides citation information only for CMIP6, so this flag is only available with the *cmip6* sub-command. Currently is only available when running clef with the *--local* or *--remote* flags.
+The citation lists is saved in a file calledd *cmip_citations.txt* in the working directory.
+
 Errata and esdoc
 ----------------
 There is some work in progress to add functionalities to interact with the ESDOC and the Errata ESGF systems. For the moment these are available only using clef interactively and not via the command line. 
