@@ -1520,7 +1520,7 @@ start from the errata:
 As you can see I’ve chosen a tracking_id that was associated to some
 errata. First I use the **errata()** function to retrieve any associated
 error_ids and then I print out the result using the **print_error()**
-function. This first retrieve the message associted to any error_id and
+function. This first retrieve the message associeted to any error_id and
 then prints it in a human readable form, including the url for the
 original error report. Let’s now have a look at how to retrieve and
 print some documentation from ESDOC.
