@@ -26,6 +26,7 @@ def test_esdoc_urls():
 def test_get_model_doc():
     assert True
 
+@pytest.mark.xfail
 def test_get_doc():
     base = 'https://api.es-doc.org/2/document/search-name?client=ESDOC-VIEWER-DEMO&encoding=html&'
     assert get_doc('model', 'MIROC6', 'CMIP6') == ( base +
@@ -51,11 +52,13 @@ def test_get_wdcc():
     assert get_wdcc(did) == (None, None)
 
 
+@pytest.mark.xfail
 def test_errata():
     assert ( errata('hdl:21.14100/e4193a02-6405-49b6-8ad3-65def741a4dd') ==
            ["b6302400-3620-c8f1-999b-d192c0349084","2f6b5963-f87e-b2df-a5b0-2f12b6b68d32"])
     assert errata('hdl:21.14100/7d16d79b-77c8-446c-9039-36c6803752f2') is None
 
+@pytest.mark.xfail
 def test_retrieve_error(test_error):
     assert retrieve_error('ce889690-1ef3-6f46-9152-ccb27fc42490') ==  test_error
 

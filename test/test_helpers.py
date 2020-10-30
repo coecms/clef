@@ -17,7 +17,7 @@
 import pytest
 
 from clef.exception import ClefException
-from clef.helpers import check_values, load_vocabularies, check_keys, get_version, time_axis, \
+from clef.helpers import check_values, load_vocabularies, check_keys, get_version, get_member, time_axis, \
                          get_keys, fix_model, fix_path, get_range, convert_periods, get_facets, get_id, get_ids
 from code_fixtures import c5_kwargs, c5_vocab, c5_keys, nranges, periods, empty, dids6, dids5, \
                           results5, results6, remote_results
@@ -120,6 +120,12 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
     assert get_version('/g/data/inst/model/var/files/tas_20110518') == 'v20110518'
     assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
+
+def test_get_member():
+    assert get_member('/g/data/inst/model/var/r0i0p0f0/v20130405') == 'r0i0p0f0'
+    assert get_member('/g/data/inst/model/var/r1i1p1f1/v20130405/tas/files') == 'r1i1p1f1'
+    assert get_member('/g/data/inst/model/var/r43i1p2f3/files/tas_20110518') == 'r43i1p2f3'
+    assert get_member('/g/data/inst/model/var/r1p2i3f2/tas/files') == None
 
 def test_get_facets():
     facets6 = get_facets('CMIP6')

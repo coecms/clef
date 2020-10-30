@@ -30,7 +30,7 @@ from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
 from .exception import ClefException
 from .esgf import esgf_query
 from .helpers import convert_periods, time_axis, check_values, check_keys, fix_model, fix_path, \
-                     get_facets, get_range, get_version, get_keys, load_vocabularies
+                     get_facets, get_range, get_version, get_keys, load_vocabularies, get_member
 
 
 def search(session, project='CMIP5', latest=True, **kwargs):
@@ -242,13 +242,16 @@ def build_query(session, project, **kwargs):
 def post_local(row):
     """Postprocess local query results row by row 
     """ 
-
     row['periods'] = convert_periods(row['period'])
     row['fdate'], row['tdate'] = get_range(row['periods'])
     row['time_complete'] = time_axis(row['periods'],row['fdate'],row['tdate'])
     # make sure a version is available even for CMIP6 where is usually None
     if row['version'] is None:
         row['version'] = get_version(row['path'])
+    if any(x in row['member_id'] for x in ['r0','i0','p0','f0']):
+        row['member_id'] = get_member(row['path'])
+        # variant_labele could actually be different if sub-experiment present but for the moment this should be ok
+        row['variant_label'] = row['member_id']
     return row
 
 

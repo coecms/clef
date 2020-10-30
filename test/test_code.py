@@ -42,7 +42,7 @@ def test_and_filter(local_results, remote_results):
     assert len(selection.index) == 1 
     assert len(rows.index) == 4
 
-    # test no match returned, used sam eexmaple as above but remove from results all models apart from mod1 first
+    # test no match returned, used same example as above but remove from results all models apart from mod1 first
     limited = local_results[local_results['model'] == 'mod1']
     rows, selection = and_filter(limited, ['variable','experiment'],
                 ['model','ensemble'], **kwargs)

@@ -42,6 +42,23 @@ def get_version(path):
         return  None 
 
 
+def get_member(path):
+    """Retrieve member_id from path ifpotentially wrong in database
+
+    Args:
+        path (str): data directory path
+
+    Returns:
+        string of member_id extracted from path 
+
+    """
+    mo = re.search(r'r\d*i\d*p\d*f\d*', path)
+    if mo:
+        return  mo.group()
+    else:
+        return  None 
+
+
 def convert_periods(nranges):
     """Convert period Numeric ranges to dates intervals
 
