@@ -52,6 +52,7 @@ def test_get_wdcc():
     assert get_wdcc(did) == (None, None)
 
 
+@pytest.mark.xfail
 def test_errata():
     assert ( errata('hdl:21.14100/e4193a02-6405-49b6-8ad3-65def741a4dd') ==
            ["b6302400-3620-c8f1-999b-d192c0349084","2f6b5963-f87e-b2df-a5b0-2f12b6b68d32"])
