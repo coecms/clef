@@ -248,7 +248,8 @@ def post_local(row):
     # make sure a version is available even for CMIP6 where is usually None
     if row['version'] is None:
         row['version'] = get_version(row['path'])
-    if any(x in row['member_id'] for x in ['r0','i0','p0','f0']):
+    # check if 'f' in row keys to exclude CMIP5 queries
+    if 'f' in row.keys() and any(x in row['member_id'] for x in ['r0','i0','p0','f0']):
         row['member_id'] = get_member(row['path'])
         # variant_labele could actually be different if sub-experiment present but for the moment this should be ok
         row['variant_label'] = row['member_id']
