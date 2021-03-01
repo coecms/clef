@@ -126,6 +126,7 @@ def cmip5_args(f):
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
         click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(vocab['time_frequency']) ),
         click.option('--realm', multiple=True, type=click.Choice(vocab['realm']) ),
+        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values")),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
@@ -139,7 +140,6 @@ def common_args(f):
     """
     constraints = [
         click.argument('query', nargs=-1),
-        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--latest/--all-versions', 'latest', default=True,
                      help="Return only the latest version or all of them. Default: --latest"),
         click.option('--replica/--no-replica', default=False,
@@ -182,6 +182,7 @@ def cmip6_args(f):
         click.option('--sub_experiment_id', '-se', multiple=True,
                      help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
+        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
         click.option('--cite', 'cite', is_flag=True, default=False,
@@ -268,7 +269,7 @@ def cmip5(ctx, query, debug, distrib, replica, latest, csvf, stats,
         'variable': variable,
         'experiment_family': experiment_family
         }
-    common_esgf_cli(ctx, project, query, cf_standard_name, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
 
 
 @clef.command()
@@ -317,11 +318,12 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         'sub_experiment_id': sub_experiment_id,
         'table_id': table_id,
         'variable_id': variable_id,
-        'variant_label': variant_label
+        'variant_label': variant_label,
+        'cf_standard_name': cf_standard_name
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, latest,
-        replica, distrib, csvf, stats, debug, dataset_constraints, and_attr, cite)
+    common_esgf_cli(ctx, project, query, latest, replica, distrib,
+        csvf, stats, debug, dataset_constraints, and_attr)
 
 
 @clef.command(cls=cordex_.CordexCommand)
@@ -332,11 +334,12 @@ def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
     
     project='CORDEX'
 
-    common_esgf_cli(ctx, project, [], cf_standard_name, latest, replica, distrib, csvf, stats, debug,
+    common_esgf_cli(ctx, project, [], latest, replica, distrib, csvf, stats, debug,
             dataset_constraints, cite)
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
-               replica, distrib, csvf, stats, debug, constraints, and_attr, cite=False):
+
+def common_esgf_cli(ctx, project, query, latest, replica, distrib,
+               csvf, stats, debug, constraints, and_attr, cite=False):
 
     if debug:
         logging.basicConfig(level=logging.DEBUG)

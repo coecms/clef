@@ -49,7 +49,7 @@ cli_facets = {
     },
     "domain": {"help": "CORDEX region name", "controlled_vocab": True},
     "variable": {"help": "Variable name in file", "controlled_vocab": True},
-    #"cf_standard_name": {"help": "CF-Conventions name of the variable"},
+    "cf_standard_name": {"help": "CF-Conventions name of the variable"},
     "rcm_version": {
         "help": "Identifier for reruns with perturbed parameters or smaller RCM release upgrades",
         "controlled_vocab": True,
