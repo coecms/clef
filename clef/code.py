@@ -380,6 +380,22 @@ def print_stats(results):
             print(f"     {m}: {', '.join(item.loc[m,'members'])}")
     print("\n")
 
+def local_latest(results):
+    """Sift through local query results dataframe and return only the latest versions
+
+    Args:
+        results (pandas.DataFrame): each row describes one simulation matching the constraints
+    Returns:
+        results (pandas.DataFrame): same but only latest versions
+    """
+
+    if len(results.index) <= 1:
+        return results
+    # separate all the attributes which could be different between two versions
+    separate = ['path', 'version', 'time_complete', 'filename','fdate', 'tdate', 'periods']
+    cols = [k for k in results.columns if k not in separate]
+    results = results.sort_values('version').drop_duplicates(subset=cols, keep='last')
+    return results
 
 def ids_df(dids):
     """Convert dataset_ids in DataFrame in same style as query results
