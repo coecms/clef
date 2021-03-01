@@ -332,7 +332,7 @@ def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
     
     project='CORDEX'
 
-    common_esgf_cli(ctx, project, [], cf_standard_name, latest, replica, distrib, icsvf, stats, debug,
+    common_esgf_cli(ctx, project, [], cf_standard_name, latest, replica, distrib, csvf, stats, debug,
             dataset_constraints, cite)
 
 def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
