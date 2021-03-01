@@ -20,7 +20,6 @@ import logging
 import sys
 import os
 import stat
-
 from itertools import repeat
 from datetime import datetime
 
@@ -32,7 +31,11 @@ from .exception import ClefException
 from .code import call_local_query, matching, write_csv, print_stats, ids_df
 from .helpers import load_vocabularies, fix_model, fix_path, get_ids
 from .esdoc import citation, write_cite
-
+#HERE possibly can delete the commented imports
+#import json
+#import pkg_resources
+#import re
+import clef.cordex as cordex_
 
 def clef_catch():
     debug_logger = logging.getLogger('clef_debug')
@@ -314,18 +317,31 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         'sub_experiment_id': sub_experiment_id,
         'table_id': table_id,
         'variable_id': variable_id,
-        'variant_label': variant_label,
+        'variant_label': variant_label
         }
 
     common_esgf_cli(ctx, project, query, cf_standard_name, latest,
         replica, distrib, csvf, stats, debug, dataset_constraints, and_attr, cite)
 
 
+@clef.command(cls=cordex_.CordexCommand)
+@common_args
+@click.pass_context
+def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
+    dataset_constraints = {k:v for k, v in kwargs.items() if k in cordex_.cli_facets}
+    
+    project='CORDEX'
+
+    common_esgf_cli(ctx, project, [], cf_standard_name, latest, replica, distrib, icsvf, stats, debug,
+            dataset_constraints, cite)
+
 def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
                replica, distrib, csvf, stats, debug, constraints, and_attr, cite=False):
+
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
+        logging.getLogger('clex_debug').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
     user_name=os.environ.get('USER','unknown')
@@ -360,7 +376,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
                 distrib=distrib,
                 replica=replica,
                 latest=latest,
-                cf_standard_name=cf_standard_name,
                 project=project,
                 **constraints,
                 )
@@ -407,7 +422,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             distrib=distrib,
             replica=replica,
             latest=(latest if latest else None),
-            cf_standard_name=cf_standard_name,
             project=project,
             **terms
             )
@@ -429,7 +443,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
     #  update list and print result
     if qm.count() > 0:
         varlist = []
-        if project == 'CMIP5' and 'variable' in terms:
+        if project in ['CMIP5','CORDEX'] and 'variable' in terms:
             varlist = terms['variable']
         updated = search_queue_csv(qm, project, varlist)
         print('\nAvailable on ESGF but not locally:')
@@ -440,7 +454,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
         return
 
     if ctx.obj['flow'] == 'request':
-        if project == 'CMIP5' and len(varlist) == 0:
+        if project in ['CMIP5','CORDEX'] and len(varlist) == 0:
             raise ClefException("Please specify at least one variable to request")
         if len(updated) >0:
             write_request(project,updated)

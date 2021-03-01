@@ -39,7 +39,8 @@ from sqlalchemy import Column, ForeignKey, Text, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INT4RANGE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property
+from sqlalchemy import func as f
 
 
 Base = declarative_base()
@@ -72,6 +73,13 @@ c6_metadata_dataset_link = Table('c6_metadata_dataset_link', Base.metadata,
                                         ForeignKey('checksums.ch_hash')),
                                  Column('dataset_id', ForeignKey('cmip6_dataset.dataset_id')))
 
+cordex_metadata_dataset_link = Table('cordex_metadata_dataset_link', Base.metadata,
+                                 Column('file_id',
+                                        ForeignKey('esgf_paths.file_id'),
+                                        ForeignKey('metadata.md_hash'),
+                                        ForeignKey('checksums.ch_hash')),
+                                 Column('dataset_id', ForeignKey('cordex_dataset.dataset_id')))
+
 
 class Path(Base):
     """Path of a file on Raijin, with links to metadata
@@ -88,6 +96,8 @@ class Path(Base):
 
     #: :class:`C6Dataset`:
     c6dataset = relationship('C6Dataset', secondary=c6_metadata_dataset_link, viewonly=True)
+
+    cordexdataset = relationship('CordexDataset', secondary=cordex_metadata_dataset_link, viewonly=True)
 
     #: :class:`Netcdf`:
     netcdf = relationship('Netcdf', viewonly=True)
@@ -286,6 +296,23 @@ class C6Dataset(Base):
 
     #:
     table_id = Column('table_id', Text)
+
+
+class CordexDataset(Base):
+    __tablename__ = 'cordex_dataset'
+
+    dataset_id = Column(UUID, primary_key=True)
+    model_id = Column('model_id', Text)
+    time_frequency = Column('frequency', Text)
+    institute = Column('institute_id', Text)
+    domain = Column('cordex_domain', Text)
+    # experiment_id = Column('experiment_id', Text)
+    rcm_version = Column('rcm_version_id', Text)
+    driving_model = Column('driving_model_id', Text)
+    experiment = Column('driving_experiment_name', Text)
+    ensemble = Column('driving_model_ensemble_member', Text)
+
+    rcm_name = column_property(f.substr(model_id, f.char_length(institute) + 2))
 
 
 class Info(Base):

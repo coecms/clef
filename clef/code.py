@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+# Most probably to delete
+#from datetime import datetime, timedelta
+#from sqlalchemy import any_, or_
+#from sqlalchemy.orm import aliased
+#from itertools import groupby
 import sys
 import os
 import pandas as pd
@@ -26,7 +30,7 @@ import itertools
 from sqlalchemy import any_
 
 from .db import connect, Session
-from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
+from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, CordexDataset
 from .exception import ClefException
 from .esgf import esgf_query
 from .helpers import convert_periods, time_axis, check_values, check_keys, fix_model, fix_path, \
@@ -206,15 +210,16 @@ def build_query(session, project, **kwargs):
 
     """   
 
-    # for cmip5 separate var from other constraints
-    if project == 'CMIP5' and 'variable' in kwargs.keys():
+    # for cmip5, cordex separate var from other constraints 
+    if (project in ['CMIP5', 'CORDEX']) and ('variable' in kwargs):
         var = kwargs.pop('variable')
     if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')
     if project == 'CMIP6' and 'activity_id' in kwargs.keys():
         activity = kwargs.pop('activity_id')
     ctables={'CMIP5': [C5Dataset, Path.c5dataset],
-          'CMIP6': [C6Dataset, Path.c6dataset]}
+          'CMIP6': [C6Dataset, Path.c6dataset],
+          'CORDEX': [CordexDataset, Path.cordexdataset] }
     family_dict = {'RCP': ['%rcp%'],
                    'ESM': ['esm%'],
                    'Atmos-only': ['sst%', 'amip%', 'aqua%'],
@@ -223,6 +228,7 @@ def build_query(session, project, **kwargs):
                    'Idealized': ['%CO2'],
                    'Paleo': ['lgm','midHolocene', 'past1000'],
                    'historical': ['historical%','%Historical']}
+
     r = (session.query(Path.path.label('path'),
          *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
          *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
@@ -315,6 +321,8 @@ def write_csv(df):
         return
     if 'experiment_id' in df.columns:
         project = 'CMIP6'
+    elif 'domain' in df.columns:
+        project = 'CORDEX'
     else:
         project = 'CMIP5'
     csv_file = f"{project}_query.csv"
@@ -371,26 +379,6 @@ def print_stats(results):
         for m in item.index.values:
             print(f"     {m}: {', '.join(item.loc[m,'members'])}")
     print("\n")
-
-
-def local_latest(results):
-    """Sift through local query results dataframe and return only the latest versions
- 
-    Args:
-        results (pandas.DataFrame): each row describes one simulation matching the constraints
-
-    Returns:
-        results (pandas.DataFrame): same but only latest versions
-
-    """
-
-    if len(results.index) <= 1:
-        return results
-    # separate all the attributes which could be different between two versions
-    separate = ['path', 'version', 'time_complete', 'filename','fdate', 'tdate', 'periods']
-    cols = [k for k in results.columns if k not in separate]
-    results = results.sort_values('version').drop_duplicates(subset=cols, keep='last')
-    return results
 
 
 def ids_df(dids):
