@@ -213,7 +213,7 @@ def build_query(session, project, **kwargs):
     # for cmip5, cordex separate var from other constraints 
     if (project in ['CMIP5', 'CORDEX']) and ('variable' in kwargs):
         var = kwargs.pop('variable')
-    if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
+    if project in ['CMIP5', 'CORDEX'] and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')
     if project == 'CMIP6' and 'activity_id' in kwargs.keys():
         activity = kwargs.pop('activity_id')
@@ -226,8 +226,9 @@ def build_query(session, project, **kwargs):
                    'Control': ['sstClim%', '%Control'],
                    'decadal': ['decadal%','noVolc%', 'volcIn%'],
                    'Idealized': ['%CO2'],
+                   'All': ['%'],
                    'Paleo': ['lgm','midHolocene', 'past1000'],
-                   'historical': ['historical%','%Historical']}
+                   'Historical': ['historical%','%Historical']}
 
     r = (session.query(Path.path.label('path'),
          *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
@@ -236,8 +237,10 @@ def build_query(session, project, **kwargs):
         .join(Path.extended)
         .join(ctables[project][1])
         .filter_by(**kwargs))
-    if 'family' in locals():
+    if 'family' in locals() and project == 'CMIP5':
           r =r.filter(C5Dataset.experiment.like(any_(family_dict[family])))
+    if 'family' in locals() and project == 'CORDEX':
+          r =r.filter(CordexDataset.experiment.like(any_(family_dict[family])))
     if 'var' in locals(): 
         r = r.filter(ExtendedMetadata.variable == var)
     if 'activity' in locals():
