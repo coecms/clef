@@ -106,15 +106,15 @@ def test_search(session):
     # missing assertion
 
 def test_stats(local_results, results5, results6):
-    sdf =  stats(local_results)
+    sdf =  stats(local_results, "CMIP5")
     assert sorted(sdf.loc['mod1', 'members']) == ['r1i1p1','r2i1p1']
     assert sdf['count'].sum() == 5
     assert sorted(sdf.index.values) == ['mod1', 'mod2', 'mod3']
-    sdf =  stats(results6)
+    sdf =  stats(results6, "CMIP6")
     assert sorted(sdf.loc['NorESM2-LM','members']) == ['r3i1p1f1']
     assert sdf['count'].sum() == 2
     assert sorted(sdf.index.unique()) == ['NESM3', 'NorESM2-LM']
-    sdf =  stats(results5)
+    sdf =  stats(results5, "CMIP5")
     assert sorted(sdf.loc['EC-EARTH','members']) == ['r5i1p1']
     assert sdf['count'].sum() == 2
     assert sorted(sdf.index.unique()) == ['EC-EARTH', 'MIROC5']

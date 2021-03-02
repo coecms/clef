@@ -173,17 +173,17 @@ def get_facets(project):
 
     """
     project = project.upper()
-    facets =  {'CMIP6': {}, 'CMIP5': {}}
+    facets =  {'CMIP6': {}, 'CMIP5': {}, 'CORDEX': {}}
     ffacets = pkg_resources.resource_filename(__name__, 'data/facets.json')
     with open(ffacets, 'r') as f:
          data = json.loads(f.read()) 
     try:
         new_keys = ['mip','pr', 'e', 'f', 'gr', 'inst', 'era', 'res',  'prod',
-                    'r', 'm', 'mtype', 'se', 't', 'v', 'vl', 'en', 'ef', 'cf']
-        #for x,y in zip(new_keys, [x for x in data.keys()]):
-        #    facets['CMIP6'][x] = y
-        facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x for x in data.keys()])}
-        facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x for x in data.values()])}
+                    'r', 'm', 'mtype', 'se', 't', 'v', 'vl', 'en', 'ef', 'cf', 
+                    'd', 'rcmv', 'dmod', 'dex']
+        facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x[0] for x in data.values()])}
+        facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x[1] for x in data.values()])}
+        facets['CORDEX'] = {k:v for k,v in zip(new_keys, [x[2] for x in data.values()])}
     except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return facets[project]
@@ -204,13 +204,13 @@ def check_keys(valid_keys, kwargs):
     # rewrite kwargs with the right facet name
     args = {}
     for key,value in kwargs.items():
-        facet = [k for k,v in valid_keys.items() if key in v]
-        if facet==[]:
+        facets = [k for k,v in valid_keys.items() if key in v]
+        if facets==[]:
             raise ClefException(
                 f"Warning {key} is not a valid constraint name"
                 f"Valid constraints are:\n{valid_keys.values()}")
         else:
-            args[facet[0]] = value
+            args[facets[0]] = value
     return args
 
 
@@ -225,8 +225,8 @@ def check_values(args, project, vocabularies):
     Returns:
 
     """
-    if project not in ['CMIP5', 'CMIP6']:
-        raise ClefException(f'Search for {project} not yet implemented')
+    if project not in ['CMIP5', 'CMIP6', 'CORDEX']:
+        raise ClefException(f'Query for {project} not yet implemented')
     facets = [v for v in get_facets(project).values() if v is not None]
     for k,v in args.items():
         if k not in facets:

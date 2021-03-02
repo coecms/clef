@@ -305,17 +305,19 @@ def test_cite(runner, prod_cli):
 def test_cf_standard_name(prod_cli):
     facets = ['--model=UKESM1-0-LL','--experiment=historical','--frequency=mon','--cf_standard_name=surface_temperature','--variant_label=r1i1p1f2']
     r = prod_cli(['cmip6', *facets])
-    assert r.output == ("/g/data1b/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/ts/gn/v20190406/\n\n" +
-        "Everything available on ESGF is also available locally\n")
+    assert r.output == ("/g/data/oi10/replicas/CMIP6/CMIP/MOHC/UKESM1-0-LL/historical/r1i1p1f2/Amon/ts/gn/v20190406/\n\n" +
+        "Available on ESGF but not locally:\n" +    
+        "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Emon.tslsiLut.gn.v20191105\n")
 
     r = prod_cli(['--remote', 'cmip6', *facets])
-    assert r.output == "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.ts.gn.v20190406\n"
+    assert r.output == ("CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Amon.ts.gn.v20190406\n" +
+                       "CMIP6.CMIP.MOHC.UKESM1-0-LL.historical.r1i1p1f2.Emon.tslsiLut.gn.v20191105\n")
 
     facets = ['--model=ACCESS1.0','--experiment=historical',
             '--frequency=mon', '--realm=atmos', '--cf_standard_name=surface_temperature', '--ensemble=r1i1p1']
 
     r = prod_cli(['cmip5', *facets])
-    assert r.output == ("/g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/ts/\n\n" +
+    assert r.output == ("/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/latest/ts/\n\n" +
         "Everything available on ESGF is also available locally\n")
 
     r = prod_cli(['--remote', 'cmip5', *facets])
@@ -326,13 +328,17 @@ def test_cf_standard_name(prod_cli):
 def test_cordex(prod_cli):
     r = prod_cli('cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
     assert r.output == """
-/g/data1/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614/
+    /g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614/
+/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20200927/
+/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/v20180614/
+/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/v20200927/
 
 Everything available on ESGF is also available locally
 """.lstrip()
 
     r = prod_cli('--remote cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
-    assert r.output == "cordex.output.AUS-44.UNSW.CSIRO-BOM-ACCESS1-0.historical.r1i1p1.WRF360K.v1.mon.tas.v20180614\n"
+    assert r.output == "cordex.output.AUS-44.UNSW.CSIRO-BOM-ACCESS1-0.historical.r1i1p1.WRF360K.v1.mon.tas.v20200927\n"
 
     r = prod_cli('--local cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
-    assert r.output == "/g/data1/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614\n"
+    assert r.output == ("/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614\n" +
+ "/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/v20180614\n")

@@ -18,8 +18,8 @@
 
 from clef.cordex import *
 
-def test_get_facets():
-    q = get_facets(project='CORDEX')
+def test_get_esgf_facets():
+    q = get_esgf_facets(project='CORDEX')
 
     assert len(q['activity_id']) == 0
     assert '20130927' in q['version']

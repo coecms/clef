@@ -319,10 +319,10 @@ def write_csv(df):
     if len(df.index) == 0:
         print(f'Nothing to write to csv file')
         return
-    if 'experiment_id' in df.columns:
-        project = 'CMIP6'
-    elif 'domain' in df.columns:
+    if 'cordex_domain' in df.columns:
         project = 'CORDEX'
+    elif 'experiment_id' in df.columns:
+        project = 'CMIP6'
     else:
         project = 'CMIP5'
     csv_file = f"{project}_query.csv"
@@ -334,18 +334,19 @@ def write_csv(df):
     except IOError:
         print("I/O error")
 
-def stats(results):
+def stats(results, project):
     """Return some stats on query results
 
     Args:
         results (pandas.DataFrame): each row describes one simulation matching the constraints
+        project (string): the dataset project (CMIP5, CMIP6, CORDEX)
     
     Returns:
         member_by_model (pandas.DataFrame): results rearranged as model: members list, members number
 
     """
 
-    project = results['project'].iloc[0]
+    #project = results['project'].iloc[0]
     attrs = get_facets(project)
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \
@@ -353,17 +354,18 @@ def stats(results):
     return member_by_model 
 
 
-def print_stats(results):
+def print_stats(results, project):
     """Call stats function and then print out query statistics
 
     Args:
         results (pandas.DataFrame): each row describes one simulation matching the constraints
+        project (string): the dataset project (CMIP5, CMIP6, CORDEX)
 
     """
     if len(results.index) == 0:
         print('No results are available for this query')
         return
-    sdf = stats(results)
+    sdf = stats(results, project)
 
     print("\nQuery summary")
     # print total number of models and their names
@@ -408,6 +410,7 @@ def ids_df(dids):
 
     """
     project = dids[0].split(".")[0]
+    facets = get_facets(project.upper())
     if project == 'CMIP6':
         facets_list = ['project', 'activity_id', 'institution_id', 'source_id',
                   'experiment_id', 'member_id', 'table_id', 'variable_id',
@@ -415,6 +418,9 @@ def ids_df(dids):
     elif project == 'cmip5':
         facets_list = ['project', 'product', 'institute', 'model', 'experiment',
                        'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
+    elif project == 'cordex':
+        facets_list = ['project', 'product', 'cordex_domain', 'institute_id', 'driving_model_id',
+                       'driving_experiment_name', 'driving_model_ensemble_member', 'model_id', 'rcm_version_id', 'frequency',  'variable', 'version']
     else:
         print(f'Warning: project {project} not available')
         return results 

@@ -267,9 +267,11 @@ def cmip5(ctx, query, debug, distrib, replica, latest, csvf, stats,
         'time_frequency': time_frequency,
         'cmor_table': cmor_table,
         'variable': variable,
-        'experiment_family': experiment_family
+        'experiment_family': experiment_family,
+        'cf_standard_name': cf_standard_name,
+        'and_attr': and_attr
         }
-    common_esgf_cli(ctx, project, query, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, latest, replica, distrib, csvf, stats, debug, dataset_constraints)
 
 
 @clef.command()
@@ -319,11 +321,12 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         'table_id': table_id,
         'variable_id': variable_id,
         'variant_label': variant_label,
-        'cf_standard_name': cf_standard_name
+        'cf_standard_name': cf_standard_name,
+        'and_attr': and_attr
         }
 
     common_esgf_cli(ctx, project, query, latest, replica, distrib,
-        csvf, stats, debug, dataset_constraints, and_attr)
+        csvf, stats, debug, dataset_constraints, cite)
 
 
 @clef.command(cls=cordex_.CordexCommand)
@@ -335,11 +338,11 @@ def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
     project='CORDEX'
 
     common_esgf_cli(ctx, project, [], latest, replica, distrib, csvf, stats, debug,
-            dataset_constraints, cite)
+            dataset_constraints)
 
 
 def common_esgf_cli(ctx, project, query, latest, replica, distrib,
-               csvf, stats, debug, constraints, and_attr, cite=False):
+               csvf, stats, debug, constraints, cite=False):
 
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -356,6 +359,11 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
         'CMIP5': ['model','ensemble'],
         'CMIP6': ['source_id','member_id'],
         }
+
+    if 'and_attr' in constraints.keys():
+        and_attr = constraints.pop('and_attr')
+    else:
+        and_attr = []
 
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
@@ -390,7 +398,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
             for did in ids:
                 print(did)
         if stats:
-            print_stats(results)
+            print_stats(results, project)
         if csvf:
             write_csv(results)
         if cite:
@@ -413,7 +421,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
         if csvf:
             write_csv(results)
         if stats:
-            print_stats(results)
+            print_stats(results, project)
         if cite:
             ids = get_ids(results) 
             citations = citation(ids)
