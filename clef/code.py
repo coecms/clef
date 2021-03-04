@@ -211,7 +211,7 @@ def build_query(session, project, **kwargs):
     """   
 
     # for cmip5, cordex separate var from other constraints 
-    if (project in ['CMIP5', 'CORDEX']) and ('variable' in kwargs):
+    if project in ['CMIP5', 'CORDEX'] and 'variable' in kwargs:
         var = kwargs.pop('variable')
     if project in ['CMIP5', 'CORDEX'] and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')

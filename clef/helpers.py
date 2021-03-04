@@ -272,8 +272,8 @@ def fix_model(project, models, invert=False):
         invert (bool): Invert the conversion (so go from ``CESM1(BGC)`` to ``CESM1-BGC``)
 
     """
-    project = project.upper()
-    if project  == 'CMIP5':
+    project = project.upper().split('-')[0]
+    if project  in ['CMIP5', 'CORDEX']:
         mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
         with open(mfile, 'r') as f:
             mdict = json.loads(f.read())

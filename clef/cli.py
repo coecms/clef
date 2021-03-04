@@ -337,6 +337,16 @@ def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
     
     project='CORDEX'
 
+    # check model name is ESGF-valid (i.e. BOM-SDM no BOM-SDMa-NRM)
+    # turns out this doesn't help as these files do not have any attributes! I'm leabing the code here just inca se other models come out but I'll comment it
+    #if len(dataset_constraints['rcm_name']) > 0:
+    #    dataset_constraints['rcm_name'] = fix_model(project, dataset_constraints['rcm_name'])
+    # change experiment_family to tuple to behave like other arguments
+    if dataset_constraints['experiment_family'] == None:
+        dataset_constraints['experiment_family'] = ()
+    else:
+        dataset_constraints['experiment_family'] = (dataset_constraints['experiment_family'],)
+
     common_esgf_cli(ctx, project, [], latest, replica, distrib, csvf, stats, debug,
             dataset_constraints)
 
@@ -358,6 +368,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
     matching_fixed = {
         'CMIP5': ['model','ensemble'],
         'CMIP6': ['source_id','member_id'],
+        'CORDEX': ['model','ensemble']
         }
 
     if 'and_attr' in constraints.keys():
