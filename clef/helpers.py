@@ -309,6 +309,12 @@ def fix_path(path, latest):
         dirs=path.split("/")
         vdir = dirs[-2].replace('d','v')
         return "/".join(dirs[:-3]+[vdir, ""])
+    elif '/rr3/publications/CORDEX' in path and latest:
+        dirs=path.split("/")
+        n = -2
+        if '/files/' in path:
+            n = -3
+        return "/".join(dirs[0:n]+['latest/'])
     else:
         return path
 

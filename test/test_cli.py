@@ -328,10 +328,7 @@ def test_cf_standard_name(prod_cli):
 def test_cordex(prod_cli):
     r = prod_cli('cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
     assert r.output == """
-    /g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614/
-/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20200927/
-/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/v20180614/
-/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/v20200927/
+    /g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/latest/
 
 Everything available on ESGF is also available locally
 """.lstrip()
@@ -340,5 +337,4 @@ Everything available on ESGF is also available locally
     assert r.output == "cordex.output.AUS-44.UNSW.CSIRO-BOM-ACCESS1-0.historical.r1i1p1.WRF360K.v1.mon.tas.v20200927\n"
 
     r = prod_cli('--local cordex --experiment historical --variable tas --institute UNSW --time_frequency mon --rcm_name WRF360K --driving_model CSIRO-BOM-ACCESS1-0 --domain AUS-44'.split(' '))
-    assert r.output == ("/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/files/d20180614\n" +
- "/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/v20180614\n")
+    assert r.output == "/g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360K/v1/mon/tas/latest\n"
