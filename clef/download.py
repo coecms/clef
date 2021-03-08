@@ -53,13 +53,14 @@ def write_request(project, missing):
         f.write(" ".join(['variable='] + list(variables)))
     f.close()
 
-    print('\nFinished writing file: '+fname)
-    answer = input('Do you want to proceed with request for missing files? (N/Y)\n No is default\n')
-    if answer  in ['Y','y','yes','YES'] and platform.node()[0:3] == 'vdi':
-        helpdesk(user, fpath, project)
-    else:
-        print(f'Your request has been saved in \n {fpath}')
-        print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
+    # print('\nFinished writing file: '+fname)
+    if platform.node()[0:3] == 'vdi':
+        answer = input('Do you want to proceed with request for missing files? (N/Y)\n No is default\n')
+        if answer  in ['Y','y','yes','YES']:
+            helpdesk(user, fpath, project)
+            return
+    print(f'Your request has been saved in \n {fpath}')
+    print('You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.')
     return
 
 
