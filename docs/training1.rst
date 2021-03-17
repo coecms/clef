@@ -33,6 +33,7 @@ Command syntax
     Commands:
       cmip5  Search ESGF and local database for CMIP5 files Constraints can be...
       cmip6  Search ESGF and local database for CMIP6 files Constraints can be...
+      cordex  Search ESGF and local database for CORDEX files Constraints can be...
       ds     Search local database for non-ESGF datasets
 
 
@@ -150,10 +151,10 @@ although for some it is no possible to pass all the possible values
     !clef cmip5 --variable tasmin --experiment historical --table day --ensemble r2i1p1
 
 
-    /g/data1/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/day/atmos/day/r2i1p1/files/tasmin_20110518/
-    /g/data1b/al33/replicas/CMIP5/combined/CCCma/CanCM4/historical/day/atmos/day/r2i1p1/v20120207/tasmin/
-    /g/data1b/al33/replicas/CMIP5/combined/CCCma/CanCM4/historical/day/atmos/day/r2i1p1/v20120612/tasmin/
-    /g/data1b/al33/replicas/CMIP5/combined/CCCma/CanESM2/historical/day/atmos/day/r2i1p1/v20120410/tasmin/
+    /g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/day/atmos/day/r2i1p1/files/tasmin_20110518/
+    /g/data/al33/replicas/CMIP5/combined/CCCma/CanCM4/historical/day/atmos/day/r2i1p1/v20120207/tasmin/
+    /g/data/al33/replicas/CMIP5/combined/CCCma/CanCM4/historical/day/atmos/day/r2i1p1/v20120612/tasmin/
+    /g/data/al33/replicas/CMIP5/combined/CCCma/CanESM2/historical/day/atmos/day/r2i1p1/v20120410/tasmin/
     ...
     
     The following datasets are not yet available in the database, but they have been requested or recently downloaded
@@ -168,19 +169,17 @@ find locally, the tool check an NCI table listing the downloads they are
 working on. Finally it lists missing datasets which are in the download
 queue, followed by the datasets that are not available locally and no
 one has yet requested.
-
-The tool list the datasets paths and dataset_ids, if you want you can
-get a more detailed list by file by passing the *–format file* option.
+The tool list the datasets paths and dataset_ids.
 
 The query by default returns the latest available version. What if we
 want to have a look at all the available versions?::
 
-    !clef cmip5 --variable tasmin --experiment historical --table Amon -m ACCESS1.0 --all-versions --format file
+    !clef cmip5 --variable tasmin --experiment historical --table Amon -m ACCESS1.0 --all-versions
 
 
-    /g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/files/tasmin_20120115/tasmin_Amon_ACCESS1-0_historical_r1i1p1_185001-200512.nc
-    /g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r2i1p1/files/tasmin_20130726/tasmin_Amon_ACCESS1-0_historical_r2i1p1_185001-200512.nc
-    /g/data1/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r3i1p1/files/tasmin_20140402/tasmin_Amon_ACCESS1-0_historical_r3i1p1_185001-200512.nc
+    /g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r1i1p1/files/tasmin_20120115/
+    /g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r2i1p1/files/tasmin_20130726/
+    /g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/ACCESS1-0/historical/mon/atmos/Amon/r3i1p1/files/tasmin_20140402/
     
     Everything available on ESGF is also available locally
 

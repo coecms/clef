@@ -26,6 +26,7 @@ Currently it searches for the following datasets:
 
 - **CMIP5**  raijin projects: rr3, where NCI is the primary publisher and al33 for replicas 
 - **CMIP6**  raijin projects: 0i10 for replicas 
+- **CORDEX**  raijin projects: rr3, where NCI is the primary publisher and al33 for replicas 
 
 The search returns both the path of data that is already available at NCI as well as information on data that
 is on external ESGF nodes but not yet available locally.
@@ -38,6 +39,8 @@ Clef is pre-installed into a Conda environment at NCI. Load it with::
 
     module use /g/data3/hh5/public/modules
     module load conda/analysis3-unstable
+
+NB You need to be a member of hh5 to load the modules
 
 We are constantly adding new features, the development version is available in a separate environment::
     module use /g/data3/hh5/public/modules
@@ -67,13 +70,13 @@ You can filter CMIP5 by the following terms:
  * ensemble/member
  * experiment
  * experiment-family
- * institution
  * model
  * table/cmor_table
  * realm
  * frequency
  * variable
  * cf-standard-name
+ * institution
 
 See ``clef cmip5 --help`` for all available filters and their aliases
 
@@ -99,18 +102,45 @@ You can filter CMIP6 by the following terms:
  
  * activity
  * experiment
- * institution
  * source_type 
  * model
  * member
  * table
+ * grid
+ * resolution
  * realm
  * frequency
  * variable
  * version
+ * sub_experiment
+ * variant_label
+ * institution
+ * cf_standard_name
 
 See ``clef cmip6 --help`` for all available filters
 
+clef cordex
+~~~~~
+
+You can filter CORDEX by the following terms:
+ 
+ * experiment
+ * domain
+ * driving_model
+ * rcm_name (model)
+ * rcm_version
+ * ensemble
+ * table
+ * time_frequency
+ * variable
+ * version
+ * experiment_family
+ * institute
+ * cf_standard_name
+
+See ``clef cordex --help`` for all available filters
+
+-------
 -------
 Develop
 -------

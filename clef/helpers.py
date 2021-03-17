@@ -23,6 +23,7 @@ from calendar import monthrange
 from datetime import datetime, timedelta
 
 from .exception import ClefException
+from .cordex import get_esgf_facets
 
 
 def get_version(path):
@@ -39,7 +40,7 @@ def get_version(path):
     if mo:
         return  "v" + mo.group()
     else:
-        return  None 
+        return  'NA' 
 
 
 def get_member(path):
@@ -180,7 +181,7 @@ def get_facets(project):
     try:
         new_keys = ['mip','pr', 'e', 'f', 'gr', 'inst', 'era', 'res',  'prod',
                     'r', 'm', 'mtype', 'se', 't', 'v', 'vl', 'en', 'ef', 'cf', 
-                    'd', 'rcmv', 'dmod', 'dex']
+                    'd', 'rcmv', 'vrs', 'dex', 'dmod']
         facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x[0] for x in data.values()])}
         facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x[1] for x in data.values()])}
         facets['CORDEX'] = {k:v for k,v in zip(new_keys, [x[2] for x in data.values()])}
@@ -228,6 +229,11 @@ def check_values(args, project, vocabularies):
     if project not in ['CMIP5', 'CMIP6', 'CORDEX']:
         raise ClefException(f'Query for {project} not yet implemented')
     facets = [v for v in get_facets(project).values() if v is not None]
+    # keeping this to test cmip5 and cmip6 facets when we switched to get them from esgf
+    #for k in facets:
+    #    if k != 'None':
+    #        if vocabularies[k] == []:
+    #            print(f'facet {k} has an empty vocab')
     for k,v in args.items():
         if k not in facets:
             raise ClefException(f'"{k}" is not a valid facet for project {project}')
@@ -249,10 +255,17 @@ def load_vocabularies(project):
 
     """
     project = project.upper()
-    vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
-    with open(vfile, 'r') as f:
-         data = f.read()
-         vocab = json.loads(data)
+    if project.split('-')[0] == 'CORDEX':
+        vocab = get_esgf_facets('CORDEX')
+        vocab['frequency'] = vocab['time_frequency']
+        vocab['attributes'] = [k for k in vocab.keys()]
+
+    else:
+
+        vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
+        with open(vfile, 'r') as f:
+            data = f.read()
+            vocab = json.loads(data)
     return vocab
 
 

@@ -333,7 +333,15 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
 @common_args
 @click.pass_context
 def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
+    """
+    Search ESGF and local database for CORDEX files.
+
+    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
+    The --latest flag will check ESGF for the latest version available, this is the default behaviour
+    NB. for CORDEX data associated to CMIP6 use  the cmip6 command with CORDEX as activity_id
+    """
     dataset_constraints = {k:v for k, v in kwargs.items() if k in cordex_.cli_facets}
+    dataset_constraints['and_attr'] = kwargs['and_attr']
     
     project='CORDEX'
 
@@ -366,9 +374,12 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
     s = Session()
 
     matching_fixed = {
-        'CMIP5': ['model','ensemble'],
-        'CMIP6': ['source_id','member_id'],
-        'CORDEX': ['model','ensemble']
+        ('CMIP5', 'local'): ['model','ensemble'],
+        ('CMIP5', 'remote'): ['model','ensemble'],
+        ('CMIP6', 'local'): ['source_id','member_id'],
+        ('CMIP6', 'remote'): ['source_id','member_id'],
+        ('CORDEX','local'): ['cordex_domain', 'driving_model_id','model_id', 'driving_model_ensemble_member'],
+        ('CORDEX','remote'): ['domain', 'driving_model','rcm_name', 'ensemble']
         }
 
     if 'and_attr' in constraints.keys():
@@ -388,7 +399,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
 
     if ctx.obj['flow'] == 'remote':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, matching_fixed[project], project=project,
+            results, selection = matching(s, and_attr, matching_fixed[(project,'remote')], project=project,
                                           local=False, latest=latest, **terms)
             for row in selection.itertuples():
                 print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join([v[0] for v in row.version])}")
@@ -420,10 +431,13 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
     # if local, query DB based on attributes not checksums
     if ctx.obj['flow'] == 'local':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, matching_fixed[project], project=project,
+            results, selection = matching(s, and_attr, matching_fixed[(project,'local')], project=project,
                                           local=True, latest=latest, **terms)
             for row in selection.itertuples():
-                print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join(row.version)}")
+                line = f"{' / '.join(row.Index[:])} versions: {', '.join(row.version)}"
+                if project == 'CORDEX':
+                    line += f" rcm versions: {', '.join(row.rcm_version_id)}"
+                print(line)
         else:
             results, paths = call_local_query(s, project, latest, **terms)
             if not stats:

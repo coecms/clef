@@ -1,7 +1,7 @@
 {"source_id:model:m": {"CMIP5": "model", "CMIP6": "source_id", "CORDEX": "rcm_name"},
  "realm": {"CMIP5": "realm", "CMIP6": "realm", "CORDEX": "NA"},
  "source_type:model_type": {"CMIP5": "NA", "CMIP6": "source_type", "CORDEX": "NA"},
- "time_frequency:frequency:f": {"CMIP5": "time_frequency", "CMIP6": "frequency", "CORDEX": "frequency"},
+ "time_frequency:frequency:f": {"CMIP5": "time_frequency", "CMIP6": "frequency", "CORDEX": "time_frequency"},
  "variable_id:variable:v": {"CMIP5": "variable", "CMIP6": "variable_id", "CORDEX": "variable"},
  "experiment_id:experiment:e": {"CMIP5": "experiment", "CMIP6": "experiment_id", "CORDEX": "experiment"},
  "activity_id:activity": {"CMIP5": "NA", "CMIP6": "activity_id", "CORDEX":"NA"},

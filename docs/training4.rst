@@ -26,24 +26,24 @@ be *model* and *member*.::
 The function returns the selected models/members combinations that have
 both variables and the corresponding subset of the original query
 *results*. NB currently using the abbreviated version for the
-constraints keys won’t work, you will have to use the attributes full
+constraints keys will not work, you will have to use the attributes full
 names. You can see by printing the length of both lists and one of the
 first item of *selection* that the results have been grouped by
 models/ensembles and then filtered.::
 
     print(len(results),len(selection))
-    selection[0]
 
+    174 87
 
-    46 23
+    selection.iloc[0,:]
+    comb                                          {(mrso,), (pr,)}
+    table_id                                          {Amon, Lmon}
+    path         {/g/data/fs38/publications/CMIP6/CMIP/CSIRO-AR...
+    version                                            {v20191108}
+    frequency                                                {mon}
+    index                                               (322, 608)
+    Name: (ACCESS-CM2, r1i1p1f1), dtype: object
 
-    {'source_id': 'BCC-CSM2-MR',
-     'member_id': 'r1i1p1f1',
-     'comb': {('mrso',), ('pr',)},
-     'table_id': {'Amon', 'Lmon'},
-     'pdir': {'/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Amon/pr/gn/v20181126',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Lmon/mrso/gn/v20181114'},
-     'version': {'v20181114', 'v20181126'}}
 
 
 The full definition the **matching()** shows all the function arguments:
@@ -64,21 +64,17 @@ We can pass more than value for more than one attribute, let’s add
     constraints = {'variable_id': ['pr','mrso'], 'frequency': ['mon'], 'experiment_id': ['historical', 'piControl']}
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
     print(len(results),len(selection))
-    selection[0]
 
+    275 93
 
-    100 29
-
-    {'source_id': 'BCC-CSM2-MR',
-     'member_id': 'r1i1p1f1',
-     'comb': {('mrso',), ('pr',)},
-     'table_id': {'Amon', 'Lmon'},
-     'pdir': {'/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Amon/pr/gn/v20181126',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Lmon/mrso/gn/v20181114',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/piControl/r1i1p1f1/Amon/pr/gn/v20181016',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/piControl/r1i1p1f1/Lmon/mrso/gn/v20181012'},
-     'version': {'v20181012', 'v20181016', 'v20181114', 'v20181126'}}
-
+    selection.iloc[0,:]
+    comb                                          {(mrso,), (pr,)}
+    table_id                                          {Amon, Lmon}
+    path         {/g/data/fs38/publications/CMIP6/CMIP/CSIRO-AR...
+    version                                 {v20191108, v20191112}
+    frequency                                                {mon}
+    index                                     (322, 624, 680, 766)
+    Name: (ACCESS-CM2, r1i1p1f1), dtype: object
 
 As you can see we get now many more results but only a few more
 combinations after applying the filter. This is because we are still
@@ -90,19 +86,19 @@ list.::
     fixed = ['source_id', 'member_id','experiment_id']
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
     print(len(results),len(selection))
-    selection[0]
 
+    270 135
 
-    98 49
+    selection.iloc[0,:]
 
-    {'source_id': 'BCC-CSM2-MR',
-     'member_id': 'r1i1p1f1',
-     'experiment_id': 'historical',
-     'comb': {('mrso',), ('pr',)},
-     'table_id': {'Amon', 'Lmon'},
-     'pdir': {'/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Amon/pr/gn/v20181126',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Lmon/mrso/gn/v20181114'},
-     'version': {'v20181114', 'v20181126'}}
+    comb                                          {(mrso,), (pr,)}
+    table_id                                          {Amon, Lmon}
+    path         {/g/data/fs38/publications/CMIP6/CMIP/CSIRO-AR...
+    version                                            {v20191108}
+    frequency                                                {mon}
+    index                                               (322, 680)
+    Name: (ACCESS-CM2, r1i1p1f1, historical), dtype: object
+
 
 
 If we wanted to find all models/members combinations which have both
@@ -113,23 +109,19 @@ was and add *experiment_id* to the *allvalues* list instead.::
     fixed=['source_id','member_id']
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
     print(len(results),len(selection))
-    selection[0]
 
+    168 42
 
-    80 20
+    selection.iloc[0,:]
 
-    {'source_id': 'BCC-CSM2-MR',
-     'member_id': 'r1i1p1f1',
-     'comb': {('mrso', 'historical'),
-      ('mrso', 'piControl'),
-      ('pr', 'historical'),
-      ('pr', 'piControl')},
-     'table_id': {'Amon', 'Lmon'},
-     'pdir': {'/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Amon/pr/gn/v20181126',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/historical/r1i1p1f1/Lmon/mrso/gn/v20181114',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/piControl/r1i1p1f1/Amon/pr/gn/v20181016',
-      '/g/data1b/oi10/replicas/CMIP6/CMIP/BCC/BCC-CSM2-MR/piControl/r1i1p1f1/Lmon/mrso/gn/v20181012'},
-     'version': {'v20181012', 'v20181016', 'v20181114', 'v20181126'}}
+    comb         {(pr, piControl), (pr, historical), (mrso, piC...
+    table_id                                          {Amon, Lmon}
+    path         {/g/data/fs38/publications/CMIP6/CMIP/CSIRO-AR...
+    version                                 {v20191108, v20191112}
+    frequency                                                {mon}
+    index                                     (322, 624, 680, 766)
+    Name: (ACCESS-CM2, r1i1p1f1), dtype: object
+
 
 
 AND filter applied to remote ESGF query
@@ -146,25 +138,17 @@ the ESGF database, so you can see what has been published.::
     fixed=['model','ensemble']
     results, selection = matching(s, allvalues, fixed, local=False, **constraints)
     print(len(results),len(selection))
-    selection[0]
 
+    1494 47
 
-    1488 46
+    selection.iloc[0,:]
 
-    {'model': 'CNRM-CM5',
-     'ensemble': 'r1i1p1',
-     'comb': {('tasmax', 'historical'),
-      ('tasmax', 'rcp26'),
-      ('tasmax', 'rcp85'),
-      ('tasmin', 'historical'),
-      ('tasmin', 'rcp26'),
-      ('tasmin', 'rcp85')},
-     'cmor_table': {'Amon'},
-     'dataset_id': {'cmip5.output1.CNRM-CERFACS.CNRM-CM5.historical.mon.atmos.Amon.r1i1p1.v20110901|esg1.umr-cnrm.fr',
-      'cmip5.output1.CNRM-CERFACS.CNRM-CM5.rcp26.mon.atmos.Amon.r1i1p1.v20110629|esg1.umr-cnrm.fr',
-      'cmip5.output1.CNRM-CERFACS.CNRM-CM5.rcp85.mon.atmos.Amon.r1i1p1.v20110930|esg1.umr-cnrm.fr'},
-     'version': {'v20110629', 'v20110901', 'v20110930'}}
-
+    comb          {(tasmax, rcp26), (tasmin, historical), (tasmi...
+    dataset_id    {cmip5.output1.CNRM-CERFACS.CNRM-CM5.rcp85.mon...
+    version              {(v20110930,), (v20110901,), (v20110629,)}
+    cmor_table                                               {Amon}
+    index         (422, 423, 424, 425, 426, 427, 476, 477, 478, ...
+    Name: (CNRM-CM5, r1i1p1), dtype: object
 
 Please note how I used different attributes names because we are
 querying CMIP5 now. *comb* highlights all the combinations that have to

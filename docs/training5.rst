@@ -2,11 +2,6 @@
 New features
 ------------
 
-We recently added new output features following a user request. These
-are currently only available in the analysis3-unstable environment::
-
-     $ module load conda/analysis3-unstable
-
 CSV file output
 ~~~~~~~~~~~~~~~
 

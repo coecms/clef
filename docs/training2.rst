@@ -69,11 +69,11 @@ Controlling the ouput: clef options
     !clef --local cmip6 -e 1pctCO2 -t Amon -v tasmax -v tasmin -g gr
 
 
-    /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20180626
-    /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-ESM2-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20181018
-    /g/data1b/oi10/replicas/CMIP6/CMIP/EC-Earth-Consortium/EC-Earth3-Veg/1pctCO2/r1i1p1f1/Amon/tasmax/gr/v20190702
-    /g/data1b/oi10/replicas/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/1pctCO2/r1i1p1f1/Amon/tasmax/gr/v20180727
-    /g/data1b/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmin/gr/v20180626
+    /g/data/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20180626
+    /g/data/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-ESM2-1/1pctCO2/r1i1p1f2/Amon/tasmax/gr/v20181018
+    /g/data/oi10/replicas/CMIP6/CMIP/EC-Earth-Consortium/EC-Earth3-Veg/1pctCO2/r1i1p1f1/Amon/tasmax/gr/v20190702
+    /g/data/oi10/replicas/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/1pctCO2/r1i1p1f1/Amon/tasmax/gr/v20180727
+    /g/data/oi10/replicas/CMIP6/CMIP/CNRM-CERFACS/CNRM-CM6-1/1pctCO2/r1i1p1f2/Amon/tasmin/gr/v20180626
     ...
 
 In this example we used the *–local* option for the main command
@@ -118,20 +118,11 @@ back).::
 
 
 The *–remote* option returns the Dataset_ids of the data matching the
-constraints, regardless that they are available locally or not.::
+constraints, regardless that they are available locally or not.
 
-    !clef --remote cmip6 -e 1pctCO2 -v tasmin -t Amon -g gr -mi r1i1p1f2 --format file
-
-
-    CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20180626.tasmin_Amon_CNRM-CM6-1_1pctCO2_r1i1p1f2_gr_185001-199912.nc
-    CMIP6.CMIP.CNRM-CERFACS.CNRM-ESM2-1.1pctCO2.r1i1p1f2.Amon.tasmin.gr.v20181018.tasmin_Amon_CNRM-ESM2-1_1pctCO2_r1i1p1f2_gr_185001-199912.nc
-
-
-Running the same command with the option *–format file* after the
-sub-command, will return the File_ids instead of the default
-Dataset_ids. Please note that *–local*, *–remote* and *–missing*
-together with *–request*, which we will look at next, are all options of
-the main command **clef** and they need to come before any sub-commands.
+Please note that *–local*, *–remote* and *–missing* together with *–request*,
+which we will look at next, are all options of the main command **clef** 
+and they need to come before any sub-commands.
 
 Requesting new data
 -------------------
@@ -164,6 +155,7 @@ option to request it from NCI. Let’s see how it works.::
     Finished writing file: CMIP6_pxp581_20191114T134444.txt
     Do you want to proceed with request for missing files? (N/Y)
      No is default
+
     Your request has been saved in 
      /home/581/pxp581/clef/docs/CMIP6_pxp581_20191114T134444.txt
     You can use this file to request the data via the NCI helpdesk: help@nci.org.au  or https://help.nci.org.au.
@@ -173,8 +165,8 @@ We run the same query which gave us as a result 4 missing datasets but
 this time we used the *–request* option after **clef**. The tool will
 execute the query remotely, then look for matches locally and on the NCI
 download list. Having found none gives as an option of putting in a
-request. It will accept any of the following as a positive answer: > Y
-YES y yes
+request. It will accept any of the following as a positive answer::
+     Y YES y yes
 
 With anything else or if you don’t pass anything it will assume you
 don’t want to put in a request. It still saved the request in a file we
@@ -190,7 +182,7 @@ can use later.::
 
 If I answered ‘yes’ the tool would have sent an e-mail to the NCI
 helpdesk with the text file attached, NCI can pass that file as input to
-their download tool and queue your request. NB if you are running clef
-from raijin you cannot send an e-mail so in that case the tool will
-remind you you you need to send an e-mail to the NCI helpdesk yourself
+their download tool and queue your request. 
+NB you cannot send e-mails from gadi as a user, so in that case the tool will
+simply remind you need to send an e-mail to the NCI helpdesk yourself
 to finalise the request.

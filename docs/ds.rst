@@ -1,4 +1,4 @@
-Climate collections command line search
+Climate collections command line query 
 =======================================
 
 The **ds** command is a new feature of clef and we are still defining its behaviour.
@@ -38,7 +38,7 @@ NB this is not an exhaustive list of the climate collections at NCI and not all 
                                       together with from-date. Format is YYYYMMDD
         --help                        Show this message and exit.
 
-shows the available arguments, if you specify any of the variable options then the search will return a list of variables rather then datasets.
+shows the available arguments, if you specify any of the variable options then the query will return a list of variables rather then datasets.
 Since variables can be named differently among datasets, using the standard_nameor cmor_name options to identify them, if available, is the best option.
 
 Examples
@@ -54,7 +54,7 @@ Looking for all datasets which have air temperature data and netcdf as file form
       tas: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/tas/tas_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
 
 NB for each variable a path structure is returned.
-This returns a subset of the previous search using the cmor_name to clearly identify one kind of air_temperature::
+This returns a subset of the previous query using the cmor_name to clearly identify one kind of air_temperature::
 
     $ clef ds -f netcdf --cmor-name ta
       ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc

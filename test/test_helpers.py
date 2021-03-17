@@ -123,7 +123,7 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/v20130405') == 'v20130405'
     assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
     assert get_version('/g/data/inst/model/var/files/tas_20110518') == 'v20110518'
-    assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
+    assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == 'NA' 
 
 def test_get_member():
     assert get_member('/g/data/inst/model/var/r0i0p0f0/v20130405') == 'r0i0p0f0'
@@ -138,6 +138,8 @@ def test_get_facets():
     assert facets6['gr'] == 'grid_label'
     facets5 = get_facets('CMIP5')
     assert facets5['t'] == 'cmor_table'
+    facetscor = get_facets('CORDEX')
+    assert facetscor['dmod'] == 'driving_model'
 
 def test_get_id(results6, dids6):
     assert get_id(results6.iloc[0]) == dids6[0]

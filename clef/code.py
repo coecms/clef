@@ -295,7 +295,9 @@ def and_filter(df, cols, fixed, **kwargs):
     df =df.reset_index()
     # useful is a list of fields to retain in the table
     useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
-              'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
+              'cmor_table','table_id', 'ensemble', 'member_id', 'driving_model_id',
+               'driving_model_ensemble_member', 'model_id', 'frequency', 
+               'cordex_domain', 'driving_experiment_name', 'rcm_version_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in [c for c in df.columns.values]]
     # define the aggregation dictionary
     agg_dict = {k: set for k in fields}
