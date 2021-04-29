@@ -88,7 +88,7 @@ You use the *--and* option to pass the *allvalues* arguments, it assumes that *m
 
 The CORDEX dataset has more default attributes to define a simulation and they are different depending if you are doing a local or remote query.
 For local queries:
-      *cordex_domain*, *driving_model_id*, *model_id* and *driving_model_ensemble_member*,
+      *domain*, *driving_model*, *model_id* and *ensemble*
 And for remote queries:
       *domain*, *driving_model*, *rcm_name* and *ensemble*
 These differences reflect the fact that the local query uses the file attributes, while the remote query uses the ESGF facets. Unfortunately different terminology have been used.

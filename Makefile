@@ -5,6 +5,7 @@ SHELL=/bin/bash
 
 check test:
 	${ENV} py.test --db=postgresql://clef.nci.org.au/clef test
+#	${ENV} py.test --db=postgresql://clefdev.nci.org.au/clef test
 
 package:
 	${ENV} conda build . --user coecms

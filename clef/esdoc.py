@@ -177,6 +177,7 @@ def write_cite(citations):
     try:
         with open(out_file, 'w') as f:
             f.write('\n'.join(citations))
+            print(f'Saving to {out_file}')
     except IOError:
         print("I/O error")
 

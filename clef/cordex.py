@@ -37,6 +37,10 @@ def get_esgf_facets(project):
 cli_facets = {
     "domain": {"short": ["-d"], "help": "CORDEX region name", "controlled_vocab": True},
     "experiment": { "short": ["-e"],
+        "help": "Experiment",
+        "controlled_vocab": True,
+    },
+    "driving_experiment": { "short": ["-dex"],
         "help": "CMIP5 experiment of driving GCM or 'evaluation' for re-analysis",
         "controlled_vocab": True,
     },
@@ -70,7 +74,9 @@ class CordexCommand(click.Command):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        facets = get_esgf_facets(project="CORDEX")
+        facets = get_esgf_facets(project="CORDEX,CORDEX-Adjust,CORDEX-ESD,CORDEXReklies")
+        facets['driving_experiment'] = facets['experiment']
+        facets['rcm_name'].append('CCAM-1391M')
         for k, v in cli_facets.items():
             opt = click.Option(
                 [f"--{k}"] + v['short'], help=v["help"], multiple=(False if 'one' in v.keys() else True), metavar="FACET"

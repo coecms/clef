@@ -294,10 +294,13 @@ def and_filter(df, cols, fixed, **kwargs):
     # reset index so index is available as column
     df =df.reset_index()
     # useful is a list of fields to retain in the table
-    useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
-              'cmor_table','table_id', 'ensemble', 'member_id', 'driving_model_id',
-               'driving_model_ensemble_member', 'model_id', 'frequency', 
-               'cordex_domain', 'driving_experiment_name', 'rcm_version_id']) - set(fixed)
+    useful =  set(['version', 'source_id', 'model', 'path','dataset_id', 'domain',
+        'cmor_table','table_id', 'ensemble', 'member_id', 'driving_experiment',
+        'model_id', 'frequency', 'driving_model', 'rcm_version']) - set(fixed)
+    #useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
+    #          'cmor_table','table_id', 'ensemble', 'member_id', 'driving_model_id',
+    #           'driving_model_ensemble_member', 'model_id', 'frequency', 
+    #           'cordex_domain', 'driving_experiment_name', 'rcm_version_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in [c for c in df.columns.values]]
     # define the aggregation dictionary
     agg_dict = {k: set for k in fields}
@@ -306,9 +309,8 @@ def and_filter(df, cols, fixed, **kwargs):
     # and aggregate rows with matching values creating a set for each including path and version
     d = (df.groupby(fixed)
        .agg(agg_dict))
-    # create a filter to select the rows where the lenght of the simulation combinations is
+    # create a filter to select the rows where the lenght of the simulation combinations 
     # is equal to the number of "cols" combinations and apply to table
-    #selection = d[d['comb'].map(len) == len(comb)]
     selection = d[d['comb'].map(len) == len(comb)]
     # select full rows from original dataframe using original index 
     if len(selection.index) > 0 :
@@ -336,8 +338,10 @@ def write_csv(df):
     try:
         with open(csv_file, 'w') as csvfile:
             csvfile.write(df[columns].to_csv())
+        print(f'Saving to {csv_file}')
     except IOError:
         print("I/O error")
+
 
 def stats(results, project):
     """Return some stats on query results
@@ -351,7 +355,6 @@ def stats(results, project):
 
     """
 
-    #project = results['project'].iloc[0]
     attrs = get_facets(project)
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \
@@ -387,6 +390,7 @@ def print_stats(results, project):
             print(f"     {m}: {', '.join(item.loc[m,'members'])}")
     print("\n")
 
+
 def local_latest(results):
     """Sift through local query results dataframe and return only the latest versions
 
@@ -403,6 +407,7 @@ def local_latest(results):
     cols = [k for k in results.columns if k not in separate]
     results = results.sort_values('version').drop_duplicates(subset=cols, keep='last')
     return results
+
 
 def ids_df(dids):
     """Convert dataset_ids in DataFrame in same style as query results
@@ -424,8 +429,10 @@ def ids_df(dids):
         facets_list = ['project', 'product', 'institute', 'model', 'experiment',
                        'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
     elif project == 'cordex':
-        facets_list = ['project', 'product', 'cordex_domain', 'institute_id', 'driving_model_id',
-                       'driving_experiment_name', 'driving_model_ensemble_member', 'model_id', 'rcm_version_id', 'frequency',  'variable', 'version']
+        facets_list = ['project', 'product', 'domain', 'institute', 'driving_model',
+                  'driving_experiment', 'ensemble', 'model_id', 'rcm_version', 'frequency',  'variable', 'version']
+        #facets_list = ['project', 'product', 'cordex_domain', 'institute_id', 'driving_model_id',
+        #               'driving_experiment_name', 'driving_model_ensemble_member', 'model_id', 'rcm_version_id', 'frequency',  'variable', 'version']
     else:
         print(f'Warning: project {project} not available')
         return results 

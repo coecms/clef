@@ -207,10 +207,8 @@ def ds_args(f):
         click.option('--format', '-f', 'fileformat', multiple=False, type=click.Choice(['netcdf','grib','HDF5','binary']),
                       help="Dataset file format as defined in clef.db Dataset table"),
         click.option('--standard-name', '-sn', multiple=True, type=click.Choice(st_names),
-        #click.option('--standard-name', '-sn', multiple=False, type=click.Choice(st_names),
                       help="Variable standard_name this is the most reliable way to look for a variable across datasets"),
         click.option('--cmor-name', '-cn', multiple=True, type=click.Choice(cm_names),
-        #click.option('--cmor-name', '-cn', multiple=False, type=click.Choice(cm_names),
                       help="Variable cmor_name useful to look for a variable across datasets"),
         click.option('--variable', '-va', 'varname', multiple=True, type=click.Choice(variables),
                       help="Variable name as defined in files: tas, pr, sic, T ... "),
@@ -343,12 +341,8 @@ def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
     dataset_constraints = {k:v for k, v in kwargs.items() if k in cordex_.cli_facets}
     dataset_constraints['and_attr'] = kwargs['and_attr']
     
-    project='CORDEX'
+    project="CORDEX,CORDEX-Adjust,CORDEX-ESD,CORDEXReklies"
 
-    # check model name is ESGF-valid (i.e. BOM-SDM no BOM-SDMa-NRM)
-    # turns out this doesn't help as these files do not have any attributes! I'm leabing the code here just inca se other models come out but I'll comment it
-    #if len(dataset_constraints['rcm_name']) > 0:
-    #    dataset_constraints['rcm_name'] = fix_model(project, dataset_constraints['rcm_name'])
     # change experiment_family to tuple to behave like other arguments
     if dataset_constraints['experiment_family'] == None:
         dataset_constraints['experiment_family'] = ()
@@ -374,13 +368,13 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
     s = Session()
 
     matching_fixed = {
-        ('CMIP5', 'local'): ['model','ensemble'],
-        ('CMIP5', 'remote'): ['model','ensemble'],
-        ('CMIP6', 'local'): ['source_id','member_id'],
-        ('CMIP6', 'remote'): ['source_id','member_id'],
-        ('CORDEX','local'): ['cordex_domain', 'driving_model_id','model_id', 'driving_model_ensemble_member'],
-        ('CORDEX','remote'): ['domain', 'driving_model','rcm_name', 'ensemble']
+        'CMIP5': ['model','ensemble'],
+        'CMIP6': ['source_id','member_id'],
+        'CORDEX': ['domain', 'driving_model','rcm_name', 'ensemble']
         }
+    if ctx.obj['flow'] == 'local' and project[0:6] == 'CORDEX':
+        matching_fixed['CORDEX'][2] = 'model_id' 
+        project+=',CORDEX-Australasia' 
 
     if 'and_attr' in constraints.keys():
         and_attr = constraints.pop('and_attr')
@@ -399,7 +393,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
 
     if ctx.obj['flow'] == 'remote':
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, matching_fixed[(project,'remote')], project=project,
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=False, latest=latest, **terms)
             for row in selection.itertuples():
                 print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join([v[0] for v in row.version])}")
@@ -430,8 +424,10 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
 
     # if local, query DB based on attributes not checksums
     if ctx.obj['flow'] == 'local':
+        if project[0:6] == 'CORDEX':
+            project='CORDEX'
         if len(and_attr) > 0:
-            results, selection = matching(s, and_attr, matching_fixed[(project,'local')], project=project,
+            results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=True, latest=latest, **terms)
             for row in selection.itertuples():
                 line = f"{' / '.join(row.Index[:])} versions: {', '.join(row.version)}"
@@ -479,7 +475,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
     #  update list and print result
     if qm.count() > 0:
         varlist = []
-        if project in ['CMIP5','CORDEX'] and 'variable' in terms:
+        if project in ['CMIP5'] and 'variable' in terms:
             varlist = terms['variable']
         updated = search_queue_csv(qm, project, varlist)
         print('\nAvailable on ESGF but not locally:')
@@ -490,7 +486,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
         return
 
     if ctx.obj['flow'] == 'request':
-        if project in ['CMIP5','CORDEX'] and len(varlist) == 0:
+        if project in ['CMIP5'] and len(varlist) == 0:
             raise ClefException("Please specify at least one variable to request")
         if len(updated) >0:
             write_request(project,updated)
