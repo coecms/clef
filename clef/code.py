@@ -14,11 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Most probably to delete
-#from datetime import datetime, timedelta
-#from sqlalchemy import any_, or_
-#from sqlalchemy.orm import aliased
-#from itertools import groupby
 import sys
 import os
 import pandas as pd

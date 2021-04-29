@@ -31,10 +31,6 @@ from .exception import ClefException
 from .code import call_local_query, matching, write_csv, print_stats, ids_df
 from .helpers import load_vocabularies, fix_model, fix_path, get_ids
 from .esdoc import citation, write_cite
-#HERE possibly can delete the commented imports
-#import json
-#import pkg_resources
-#import re
 import clef.cordex as cordex_
 
 def clef_catch():
