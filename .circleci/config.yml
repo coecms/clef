@@ -16,6 +16,8 @@ run_conda: &run_conda
             command: |
                 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O conda.sh
                 bash conda.sh -b -p ~/miniconda
+                source ~/miniconda/bin/activate
+                conda update --all --yes
         - run:
             name: setup
             command: |
@@ -30,7 +32,7 @@ run_conda: &run_conda
             command: |
                 source ~/miniconda/bin/activate
                 mv conda/run_test_coverage.sh conda/run_test.sh
-                conda build conda -c conda-forge --python=${PYTHON_VER} --output-folder /tmp/artefacts
+                conda build conda -c conda-forge --output-folder /tmp/artefacts
                 cp /tmp/artefacts/*/*.tar.bz2 /tmp/artefacts/persist
         - run:
             name: report-coverage
