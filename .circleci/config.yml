@@ -16,6 +16,8 @@ run_conda: &run_conda
             command: |
                 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O conda.sh
                 bash conda.sh -b -p ~/miniconda
+                source ~/miniconda/bin/activate
+                conda update --all --yes
         - run:
             name: setup
             command: |
