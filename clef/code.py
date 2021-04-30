@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import sys
 import os
 import pandas as pd
@@ -26,7 +25,7 @@ import itertools
 from sqlalchemy import any_
 
 from .db import connect, Session
-from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata
+from .model import Path, C5Dataset, C6Dataset, ExtendedMetadata, CordexDataset
 from .exception import ClefException
 from .esgf import esgf_query
 from .helpers import convert_periods, time_axis, check_values, check_keys, fix_model, fix_path, \
@@ -206,23 +205,26 @@ def build_query(session, project, **kwargs):
 
     """   
 
-    # for cmip5 separate var from other constraints
-    if project == 'CMIP5' and 'variable' in kwargs.keys():
+    # for cmip5, cordex separate var from other constraints 
+    if project in ['CMIP5', 'CORDEX'] and 'variable' in kwargs:
         var = kwargs.pop('variable')
-    if project == 'CMIP5' and 'experiment_family' in kwargs.keys():
+    if project in ['CMIP5', 'CORDEX'] and 'experiment_family' in kwargs.keys():
         family = kwargs.pop('experiment_family')
     if project == 'CMIP6' and 'activity_id' in kwargs.keys():
         activity = kwargs.pop('activity_id')
     ctables={'CMIP5': [C5Dataset, Path.c5dataset],
-          'CMIP6': [C6Dataset, Path.c6dataset]}
+          'CMIP6': [C6Dataset, Path.c6dataset],
+          'CORDEX': [CordexDataset, Path.cordexdataset] }
     family_dict = {'RCP': ['%rcp%'],
                    'ESM': ['esm%'],
                    'Atmos-only': ['sst%', 'amip%', 'aqua%'],
                    'Control': ['sstClim%', '%Control'],
                    'decadal': ['decadal%','noVolc%', 'volcIn%'],
                    'Idealized': ['%CO2'],
+                   'All': ['%'],
                    'Paleo': ['lgm','midHolocene', 'past1000'],
-                   'historical': ['historical%','%Historical']}
+                   'Historical': ['historical%','%Historical']}
+
     r = (session.query(Path.path.label('path'),
          *[c.label(c.name) for c in ctables[project][0].__table__.columns if c.name != 'dataset_id'],
          *[c.label(c.name) for c in ExtendedMetadata.__table__.columns if c.name != 'file_id']
@@ -230,8 +232,10 @@ def build_query(session, project, **kwargs):
         .join(Path.extended)
         .join(ctables[project][1])
         .filter_by(**kwargs))
-    if 'family' in locals():
+    if 'family' in locals() and project == 'CMIP5':
           r =r.filter(C5Dataset.experiment.like(any_(family_dict[family])))
+    if 'family' in locals() and project == 'CORDEX':
+          r =r.filter(CordexDataset.experiment.like(any_(family_dict[family])))
     if 'var' in locals(): 
         r = r.filter(ExtendedMetadata.variable == var)
     if 'activity' in locals():
@@ -285,8 +289,13 @@ def and_filter(df, cols, fixed, **kwargs):
     # reset index so index is available as column
     df =df.reset_index()
     # useful is a list of fields to retain in the table
-    useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
-              'cmor_table','table_id', 'ensemble', 'member_id']) - set(fixed)
+    useful =  set(['version', 'source_id', 'model', 'path','dataset_id', 'domain',
+        'cmor_table','table_id', 'ensemble', 'member_id', 'driving_experiment',
+        'model_id', 'frequency', 'driving_model', 'rcm_version']) - set(fixed)
+    #useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
+    #          'cmor_table','table_id', 'ensemble', 'member_id', 'driving_model_id',
+    #           'driving_model_ensemble_member', 'model_id', 'frequency', 
+    #           'cordex_domain', 'driving_experiment_name', 'rcm_version_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in [c for c in df.columns.values]]
     # define the aggregation dictionary
     agg_dict = {k: set for k in fields}
@@ -295,9 +304,8 @@ def and_filter(df, cols, fixed, **kwargs):
     # and aggregate rows with matching values creating a set for each including path and version
     d = (df.groupby(fixed)
        .agg(agg_dict))
-    # create a filter to select the rows where the lenght of the simulation combinations is
+    # create a filter to select the rows where the lenght of the simulation combinations 
     # is equal to the number of "cols" combinations and apply to table
-    #selection = d[d['comb'].map(len) == len(comb)]
     selection = d[d['comb'].map(len) == len(comb)]
     # select full rows from original dataframe using original index 
     if len(selection.index) > 0 :
@@ -313,7 +321,9 @@ def write_csv(df):
     if len(df.index) == 0:
         print(f'Nothing to write to csv file')
         return
-    if 'experiment_id' in df.columns:
+    if 'cordex_domain' in df.columns:
+        project = 'CORDEX'
+    elif 'experiment_id' in df.columns:
         project = 'CMIP6'
     else:
         project = 'CMIP5'
@@ -323,21 +333,23 @@ def write_csv(df):
     try:
         with open(csv_file, 'w') as csvfile:
             csvfile.write(df[columns].to_csv())
+        print(f'Saving to {csv_file}')
     except IOError:
         print("I/O error")
 
-def stats(results):
+
+def stats(results, project):
     """Return some stats on query results
 
     Args:
         results (pandas.DataFrame): each row describes one simulation matching the constraints
+        project (string): the dataset project (CMIP5, CMIP6, CORDEX)
     
     Returns:
         member_by_model (pandas.DataFrame): results rearranged as model: members list, members number
 
     """
 
-    project = results['project'].iloc[0]
     attrs = get_facets(project)
     # group results by model and create members list, finally count memebrs number for each model
     member_by_model = results.groupby(attrs['m'])[attrs['en']] \
@@ -345,17 +357,18 @@ def stats(results):
     return member_by_model 
 
 
-def print_stats(results):
+def print_stats(results, project):
     """Call stats function and then print out query statistics
 
     Args:
         results (pandas.DataFrame): each row describes one simulation matching the constraints
+        project (string): the dataset project (CMIP5, CMIP6, CORDEX)
 
     """
     if len(results.index) == 0:
         print('No results are available for this query')
         return
-    sdf = stats(results)
+    sdf = stats(results, project)
 
     print("\nQuery summary")
     # print total number of models and their names
@@ -375,13 +388,11 @@ def print_stats(results):
 
 def local_latest(results):
     """Sift through local query results dataframe and return only the latest versions
- 
+
     Args:
         results (pandas.DataFrame): each row describes one simulation matching the constraints
-
     Returns:
         results (pandas.DataFrame): same but only latest versions
-
     """
 
     if len(results.index) <= 1:
@@ -404,6 +415,7 @@ def ids_df(dids):
 
     """
     project = dids[0].split(".")[0]
+    facets = get_facets(project.upper())
     if project == 'CMIP6':
         facets_list = ['project', 'activity_id', 'institution_id', 'source_id',
                   'experiment_id', 'member_id', 'table_id', 'variable_id',
@@ -411,6 +423,11 @@ def ids_df(dids):
     elif project == 'cmip5':
         facets_list = ['project', 'product', 'institute', 'model', 'experiment',
                        'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
+    elif project == 'cordex':
+        facets_list = ['project', 'product', 'domain', 'institute', 'driving_model',
+                  'driving_experiment', 'ensemble', 'model_id', 'rcm_version', 'frequency',  'variable', 'version']
+        #facets_list = ['project', 'product', 'cordex_domain', 'institute_id', 'driving_model_id',
+        #               'driving_experiment_name', 'driving_model_ensemble_member', 'model_id', 'rcm_version_id', 'frequency',  'variable', 'version']
     else:
         print(f'Warning: project {project} not available')
         return results 

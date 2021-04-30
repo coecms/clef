@@ -97,6 +97,8 @@ def test_fix_path():
     dir6 = '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/files/d20191115/'
     dir7 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/mon/atmos/Amon/r2i1p1/v20120323/ta/'
     dir8 = '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/day/atmos/day/r10i1p1/files/tasmax_20110518/'
+    dir9 = '/g/data/rr3/publications/CORDEX/output/AUS-44i/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360L/v1/mon/snd/files/d20180614/'
+    dir10 = '/g/data/rr3/publications/CORDEX/output/AUS-44i/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360L/v1/mon/snd/v20180614/'
     fname = 'name.nc'
     latest=True
     assert fix_path(dir1, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/tas/'
@@ -108,6 +110,8 @@ def test_fix_path():
     assert fix_path(dir5, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/latest/pr/'
     assert fix_path(dir6, latest) == '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/v20191115/'
     assert fix_path(dir8, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/day/atmos/day/r10i1p1/files/tasmax_20110518/'
+    assert fix_path(dir9, latest) == '/g/data/rr3/publications/CORDEX/output/AUS-44i/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360L/v1/mon/snd/latest/'
+    assert fix_path(dir10, latest) == '/g/data/rr3/publications/CORDEX/output/AUS-44i/UNSW/CSIRO-BOM-ACCESS1-0/historical/r1i1p1/UNSW-WRF360L/v1/mon/snd/latest/'
     latest=False
     assert fix_path(dir5, latest) == '/g/data/rr3/publications/CMIP5/output1/CSIRO-BOM/more/files/pr_20141119/'
     assert fix_path(dir6, latest) == '/g/data/fs38/publications/CMIP6/CMIP/CSIRO/ACCESS-ESM1-5/historical/r1i1p1f1/day/tasmin/gn/v20191115/'
@@ -119,7 +123,7 @@ def test_get_version():
     assert get_version('/g/data/inst/model/var/v20130405') == 'v20130405'
     assert get_version('/g/data/inst/model/var/v20130405/tas/files') == 'v20130405'
     assert get_version('/g/data/inst/model/var/files/tas_20110518') == 'v20110518'
-    assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == None
+    assert get_version('/g/data/inst/model/var/noversionhere/tas/files') == 'NA' 
 
 def test_get_member():
     assert get_member('/g/data/inst/model/var/r0i0p0f0/v20130405') == 'r0i0p0f0'
@@ -134,6 +138,8 @@ def test_get_facets():
     assert facets6['gr'] == 'grid_label'
     facets5 = get_facets('CMIP5')
     assert facets5['t'] == 'cmor_table'
+    facetscor = get_facets('CORDEX')
+    assert facetscor['dmod'] == 'driving_model'
 
 def test_get_id(results6, dids6):
     assert get_id(results6.iloc[0]) == dids6[0]

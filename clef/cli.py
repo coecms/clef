@@ -20,7 +20,6 @@ import logging
 import sys
 import os
 import stat
-
 from itertools import repeat
 from datetime import datetime
 
@@ -32,7 +31,7 @@ from .exception import ClefException
 from .code import call_local_query, matching, write_csv, print_stats, ids_df
 from .helpers import load_vocabularies, fix_model, fix_path, get_ids
 from .esdoc import citation, write_cite
-
+import clef.cordex as cordex_
 
 def clef_catch():
     debug_logger = logging.getLogger('clef_debug')
@@ -123,6 +122,7 @@ def cmip5_args(f):
         click.option('--ensemble', '--member', '-en', 'ensemble', multiple=True, help="CMIP5 ensemble member: r#i#p#"),
         click.option('--frequency', 'time_frequency', multiple=True, type=click.Choice(vocab['time_frequency']) ),
         click.option('--realm', multiple=True, type=click.Choice(vocab['realm']) ),
+        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable` to apply to variable values")),
         click.option('--institution', 'institute', multiple=True, help="Modelling group institution id: MIROC, IPSL, MRI ...")
@@ -136,7 +136,6 @@ def common_args(f):
     """
     constraints = [
         click.argument('query', nargs=-1),
-        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--latest/--all-versions', 'latest', default=True,
                      help="Return only the latest version or all of them. Default: --latest"),
         click.option('--replica/--no-replica', default=False,
@@ -179,6 +178,7 @@ def cmip6_args(f):
         click.option('--sub_experiment_id', '-se', multiple=True,
                      help="Only available for hindcast and forecast experiments: sYYYY"),
         click.option('--variant_label', '-vl', multiple=True, help="Indicates a model variant: r#i#p#f#"),
+        click.option('--cf_standard_name',multiple=True, help="CF variable standard_name, use instead of variable constraint "),
         click.option('--and', 'and_attr', multiple=True, type=click.Choice(vocab['attributes']),
                       help=("Attributes for which we want to add AND filter, i.e. `--and variable_id` to apply to variable values")),
         click.option('--cite', 'cite', is_flag=True, default=False,
@@ -203,10 +203,8 @@ def ds_args(f):
         click.option('--format', '-f', 'fileformat', multiple=False, type=click.Choice(['netcdf','grib','HDF5','binary']),
                       help="Dataset file format as defined in clef.db Dataset table"),
         click.option('--standard-name', '-sn', multiple=True, type=click.Choice(st_names),
-        #click.option('--standard-name', '-sn', multiple=False, type=click.Choice(st_names),
                       help="Variable standard_name this is the most reliable way to look for a variable across datasets"),
         click.option('--cmor-name', '-cn', multiple=True, type=click.Choice(cm_names),
-        #click.option('--cmor-name', '-cn', multiple=False, type=click.Choice(cm_names),
                       help="Variable cmor_name useful to look for a variable across datasets"),
         click.option('--variable', '-va', 'varname', multiple=True, type=click.Choice(variables),
                       help="Variable name as defined in files: tas, pr, sic, T ... "),
@@ -263,9 +261,11 @@ def cmip5(ctx, query, debug, distrib, replica, latest, csvf, stats,
         'time_frequency': time_frequency,
         'cmor_table': cmor_table,
         'variable': variable,
-        'experiment_family': experiment_family
+        'experiment_family': experiment_family,
+        'cf_standard_name': cf_standard_name,
+        'and_attr': and_attr
         }
-    common_esgf_cli(ctx, project, query, cf_standard_name, latest, replica, distrib, csvf, stats, debug, dataset_constraints, and_attr)
+    common_esgf_cli(ctx, project, query, latest, replica, distrib, csvf, stats, debug, dataset_constraints)
 
 
 @clef.command()
@@ -315,17 +315,47 @@ def cmip6(ctx,query, debug, distrib, replica, latest, csvf, stats,
         'table_id': table_id,
         'variable_id': variable_id,
         'variant_label': variant_label,
+        'cf_standard_name': cf_standard_name,
+        'and_attr': and_attr
         }
 
-    common_esgf_cli(ctx, project, query, cf_standard_name, latest,
-        replica, distrib, csvf, stats, debug, dataset_constraints, and_attr, cite)
+    common_esgf_cli(ctx, project, query, latest, replica, distrib,
+        csvf, stats, debug, dataset_constraints, cite)
 
 
-def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
-               replica, distrib, csvf, stats, debug, constraints, and_attr, cite=False):
+@clef.command(cls=cordex_.CordexCommand)
+@common_args
+@click.pass_context
+def cordex(ctx, query, debug, distrib, replica, latest, csvf, stats, **kwargs):
+    """
+    Search ESGF and local database for CORDEX files.
+
+    Constraints can be specified multiple times, in which case they are combined    using OR: -v tas -v tasmin will return anything matching variable = 'tas' or variable = 'tasmin'.
+    The --latest flag will check ESGF for the latest version available, this is the default behaviour
+    NB. for CORDEX data associated to CMIP6 use  the cmip6 command with CORDEX as activity_id
+    """
+    dataset_constraints = {k:v for k, v in kwargs.items() if k in cordex_.cli_facets}
+    dataset_constraints['and_attr'] = kwargs['and_attr']
+    
+    project="CORDEX,CORDEX-Adjust,CORDEX-ESD,CORDEXReklies"
+
+    # change experiment_family to tuple to behave like other arguments
+    if dataset_constraints['experiment_family'] == None:
+        dataset_constraints['experiment_family'] = ()
+    else:
+        dataset_constraints['experiment_family'] = (dataset_constraints['experiment_family'],)
+
+    common_esgf_cli(ctx, project, [], latest, replica, distrib, csvf, stats, debug,
+            dataset_constraints)
+
+
+def common_esgf_cli(ctx, project, query, latest, replica, distrib,
+               csvf, stats, debug, constraints, cite=False):
+
     if debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.getLogger('sqlalchemy.engine').setLevel(level=logging.INFO)
+        logging.getLogger('clex_debug').setLevel(level=logging.INFO)
 
     clef_log = ctx.obj['log']
     user_name=os.environ.get('USER','unknown')
@@ -336,7 +366,16 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
     matching_fixed = {
         'CMIP5': ['model','ensemble'],
         'CMIP6': ['source_id','member_id'],
+        'CORDEX': ['domain', 'driving_model','rcm_name', 'ensemble']
         }
+    if ctx.obj['flow'] == 'local' and project[0:6] == 'CORDEX':
+        matching_fixed['CORDEX'][2] = 'model_id' 
+        project+=',CORDEX-Australasia' 
+
+    if 'and_attr' in constraints.keys():
+        and_attr = constraints.pop('and_attr')
+    else:
+        and_attr = []
 
     # keep track of query arguments in clef_log file
     args_str = ' '.join('{}={}'.format(k,v) for k,v in constraints.items())
@@ -360,7 +399,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
                 distrib=distrib,
                 replica=replica,
                 latest=latest,
-                cf_standard_name=cf_standard_name,
                 project=project,
                 **constraints,
                 )
@@ -372,7 +410,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             for did in ids:
                 print(did)
         if stats:
-            print_stats(results)
+            print_stats(results, project)
         if csvf:
             write_csv(results)
         if cite:
@@ -382,11 +420,16 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
 
     # if local, query DB based on attributes not checksums
     if ctx.obj['flow'] == 'local':
+        if project[0:6] == 'CORDEX':
+            project='CORDEX'
         if len(and_attr) > 0:
             results, selection = matching(s, and_attr, matching_fixed[project], project=project,
                                           local=True, latest=latest, **terms)
             for row in selection.itertuples():
-                print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join(row.version)}")
+                line = f"{' / '.join(row.Index[:])} versions: {', '.join(row.version)}"
+                if project == 'CORDEX':
+                    line += f" rcm versions: {', '.join(row.rcm_version_id)}"
+                print(line)
         else:
             results, paths = call_local_query(s, project, latest, **terms)
             if not stats:
@@ -395,7 +438,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
         if csvf:
             write_csv(results)
         if stats:
-            print_stats(results)
+            print_stats(results, project)
         if cite:
             ids = get_ids(results) 
             citations = citation(ids)
@@ -407,7 +450,6 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
             distrib=distrib,
             replica=replica,
             latest=(latest if latest else None),
-            cf_standard_name=cf_standard_name,
             project=project,
             **terms
             )
@@ -429,7 +471,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
     #  update list and print result
     if qm.count() > 0:
         varlist = []
-        if project == 'CMIP5' and 'variable' in terms:
+        if project in ['CMIP5'] and 'variable' in terms:
             varlist = terms['variable']
         updated = search_queue_csv(qm, project, varlist)
         print('\nAvailable on ESGF but not locally:')
@@ -440,7 +482,7 @@ def common_esgf_cli(ctx, project, query, cf_standard_name, latest,
         return
 
     if ctx.obj['flow'] == 'request':
-        if project == 'CMIP5' and len(varlist) == 0:
+        if project in ['CMIP5'] and len(varlist) == 0:
             raise ClefException("Please specify at least one variable to request")
         if len(updated) >0:
             write_request(project,updated)

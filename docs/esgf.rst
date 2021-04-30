@@ -1,20 +1,20 @@
-ESGF command line search
+ESGF command line query 
 ========================
 
 Four optional flags are available for the **cmip5** and **cmip6** commands to change the output or submit a data request:
 
- * :code:`clef --remote cmip5` returns all the ESGF CMIP5/CMIP6 datasets  matching the constraints, it is the equivalent of doing a search online on an ESGF node 
+ * :code:`clef --remote <dataset>` returns all the ESGF datasets  matching the constraints, it is the equivalent of doing a query online on an ESGF node 
 
- * :code:`clef --local cmip5` finds local files accessing directly the NCI's clef.nci.org.au database so it will also return older versions or datasets that might be temporarily offline.
+ * :code:`clef --local <dataset>` finds local files accessing directly the NCI's clef.nci.org.au database so it will also return older versions or datasets that might be temporarily offline.
 
- * :code:`clef --missing cmip6` finds files on ESGF that haven't been downloaded to NCI
+ * :code:`clef --missing <dataset>` finds files on ESGF that haven't been downloaded to NCI
 
- * :code:`clef --request cmip6` create and pass to NCI a request to download the missing files
+ * :code:`clef --request <dataset>` create and pass to NCI a request to download the missing files
 
-If these flags are omitted then the tool will search on the ESGF datasets matching the constraints and return both the local and missing files lists, based on searching an ESGF node.
+If these flags are omitted then the tool will look for the ESGF datasets matching the constraints and return both the local and missing files lists, based on querying an ESGF node.
 
-The search works like the ESGF search website, e.g. https://esgf.nci.org.au/search/esgf_nci.
-Results can be filtered by using flags matching the ESGF search facets::
+The query works like the ESGF search website, e.g. https://esgf.nci.org.au/search/esgf_nci.
+Results can be filtered by using flags matching the ESGF query facets::
 
     $ clef cmip5 --model ACCESS1.0 \
                --experiment historical \
@@ -24,8 +24,8 @@ Results can be filtered by using flags matching the ESGF search facets::
 
 If the same flag is used multiple times both terms will be searched for.
 
-Please note that CMIP5 and CMIP6 have different names and number of flags, 
-we tried to use the same names wherever possible.
+Please note that CMIP5, CMIP6 and CORDEX have different query facets so different names and number of flags in CleF. 
+We tried to use the same names wherever possible.
 In particular CMIP6 has some new flags available::
            
     $ clef cmip6 --activity CMIP \
@@ -45,8 +45,16 @@ In particular CMIP6 has some new flags available::
              If the resolution is in kms then this is an approximate resolution. Details are available in the appendix 2 of the CMIP6 attributes documentation:  https://goo.gl/v1drZl
              Note that resolution is always composed of two separate words and will need to be passed as a string enclosed in quotes "". 
 
+While CORDEX has flags specifics to their experiment design:
+
+ `domain` - CORDEX region name
+ `rcm_name` - Identifier of the CORDEX Regional Climate Model
+ `rcm_version` - Identifier for reruns with perturbed parameters or smaller RCM release upgrades
+ `driving_model` - Model/analysis used to drive the model (eg. ECMWF­ERAINT)
+
+           
 When querying the ESGF website, the total amount of results is limited to
-5,000 files. If `clef` finds more results it will ask you to refine your query.
+10,000 files. If `clef` finds more results it will ask you to refine your query.
 You can follow the link to see the query `clef` used on the ESGF
 website::
 
@@ -60,7 +68,7 @@ Options
 clef --missing
 ------------
 
-:code:`clef --missing <dataset>` searches ESGF for files that haven't been downloaded to
+:code:`clef --missing <dataset>` queries the ESGF database for files that haven't been downloaded to
 NCI. It returns ESGF dataset IDs for each dataset that has one or more missing files::
 
     $ clef --missing cmip5 --model HadCM3 --experiment historical \
@@ -75,24 +83,22 @@ NOTE: ESGF keeps track of only the most recent versions of each file for a given
 clef --local
 ----------
 
-:code:`clef --local <dataset>` searches the local file system for files that have been
+:code:`clef --local <dataset>` queries the local file system for files that have been
 downloaded to NCI. It returns the path to the file on NCI's /g/data disk::
 
      $ clef --local cmip5 --model HadCM3 --experiment historical --table day --ensemble r1i1p1 \
                           --variable ta --all-versions
-     /g/data1/ua6/unofficial-ESG-replica/tmp/tree/cmip-dn1.badc.rl.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/historical/day/atmos/day/r1i1p1/v20110728/ta/
-     /g/data1/ua6/unofficial-ESG-replica/tmp/tree/esgf-data1.ceda.ac.uk/thredds/fileServer/esg_dataroot/cmip5/output1/MOHC/HadCM3/historical/day/atmos/day/r1i1p1/v20140110/ta/
+     /g/data/al33/replicas/CMIP5/combined/MOHC/HadCM3/historical/day/atmos/day/r1i1p1/v20110728/ta
+     /g/data/al33/replicas/CMIP5/combined/MOHC/HadCM3/historical/day/atmos/day/r1i1p1/v20140110/ta
 
-
-NOTE: Presently the default behaviour for all the ESGF-node based searches is to check for the most recent (latest) version on ESGF, and return only files with that version. This can be disabled with the :code:`--all-versions` flag.
+NOTE: Presently the default behaviour for all the ESGF-node based queries is to check for the most recent (latest) version on ESGF, and return only files with that version. This can be disabled with the :code:`--all-versions` flag.
 The --local option instead currently returns by default all available versions, including versions unpublished by the ESGF but that are still available locally,
-Most of the older CMIP5 collection (ua6 project) has been replaced by the new one (al33i project), this does not include older or superceded versions.
-If you are looking for one of these versions you could try using the ARCCSSive module https://github.com/coecms/arccssive to locate it or ask the helpdesk.
+Most of the older CMIP5 collection (ua6 project) has been replaced by the new one (al33 project), this does not include older or superceded versions.
 
-tips
+Tips
 --------
 
-If your search does not return any results try again at a later time. The tool is searching the ESGF website first 
+If your query does not return any results try again at a later time. The tool is querying the ESGF website first 
 and sometimes one or more nodes can be disconnected and the returned results are incomplete.
 Try the --local flag to at least get what is available locally.
 For CMIP5 you can use the older ARCCSSive tool if in doubt.

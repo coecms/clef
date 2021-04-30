@@ -110,6 +110,7 @@
                 "CDRMIP",
                 "CMIP",
                 "DAMIP",
+                "LUMIP",
                 "OMIP",
                 "PMIP",
                 "RFMIP",
@@ -159,6 +160,104 @@
             },
             "release_year":"2019",
             "source_id":"ACCESS-ESM1-5"
+        },
+        "ACCESS-OM2":{
+            "activity_participation":[
+                "OMIP"
+            ],
+            "cohort":[
+                "Registered"
+            ],
+            "institution_id":[
+                "CSIRO-COSIMA"
+            ],
+            "label":"ACCESS-OM2",
+            "label_extended":"Australian Community Climate and Earth System Simulator Ocean Model Version 2",
+            "model_component":{
+                "aerosol":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "atmos":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "atmosChem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "land":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "landIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocean":{
+                    "description":"ACCESS-OM2 (MOM5, tripolar primarily 1deg; 360 x 300 longitude/latitude; 50 levels; top grid cell 0-2.3 m)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "ocnBgchem":{
+                    "description":"WOMBAT (same grid as ocean)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "seaIce":{
+                    "description":"CICE5.1.2 (same grid as ocean)",
+                    "native_nominal_resolution":"100 km"
+                }
+            },
+            "release_year":"2020",
+            "source_id":"ACCESS-OM2"
+        },
+        "ACCESS-OM2-025":{
+            "activity_participation":[
+                "OMIP"
+            ],
+            "cohort":[
+                "Registered"
+            ],
+            "institution_id":[
+                "CSIRO-COSIMA"
+            ],
+            "label":"ACCESS-OM2-025",
+            "label_extended":"Australian Community Climate and Earth System Simulator Ocean Model Version 2 quarter degree",
+            "model_component":{
+                "aerosol":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "atmos":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "atmosChem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "land":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "landIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocean":{
+                    "description":"ACCESS-OM2 (MOM5, tripolar primarily 1/4 deg; 1440 x 1080 longitude/latitude; 50 levels; top grid cell 0-2.3 m)",
+                    "native_nominal_resolution":"25 km"
+                },
+                "ocnBgchem":{
+                    "description":"WOMBAT (same grid as ocean)",
+                    "native_nominal_resolution":"25 km"
+                },
+                "seaIce":{
+                    "description":"CICE5.1.2 (same grid as ocean)",
+                    "native_nominal_resolution":"25 km"
+                }
+            },
+            "release_year":"2020",
+            "source_id":"ACCESS-OM2-025"
         },
         "ARTS-2-3":{
             "activity_participation":[
@@ -788,6 +887,55 @@
             "release_year":"2018",
             "source_id":"CAM-MPAS-HR"
         },
+        "CAM-MPAS-LR":{
+            "activity_participation":[
+                "HighResMIP"
+            ],
+            "cohort":[
+                "Registered"
+            ],
+            "institution_id":[
+                "PNNL-WACCEM"
+            ],
+            "label":"CAM-MPAS-LR",
+            "label_extended":"CAM MPAS (Community Atmosphere Model - Model for Prediction Across Scales)",
+            "model_component":{
+                "aerosol":{
+                    "description":"none, prescribed MACv2-SP",
+                    "native_nominal_resolution":"100 km"
+                },
+                "atmos":{
+                    "description":"CAM-MPAS (CAMv5.4 with Grell-Freitas deep convection; MPASv4, C-grid staggered centroidal Voronoi tesselation atmosphere 120 km mesh with 40962 cells and 122880 edges; 32 vertical levels, model top 40363 m)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "atmosChem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "land":{
+                    "description":"CLM (v4.0, same grid as atmos), River Transport Model (v1.0)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "landIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocean":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocnBgchem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "seaIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                }
+            },
+            "release_year":"2018",
+            "source_id":"CAM-MPAS-LR"
+        },
         "CAMS-CSM1-0":{
             "activity_participation":[
                 "CFMIP",
@@ -1064,7 +1212,8 @@
                 "Registered"
             ],
             "institution_id":[
-                "UCI"
+                "UCI",
+                "NCAR"
             ],
             "label":"CESM1-WACCM-SC",
             "label_extended":"Community Earth System Model 1, with the Whole Atmosphere Community Climate Model and Specified Chemistry",
@@ -1632,7 +1781,7 @@
                     "native_nominal_resolution":"100 km"
                 },
                 "ocnBgchem":{
-                    "description":"BFM5.1",
+                    "description":"BFM5.2",
                     "native_nominal_resolution":"100 km"
                 },
                 "seaIce":{
@@ -2044,13 +2193,16 @@
         },
         "E3SM-1-0":{
             "activity_participation":[
-                "CMIP"
+                "CFMIP",
+                "CMIP",
+                "ScenarioMIP"
             ],
             "cohort":[
                 "Registered"
             ],
             "institution_id":[
-                "E3SM-Project"
+                "E3SM-Project",
+                "LLNL"
             ],
             "label":"E3SM 1.0",
             "label_extended":"E3SM 1.0 (Energy Exascale Earth System Model)",
@@ -2095,7 +2247,9 @@
             "activity_participation":[
                 "C4MIP",
                 "CMIP",
-                "LS3MIP"
+                "DAMIP",
+                "LS3MIP",
+                "ScenarioMIP"
             ],
             "cohort":[
                 "Registered"
@@ -2146,7 +2300,8 @@
         "E3SM-1-1-ECA":{
             "activity_participation":[
                 "C4MIP",
-                "CMIP"
+                "CMIP",
+                "ScenarioMIP"
             ],
             "cohort":[
                 "Registered"
@@ -2197,9 +2352,11 @@
             "activity_participation":[
                 "CMIP",
                 "CORDEX",
+                "DAMIP",
                 "DCPP",
                 "DynVarMIP",
                 "LS3MIP",
+                "OMIP",
                 "PAMIP",
                 "PMIP",
                 "RFMIP",
@@ -2257,6 +2414,7 @@
             "activity_participation":[
                 "AerChemMIP",
                 "CMIP",
+                "RFMIP",
                 "ScenarioMIP"
             ],
             "cohort":[
@@ -2306,11 +2464,12 @@
         },
         "EC-Earth3-CC":{
             "activity_participation":[
+                "C4MIP",
                 "CDRMIP",
                 "CMIP",
-                "C4MIP",
                 "LUMIP",
-                "OMIP"
+                "OMIP",
+                "ScenarioMIP"
             ],
             "cohort":[
                 "Registered"
@@ -3285,6 +3444,7 @@
                 "CMIP",
                 "DAMIP",
                 "DynVarMIP",
+                "FAFMIP",
                 "GMMIP",
                 "OMIP",
                 "RFMIP",
@@ -3441,6 +3601,7 @@
                 "CMIP",
                 "DAMIP",
                 "DynVarMIP",
+                "FAFMIP",
                 "LUMIP",
                 "RFMIP",
                 "ScenarioMIP"
@@ -4259,6 +4420,7 @@
                 "HighResMIP",
                 "LS3MIP",
                 "OMIP",
+                "PAMIP",
                 "ScenarioMIP"
             ],
             "cohort":[
@@ -4458,7 +4620,8 @@
         "IITM-ESM":{
             "activity_participation":[
                 "CMIP",
-                "GMMIP"
+                "GMMIP",
+                "ScenarioMIP"
             ],
             "cohort":[
                 "Registered"
@@ -4658,7 +4821,9 @@
         },
         "IPSL-CM5A2-INCA":{
             "activity_participation":[
-                "AerChemMIP"
+                "AerChemMIP",
+                "LUMIP",
+                "ScenarioMIP"
             ],
             "cohort":[
                 "Registered"
@@ -4757,6 +4922,7 @@
         "IPSL-CM6A-LR":{
             "activity_participation":[
                 "C4MIP",
+                "CDRMIP",
                 "CFMIP",
                 "CMIP",
                 "DAMIP",
@@ -5136,7 +5302,7 @@
             "label_extended":"Manabe Climate Model v1.0 - University of Arizona",
             "model_component":{
                 "aerosol":{
-                    "description":"Modifies surface albedoes (Haywood et al. 1997, doi: 10.1175/1520-0442(1997)010<1562:GCMCOT>2.0.CO;2)",
+                    "description":"Modifies surface albedoes (Haywood et al. 1997, doi: 10.1175/1520-0442(1997)010&lt;1562:GCMCOT&gt;2.0.CO;2)",
                     "native_nominal_resolution":"250 km"
                 },
                 "atmos":{
@@ -5148,7 +5314,7 @@
                     "native_nominal_resolution":"none"
                 },
                 "land":{
-                    "description":"Standard Manabe bucket hydrology scheme (Manabe 1969, doi: 10.1175/1520-0493(1969)097<0739:CATOC>2.3.CO;2)",
+                    "description":"Standard Manabe bucket hydrology scheme (Manabe 1969, doi: 10.1175/1520-0493(1969)097&lt;0739:CATOC&gt;2.3.CO;2)",
                     "native_nominal_resolution":"250 km"
                 },
                 "landIce":{
@@ -5174,9 +5340,11 @@
         "MIROC-ES2H":{
             "activity_participation":[
                 "AerChemMIP",
+                "C4MIP",
                 "CMIP",
                 "DynVarMIP",
                 "GeoMIP",
+                "ScenarioMIP",
                 "VIACSAB"
             ],
             "cohort":[
@@ -5279,6 +5447,7 @@
                 "C4MIP",
                 "CDRMIP",
                 "CMIP",
+                "DAMIP",
                 "DynVarMIP",
                 "GeoMIP",
                 "LUMIP",
@@ -5401,6 +5570,7 @@
             "activity_participation":[
                 "AerChemMIP",
                 "CMIP",
+                "RFMIP",
                 "ScenarioMIP"
             ],
             "cohort":[
@@ -5455,6 +5625,7 @@
                 "DCPP",
                 "DynVarMIP",
                 "FAFMIP",
+                "GeoMIP",
                 "HighResMIP",
                 "OMIP",
                 "SIMIP",
@@ -5514,6 +5685,7 @@
                 "CDRMIP",
                 "CFMIP",
                 "CMIP",
+                "DAMIP",
                 "DCPP",
                 "DynVarMIP",
                 "FAFMIP",
@@ -5534,7 +5706,8 @@
             ],
             "institution_id":[
                 "MPI-M",
-                "AWI"
+                "AWI",
+                "DKRZ"
             ],
             "label":"MPI-ESM1.2-LR",
             "label_extended":"MPI-ESM1.2-LR",
@@ -6728,6 +6901,7 @@
                 "CMIP",
                 "GMMIP",
                 "LUMIP",
+                "PAMIP",
                 "PMIP",
                 "ScenarioMIP"
             ],
@@ -6832,6 +7006,7 @@
                 "C4MIP",
                 "CDRMIP",
                 "CMIP",
+                "DAMIP",
                 "GeoMIP",
                 "LS3MIP",
                 "LUMIP",
@@ -7097,13 +7272,13 @@
         }
     },
     "version_metadata":{
-        "CV_collection_modified":"Fri Aug 28 10:26:45 2020 -0700",
-        "CV_collection_version":"6.2.53.7",
+        "CV_collection_modified":"Tue Mar  9 11:08:57 2021 -0800",
+        "CV_collection_version":"6.2.55.10",
         "author":"Paul J. Durack <durack1@llnl.gov>",
         "institution_id":"PCMDI",
-        "previous_commit":"13920afe8faaceac1dcd150f9afd5a8245d98fc1",
-        "source_id_CV_modified":"Wed Jul 29 12:59:55 2020 -0700",
-        "source_id_CV_note":"Revise source_id IPSL-CM6A-LR-INCA",
+        "previous_commit":"beb5c86f29724e40b3c8fc9755f321cf236230bd",
+        "source_id_CV_modified":"Tue Feb 16 10:44:59 2021 -0800",
+        "source_id_CV_note":"Revise source_id CMCC-ESM2",
         "specs_doc":"v6.2.7 (10th September 2018; https://goo.gl/v1drZl)"
     }
 }

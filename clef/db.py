@@ -35,6 +35,7 @@ from sqlalchemy.orm import sessionmaker
 from .exception import ClefException
 
 default_url = 'postgresql://clef.nci.org.au:5432/clef'
+#default_url = 'postgresql://clefdev.nci.org.au:5432/clef'
 
 Session = sessionmaker()
 

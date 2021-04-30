@@ -23,6 +23,7 @@ from calendar import monthrange
 from datetime import datetime, timedelta
 
 from .exception import ClefException
+from .cordex import get_esgf_facets
 
 
 def get_version(path):
@@ -39,7 +40,7 @@ def get_version(path):
     if mo:
         return  "v" + mo.group()
     else:
-        return  None 
+        return  'NA' 
 
 
 def get_member(path):
@@ -173,17 +174,17 @@ def get_facets(project):
 
     """
     project = project.upper()
-    facets =  {'CMIP6': {}, 'CMIP5': {}}
+    facets =  {'CMIP6': {}, 'CMIP5': {}, 'CORDEX': {}}
     ffacets = pkg_resources.resource_filename(__name__, 'data/facets.json')
     with open(ffacets, 'r') as f:
          data = json.loads(f.read()) 
     try:
         new_keys = ['mip','pr', 'e', 'f', 'gr', 'inst', 'era', 'res',  'prod',
-                    'r', 'm', 'mtype', 'se', 't', 'v', 'vl', 'en', 'ef', 'cf']
-        #for x,y in zip(new_keys, [x for x in data.keys()]):
-        #    facets['CMIP6'][x] = y
-        facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x for x in data.keys()])}
-        facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x for x in data.values()])}
+                    'r', 'm', 'mtype', 'se', 't', 'v', 'vl', 'en', 'ef', 'cf', 
+                    'd', 'rcmv', 'vrs', 'dex', 'dmod']
+        facets['CMIP6'] = {k:v for k,v in zip(new_keys, [x[0] for x in data.values()])}
+        facets['CMIP5'] = {k:v for k,v in zip(new_keys, [x[1] for x in data.values()])}
+        facets['CORDEX'] = {k:v for k,v in zip(new_keys, [x[2] for x in data.values()])}
     except KeyError:
         raise ClefException(f"Keys validation not defined for project: {project}")
     return facets[project]
@@ -204,13 +205,13 @@ def check_keys(valid_keys, kwargs):
     # rewrite kwargs with the right facet name
     args = {}
     for key,value in kwargs.items():
-        facet = [k for k,v in valid_keys.items() if key in v]
-        if facet==[]:
+        facets = [k for k,v in valid_keys.items() if key in v]
+        if facets==[]:
             raise ClefException(
                 f"Warning {key} is not a valid constraint name"
                 f"Valid constraints are:\n{valid_keys.values()}")
         else:
-            args[facet[0]] = value
+            args[facets[0]] = value
     return args
 
 
@@ -225,9 +226,14 @@ def check_values(args, project, vocabularies):
     Returns:
 
     """
-    if project not in ['CMIP5', 'CMIP6']:
-        raise ClefException(f'Search for {project} not yet implemented')
+    if project not in ['CMIP5', 'CMIP6', 'CORDEX']:
+        raise ClefException(f'Query for {project} not yet implemented')
     facets = [v for v in get_facets(project).values() if v is not None]
+    # keeping this to test cmip5 and cmip6 facets when we switched to get them from esgf
+    #for k in facets:
+    #    if k != 'None':
+    #        if vocabularies[k] == []:
+    #            print(f'facet {k} has an empty vocab')
     for k,v in args.items():
         if k not in facets:
             raise ClefException(f'"{k}" is not a valid facet for project {project}')
@@ -249,10 +255,17 @@ def load_vocabularies(project):
 
     """
     project = project.upper()
-    vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
-    with open(vfile, 'r') as f:
-         data = f.read()
-         vocab = json.loads(data)
+    if project.split('-')[0] == 'CORDEX':
+        vocab = get_esgf_facets('CORDEX')
+        vocab['frequency'] = vocab['time_frequency']
+        vocab['attributes'] = [k for k in vocab.keys()]
+
+    else:
+
+        vfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_validation.json')
+        with open(vfile, 'r') as f:
+            data = f.read()
+            vocab = json.loads(data)
     return vocab
 
 
@@ -272,8 +285,8 @@ def fix_model(project, models, invert=False):
         invert (bool): Invert the conversion (so go from ``CESM1(BGC)`` to ``CESM1-BGC``)
 
     """
-    project = project.upper()
-    if project  == 'CMIP5':
+    project = project.upper().split('-')[0]
+    if project  in ['CMIP5', 'CORDEX']:
         mfile = pkg_resources.resource_filename(__name__, 'data/'+project+'_model_fix.json')
         with open(mfile, 'r') as f:
             mdict = json.loads(f.read())
@@ -309,6 +322,12 @@ def fix_path(path, latest):
         dirs=path.split("/")
         vdir = dirs[-2].replace('d','v')
         return "/".join(dirs[:-3]+[vdir, ""])
+    elif '/rr3/publications/CORDEX' in path and latest:
+        dirs=path.split("/")
+        n = -2
+        if '/files/' in path:
+            n = -3
+        return "/".join(dirs[0:n]+['latest/'])
     else:
         return path
 
