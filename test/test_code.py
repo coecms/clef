@@ -17,6 +17,7 @@
 import pytest
 
 from clef.code import and_filter, matching, local_latest, search, stats, ids_df
+from clef.exception import ClefException
 from code_fixtures import *
 from clef.exception import ClefException
 
@@ -153,9 +154,9 @@ def test_matching(session):
         'ensemble':'r1i1p1',
         'variable': ['x'],
     }
-    # Errors should print a message and return 'None'
-    r = matching(session, ['variable','experiment'],['model','ensemble'], **facets)
-    assert r is None
+    # Errors should raise
+    with pytest.raises(ClefException):
+        matching(session, ['variable','experiment'],['model','ensemble'], **facets)
 
 
 def test_ids_df(dids6, results6, dids5, results5):
