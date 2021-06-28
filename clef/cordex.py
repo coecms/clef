@@ -16,10 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clef.esgf import esgf_query
 import functools
 import click
 
+from clef.esgf import esgf_query
+from clef.helpers import load_vocabularies
 
 def tidy_facet_count(v):
     return v[::2]
@@ -60,7 +61,8 @@ cli_facets = {
         "controlled_vocab": True,
     },
     "version": {"short": ['-vrs'], "help": "Data publication version", "controlled_vocab": True},
-    "cf_standard_name": {"short": ['-cf'], "help": "CF-Conventions name of the variable"},
+    "cf_standard_name": {"short": ['-cf'], "help": "CF-Conventions name of the variable",
+                 "controlled_vocab": True},
     "experiment_family": {"short": ['-ef'], 'one': True, "controlled_vocab": True,
         "help": "Experiment family: All, Historical, RCP"},
     "institute": { "short": ['-inst'],
@@ -74,8 +76,8 @@ class CordexCommand(click.Command):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        facets = get_esgf_facets(project="CORDEX,CORDEX-Adjust,CORDEX-ESD,CORDEXReklies")
-        facets['driving_experiment'] = facets['experiment']
+        #facets = get_esgf_facets(project="CORDEX,CORDEX-Adjust,CORDEX-ESD,CORDEXReklies")
+        facets = load_vocabularies('CORDEX')
         facets['rcm_name'].append('CCAM-1391M')
         for k, v in cli_facets.items():
             opt = click.Option(

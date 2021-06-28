@@ -4084,6 +4084,57 @@
             "release_year":"2019",
             "source_id":"GISS-E2-2-G"
         },
+        "GISS-E2-2-H":{
+            "activity_participation":[
+                "CMIP",
+                "SIMIP",
+                "ScenarioMIP"
+            ],
+            "cohort":[
+                "Registered"
+            ],
+            "institution_id":[
+                "NASA-GISS"
+            ],
+            "label":"GISS-E2.2H",
+            "label_extended":"GISS-E2.2H",
+            "model_component":{
+                "aerosol":{
+                    "description":"Varies with physics-version (p==1 none, p==3 OMA, p==4 TOMAS, p==5 MATRIX)",
+                    "native_nominal_resolution":"250 km"
+                },
+                "atmos":{
+                    "description":"GISS-E2.2 (High Top, 2.5x2 degree; 144 x 90 longitude/latitude; 102 levels; top level 0.002 hPa)",
+                    "native_nominal_resolution":"250 km"
+                },
+                "atmosChem":{
+                    "description":"Varies with physics-version (p==1 Non-interactive, p>1 GPUCCINI)",
+                    "native_nominal_resolution":"250 km"
+                },
+                "land":{
+                    "description":"GISS LSM",
+                    "native_nominal_resolution":"250 km"
+                },
+                "landIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocean":{
+                    "description":"HYCOM Ocean (~1 degree tripolar grid; 360 x 180 longitude/latitude; 32 levels; top grid cell 0-10 m)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "ocnBgchem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "seaIce":{
+                    "description":"GISS SI (same grid as atmos)",
+                    "native_nominal_resolution":"250 km"
+                }
+            },
+            "release_year":"2021",
+            "source_id":"GISS-E2-2-H"
+        },
         "GISS-E3-G":{
             "activity_participation":[
                 "AerChemMIP",
@@ -5034,6 +5085,104 @@
             },
             "release_year":"2019",
             "source_id":"IPSL-CM6A-LR-INCA"
+        },
+        "IPSL-CM6A-MR025":{
+            "activity_participation":[
+                "CMIP"
+            ],
+            "cohort":[
+                "Registered"
+            ],
+            "institution_id":[
+                "IPSL"
+            ],
+            "label":"IPSL-CM6A-MR025",
+            "label_extended":"IPSL-CM6A-MR025",
+            "model_component":{
+                "aerosol":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "atmos":{
+                    "description":"LMDZ (NPv6; 256 x 256 longitude/latitude; 79 levels; top level 80000 m)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "atmosChem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "land":{
+                    "description":"ORCHIDEE (v2.2, Water/Carbon/Energy mode; same grid as atmos)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "landIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocean":{
+                    "description":"NEMO-OPA (eORCA025, tripolar primarily 0.25deg; 1442 x 1207 longitude/latitude; 75 levels; top grid cell 0-2 m)",
+                    "native_nominal_resolution":"25 km"
+                },
+                "ocnBgchem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "seaIce":{
+                    "description":"NEMO-LIM3 (same grid as ocean)",
+                    "native_nominal_resolution":"25 km"
+                }
+            },
+            "release_year":"2021",
+            "source_id":"IPSL-CM6A-MR025"
+        },
+        "IPSL-CM6A-MR1":{
+            "activity_participation":[
+                "CMIP"
+            ],
+            "cohort":[
+                "Registered"
+            ],
+            "institution_id":[
+                "IPSL"
+            ],
+            "label":"IPSL-CM6A-MR1",
+            "label_extended":"IPSL-CM6A-MR1",
+            "model_component":{
+                "aerosol":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "atmos":{
+                    "description":"LMDZ (NPv6; 256 x 256 longitude/latitude; 79 levels; top level 80000 m)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "atmosChem":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "land":{
+                    "description":"ORCHIDEE (v2.2, Water/Carbon/Energy mode; same grid as atmos)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "landIce":{
+                    "description":"none",
+                    "native_nominal_resolution":"none"
+                },
+                "ocean":{
+                    "description":"NEMO-OPA (eORCA1.3, tripolar primarily 1deg; 362 x 332 longitude/latitude; 75 levels; top grid cell 0-2 m)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "ocnBgchem":{
+                    "description":"NEMO-PISCES (same grid as ocean)",
+                    "native_nominal_resolution":"100 km"
+                },
+                "seaIce":{
+                    "description":"NEMO-LIM3 (same grid as ocean)",
+                    "native_nominal_resolution":"100 km"
+                }
+            },
+            "release_year":"2021",
+            "source_id":"IPSL-CM6A-MR1"
         },
         "IPSL-CM7A-ATM-HR":{
             "activity_participation":[
@@ -7272,13 +7421,13 @@
         }
     },
     "version_metadata":{
-        "CV_collection_modified":"Tue Mar  9 11:08:57 2021 -0800",
-        "CV_collection_version":"6.2.55.10",
+        "CV_collection_modified":"Mon Jun 21 11:28:21 2021 -0700",
+        "CV_collection_version":"6.2.56.2",
         "author":"Paul J. Durack <durack1@llnl.gov>",
         "institution_id":"PCMDI",
-        "previous_commit":"beb5c86f29724e40b3c8fc9755f321cf236230bd",
-        "source_id_CV_modified":"Tue Feb 16 10:44:59 2021 -0800",
-        "source_id_CV_note":"Revise source_id CMCC-ESM2",
+        "previous_commit":"66344226746627e0b6c12db974666126c343ce27",
+        "source_id_CV_modified":"Mon Jun 21 11:22:45 2021 -0700",
+        "source_id_CV_note":"Register source_id IPSL-CM6A-MR025",
         "specs_doc":"v6.2.7 (10th September 2018; https://goo.gl/v1drZl)"
     }
 }
