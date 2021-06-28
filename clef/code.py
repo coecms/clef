@@ -292,10 +292,6 @@ def and_filter(df, cols, fixed, **kwargs):
     useful =  set(['version', 'source_id', 'model', 'path','dataset_id', 'domain',
         'cmor_table','table_id', 'ensemble', 'member_id', 'driving_experiment',
         'model_id', 'frequency', 'driving_model', 'rcm_version']) - set(fixed)
-    #useful =  set(['version', 'source_id', 'model', 'path','dataset_id',
-    #          'cmor_table','table_id', 'ensemble', 'member_id', 'driving_model_id',
-    #           'driving_model_ensemble_member', 'model_id', 'frequency', 
-    #           'cordex_domain', 'driving_experiment_name', 'rcm_version_id']) - set(fixed)
     fields = ['comb'] + [f for f in useful if f in [c for c in df.columns.values]]
     # define the aggregation dictionary
     agg_dict = {k: set for k in fields}
@@ -425,9 +421,8 @@ def ids_df(dids):
                        'time_frequency', 'realm', 'cmor_table', 'ensemble', 'version']
     elif project == 'cordex':
         facets_list = ['project', 'product', 'domain', 'institute', 'driving_model',
-                  'driving_experiment', 'ensemble', 'model_id', 'rcm_version', 'frequency',  'variable', 'version']
-        #facets_list = ['project', 'product', 'cordex_domain', 'institute_id', 'driving_model_id',
-        #               'driving_experiment_name', 'driving_model_ensemble_member', 'model_id', 'rcm_version_id', 'frequency',  'variable', 'version']
+             'driving_experiment', 'ensemble', 'model_id', 'rcm_version', 'frequency',
+             'variable', 'version']
     else:
         print(f'Warning: project {project} not available')
         return results 

@@ -33,6 +33,7 @@ from .helpers import load_vocabularies, fix_model, fix_path, get_ids
 from .esdoc import citation, write_cite
 import clef.cordex as cordex_
 
+
 def clef_catch():
     debug_logger = logging.getLogger('clef_debug')
     debug_logger.setLevel(logging.CRITICAL)
