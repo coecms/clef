@@ -34,6 +34,7 @@ from .esdoc import citation, write_cite
 import clef.cordex as cordex_
 
 
+
 def clef_catch():
     debug_logger = logging.getLogger('clef_debug')
     debug_logger.setLevel(logging.CRITICAL)
@@ -45,7 +46,8 @@ def clef_catch():
         sys.exit(1)
 
 
-@click.group()
+
+@click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('--remote', 'flow', is_flag=True, default=False, flag_value='remote',
                help="returns only ESGF search results")
 @click.option('--local', 'flow', is_flag=True, default=False, flag_value='local',
@@ -132,6 +134,7 @@ def cmip5_args(f):
         f = c(f)
     return f
 
+
 def common_args(f):
     """Define common click arguments
     """
@@ -153,6 +156,7 @@ def common_args(f):
     for c in reversed(constraints):
         f = c(f)
     return f
+
 
 def cmip6_args(f):
     """Define CMIP6 only click arguments
@@ -401,6 +405,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
                 replica=replica,
                 latest=latest,
                 project=project,
+                limit=20000,
                 **constraints,
                 )
 
