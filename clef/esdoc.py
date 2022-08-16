@@ -144,28 +144,28 @@ def print_error(uid):
         print(f'Status: {error[k]["status"]}')
         print(f'Description: {error[k]["description"]}')
 
+
 def citation(dids):
-    '''Retrieve citations for a list of CMIP6 dataset ids'''
+    '''Retrieve citations for a list of CMIP6 dataset ids
+       Example url:
+       https://www.wdc-climate.de/ui/cerarest/cmip6Citations?drsId=CMIP6.CMIP.CNRM-CERFACS.CNRM-CM6-1
+    '''
     citations = []
-    url = 'https://cera-www.dkrz.de/WDCC/ui/cerasearch/cmip6?input=' 
-    #fexp = pkg_resources.resource_filename(__name__, 'data/CMIP6_exp_act.json')
-    #with open(fexp, 'r') as f:
-    #     data = json.loads(f.read())
+    url = 'https://www.wdc-climate.de/ui/cerarest/cmip6Citations?drsId='
     for did in dids:
-# get facets from did to build correct url
+        # get facets from did to build correct url
         did_bits = did.split(".")
         version = did_bits[9]
         newdid = ".".join(did_bits[0:5])
         response = requests.get(url+newdid, headers={"User-Agent": "Requests"})
-        soup = BeautifulSoup(response.content, 'lxml')
-        el = soup.find('dt', text="Citation")
-        cite = el.next_sibling.text.replace(" BibTeX  RIS","")
+        cite = response.json()[0]['DATA_REFERENCE']
         if version == 'none':
             now = date.today()
             citations.append(cite.replace("Version YYYYMMDD[1]",f'Accessed on {now}'))
         else:
             citations.append(cite.replace("YYYYMMDD[1].",f"{version}. "))
     return citations
+
 
 def write_cite(citations):
     """Write citations to file

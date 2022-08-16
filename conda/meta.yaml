@@ -25,7 +25,7 @@ requirements:
     run:
         - python
         - six
-        - sqlalchemy<1.4
+        - sqlalchemy
         - psycopg2
         - requests
         - click

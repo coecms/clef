@@ -33,9 +33,10 @@ import sqlalchemy as sa
 import pandas as pd
 
 from sqlalchemy.sql import column
+from sqlalchemy.sql import values as sqlalvalues
 from sqlalchemy import String, Float, Integer, or_, func
 
-from .pgvalues import values
+#from .pgvalues import values
 from .model import Path, Checksum
 from .exception import ClefException
 
@@ -157,7 +158,6 @@ def find_checksum_id(query, **kwargs):
          * version
         This table can be joined against the DB database tables
     """
-
     constraints = {k: v for k,v in kwargs.items() if v != ()}
     response = esgf_query(query, 'checksum,id,dataset_id,title,version', **constraints)
 
@@ -165,14 +165,16 @@ def find_checksum_id(query, **kwargs):
         raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], link_to_esgf(query, **constraints)))
+        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], 
+                            link_to_esgf(query, **constraints)))
     # separate records that do not have checksum in response (nosums list) from others (records list)
     # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
     nosums=[]
     records=[]
     # another issue appears when latest=False, then the ESGF return in the response all the variables in same dataset-id, this happens with CMIP5
     no_filter = True
-    if constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None) is False and constraints.get('variable', None) is not None:
+    if ( constraints.get('project', None) == 'CMIP5' and constraints.get('latest', None) is False 
+         and constraints.get('variable', None) is not None ):
         matches_list = ['.'+var+'_' for var in constraints.get('variable', []) ]
         no_filter = False
 
@@ -183,24 +185,23 @@ def find_checksum_id(query, **kwargs):
             else:
                 nosums.append(doc)
 
-    table = values([
+    record_list = [ 
+             (doc['checksum'][0],
+              doc['id'].split('|')[0], # drop the server name
+              doc['dataset_id'].split('|')[0], # Drop the server name
+              doc['title'],
+              doc['version'],
+              doc['score'])
+            for doc in records]
+    table = sqlalvalues(
             column('checksum', String),
             column('id', String),
             column('dataset_id', String),
             column('title', String),
             column('version', Integer),
             column('score', Float),
-        ],
-        *[(
-            doc['checksum'][0],
-            doc['id'].split('|')[0], # drop the server name
-            doc['dataset_id'].split('|')[0], # Drop the server name
-            doc['title'],
-            doc['version'],
-            doc['score'])
-            for doc in records],
-        alias_name = 'esgf_query'
-        )
+            name = 'esgf_table'
+        ).data(record_list)
 
     return table
 
@@ -220,19 +221,20 @@ def match_query(session, query, latest=None, **kwargs):
     Returns:
         Joined result of :class:`clef.model.Path` and :func:`find_checksum_id`
     """
-    values = find_checksum_id(query, latest=latest, **kwargs)
+    checksum_table = find_checksum_id(query, latest=latest, **kwargs)
 
     if latest is True:
         # Exact match on checksum
-        return (values
+        return (checksum_table
                 .outerjoin(Checksum,
-                    or_(Checksum.md5 == values.c.checksum,
-                        Checksum.sha256 == values.c.checksum))
+                    or_(Checksum.md5 == checksum_table.c.checksum,
+                        Checksum.sha256 == checksum_table.c.checksum))
                 .outerjoin(Path))
     else:
         # Match on file name
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
-        return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
+        #return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
+        return checksum_table.join(Path, func.regexp_replace(Path.path, '^.*/', '') == checksum_table.c.title)
 
 def find_local_path(session, subq):
     """Find the filesystem paths of ESGF matches
@@ -273,8 +275,9 @@ def find_missing_id(session, subq):
         Iterable of strings with the ESGF file or dataset id
     """
 
+    esgf_ds_id = column('dataset_id')
     return (session
-            .query('esgf_query.dataset_id')
+            .query(esgf_ds_id)
             .select_from(subq)
             .filter(subq.c.esgf_paths_file_id == None)
             .distinct())
