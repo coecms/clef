@@ -1,12 +1,15 @@
+{% set version = "1.4" %}
 package:
     name: clef
-    version: {{ GIT_DESCRIBE_TAG }}
+    version: {{ version }}
+
+
 
 build:
-    number: {{ GIT_DESCRIBE_NUMBER }}
+    number: 1
 
 source:
-    git_url: ../
+    url: https://github.com/coecms/clef/archive/refs/tags/{{version}}.tar.gz
 
 build:
     noarch: python
