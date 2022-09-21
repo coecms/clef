@@ -8,14 +8,10 @@ CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://clim
   :target: https://clef.readthedocs.io/en/stable/
 .. image:: https://circleci.com/gh/coecms/clef/tree/master.svg?style=shield
   :target: https://circleci.com/gh/coecms/clef/tree/master
-.. image:: https://api.codacy.com/project/badge/Grade/aabc5bed0d284dc3970d32e5ecbfe460
-  :target: https://www.codacy.com/app/ScottWales/clef
-.. image:: https://api.codacy.com/project/badge/Coverage/aabc5bed0d284dc3970d32e5ecbfe460
-  :target: https://www.codacy.com/app/ScottWales/clef
 .. image:: https://img.shields.io/conda/v/coecms/clef.svg
   :target: https://anaconda.org/coecms/clef
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4729030.svg
-   :target: https://doi.org/10.5281/zenodo.4729030
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7020691.svg
+   :target: https://doi.org/10.5281/zenodo.7020691
 
 .. content-marker-for-sphinx
 
