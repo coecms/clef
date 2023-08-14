@@ -136,7 +136,7 @@ terminology has changed between CMIP5 and CMIP6. You can pass how many
 constraints you want and pass the same constraint more than once. Let’s
 see what happens though if we do not pass any constraint.
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5
 
@@ -146,7 +146,7 @@ see what happens though if we do not pass any constraint.
     ERROR: Too many results (3781387), try limiting your search https://esgf.nci.org.au/search/esgf-nci?query=&type=File&distrib=True&replica=False&latest=True&project=CMIP5
 
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5 --variable tasmin --experiment historical --table day --ensemble r2i1p1s
 
@@ -159,7 +159,7 @@ see what happens though if we do not pass any constraint.
 Oops that wasn’t reasonable! I mispelled the ensemble “r2i1p1s” does not
 exists and the tool is telling me it cannot find any matches.
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5 --variable tasmin --experiment historical --table days --ensemble r2i1p1
 
@@ -178,7 +178,7 @@ table. Eventually we are aiming to validate all the arguments we can,
 although for some it is no possible to pass all the possible values
 (ensemble for example).
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5 --variable tasmin --experiment historical --table day --ensemble r2i1p1
 
@@ -210,7 +210,7 @@ versions.
 The query by default returns the latest available version. What if we
 want to have a look at all the available versions?
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5 --variable clivi --experiment historical --table Amon -m ACCESS1.0 --all-versions
 
