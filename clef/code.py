@@ -116,13 +116,16 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
 
     except Exception as e:
         print('ERROR',str(e))
-        return None
+        return None, None
 
     # if nothing turned by query print warning and return
     if len(results.index) == 0:
         print(f'{msg} for {kwargs}')
-        return None, None
-    return and_filter(results, cols, fixed, **kwargs)
+        final = None
+        selection = None
+    else:
+        final, selection  = and_filter(results, cols, fixed, **kwargs)
+    return final, selection
 
 
 def call_local_query(s, project, latest, **kwargs):
@@ -283,7 +286,6 @@ def and_filter(df, cols, fixed, **kwargs):
     # create a new column with pairs of values for the 'cols' attributes
     if len(cols) >= 1:
         comb_val = list(zip(*[df[c] for c in cols]))
-        #df['comb'] = list(zip(*[df[c] for c in cols]))
         df2 = df.assign(comb=comb_val)
     # list all possible combinations of values for 'cols' attributes
         comb = list(itertools.product(*[kwargs[c] for c in cols]))

@@ -14,7 +14,6 @@ Contents:
    readme.rst 
    gettingstarted.rst
    esgf.rst
-   ds.rst
    code.rst
    queries.rst
    new_features.rst
