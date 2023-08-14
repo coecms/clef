@@ -1,6 +1,8 @@
 CORDEX
 ------
 
+Let's look at the `cordex` sub-command in detail:
+
 .. code::
 
     !clef cordex --help
@@ -82,7 +84,6 @@ timesteps.
 
     !clef cordex -v tas -e historical -dmod CSIRO-BOM-ACCESS1-3 -en r1i1p1 -f mon
 
-
 .. parsed-literal::
 
     /g/data/rr3/publications/CORDEX/output/AUS-44/UNSW/CSIRO-BOM-ACCESS1-3/historical/r1i1p1/UNSW-WRF360J/v1/mon/tas/latest/
@@ -97,6 +98,8 @@ timesteps.
 
 CMIP6
 -----
+
+Similarly `cmip6` has its own arguments but usage is the same:
 
 .. code::
 
@@ -181,10 +184,11 @@ approximation of the actual resolution and **grid**.
 Controlling the ouput: clef options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+`clef` allows some control over the output by using different `flags` after clef:
+
 .. code::
 
     !clef --local cmip6 -e 1pctCO2 -t Amon -v tasmax -v tasmin -g gr
-
 
 .. parsed-literal::
 
@@ -216,7 +220,6 @@ unpublished from the ESGF but is still available locally.
 .. code::
 
     !clef --missing cmip6 -e 1pctCO2 -v clw -v clwvi -t Amon -g gr
-
 
 .. parsed-literal::
 
