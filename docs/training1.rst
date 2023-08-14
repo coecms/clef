@@ -158,7 +158,8 @@ see what happens though if we do not pass any constraint.
 Oops that wasn’t reasonable! I mispelled the ensemble “r2i1p1s” does not
 exists and the tool is telling me it cannot find any matches.
 
-.. code:: 
+
+.. code::
 
     !clef cmip5 --variable tasmin --experiment historical --table days --ensemble r2i1p1
 
@@ -209,7 +210,7 @@ versions.
 The query by default returns the latest available version. What if we
 want to have a look at all the available versions?
 
-.. code:: 
+.. code::
 
     !clef cmip5 --variable clivi --experiment historical --table Amon -m ACCESS1.0 --all-versions
 
