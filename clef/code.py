@@ -87,7 +87,7 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
 
     """
 
-    results = pd.DataFrame() 
+    res_list = [] 
     try:
         # use local search
         if local:
@@ -95,9 +95,9 @@ def matching(session, cols, fixed, project='CMIP5', local=True, latest=True, **k
             # perform the query for each variable separately and concatenate the results
             combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
             for c in combs:
-                results = results.append(search(session,project=project.upper(),
-                                                latest=latest, **c),
-                                         ignore_index=True)
+                res_list.append(search(session,project=project.upper(),
+                                            latest=latest, **c))
+            results = pd.concat(res_list, ignore_index=True)
         # use ESGF search
         else:
             msg = "There are no simulations currently available on the ESGF nodes"
@@ -140,11 +140,13 @@ def call_local_query(s, project, latest, **kwargs):
 
     """
 
-    datasets = pd.DataFrame() 
+    ds_list = [] 
     paths = []
     combs = [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
     for c in combs:
-         datasets = datasets.append(local_query(s,project=project, latest=latest, **c), ignore_index=True)
+         ds_list.append(local_query(s,project=project, latest=latest, **c))
+    datasets = pd.concat(ds_list, ignore_index=True)
+    
     paths = datasets['path'].tolist()
     return datasets, paths
 

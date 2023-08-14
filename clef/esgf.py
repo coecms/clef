@@ -47,7 +47,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query=None, fields=[], otype='File', limit=10000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
+def esgf_query(query=None, fields=[], otype='File', limit=20000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
@@ -79,7 +79,7 @@ def esgf_query(query=None, fields=[], otype='File', limit=10000, offset=0,  dist
           'query': query,
           'fields': fields,
           'offset': offset,
-          'limit': limit,
+          #'limit': 20000,
           'distrib': distrib,
           'replica': replica,
           'latest': latest,
@@ -88,8 +88,10 @@ def esgf_query(query=None, fields=[], otype='File', limit=10000, offset=0,  dist
           }
     params.update(kwargs)
     if otype == 'Dataset': params.pop('type')
+    print(f"Params: {params}")
 
     try:
+        #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
         r = requests.get('https://esgf.nci.org.au/esg-search/search',
                      params = params )
         r.raise_for_status()
@@ -132,7 +134,7 @@ def link_to_esgf(query, **kwargs):
             }
     params.update(constraints)
 
-    #r = requests.Request('GET','https://esgf-node.llnl.gov/search/%s'%endpoint,
+    #r = requests.Request('GET','https://esgf-node.llnl.gov/esg-search/search',
     #r = requests.Request('GET','https://esgf-data.dkrz.de/search/%s-dkrz'%endpoint,
     r = requests.Request('GET','https://esgf.nci.org.au/search/esgf-nci',
             params=params,
@@ -165,8 +167,11 @@ def find_checksum_id(query, **kwargs):
         raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], 
-                            link_to_esgf(query, **constraints)))
+        print(f"Too many files ({response['response']['numFound']}), try limiting your search.\n")
+        print("Returning only dataset results, hence a full comparison with local collection is not possible")
+        response = esgf_query(query, 'id,dataset_id,title,version', otype='Dataset', **constraints)
+        #raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], 
+        #                    link_to_esgf(query, **constraints)))
     # separate records that do not have checksum in response (nosums list) from others (records list)
     # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
     nosums=[]
@@ -193,6 +198,14 @@ def find_checksum_id(query, **kwargs):
               doc['version'],
               doc['score'])
             for doc in records]
+    nosums_list = [ 
+             ('NA',
+              doc['id'].split('|')[0], # drop the server name
+              doc['dataset_id'].split('|')[0], # Drop the server name
+              doc['title'],
+              doc['version'],
+              doc['score'])
+            for doc in nosums]
     table = sqlalvalues(
             column('checksum', String),
             column('id', String),
@@ -202,7 +215,19 @@ def find_checksum_id(query, **kwargs):
             column('score', Float),
             name = 'esgf_table'
         ).data(record_list)
+    print(record_list)
+    if record_list == []:
+        table = sqlalvalues(
+            column('checksum', String),
+            column('id', String),
+            #column('dataset_id', String),
+            column('title', String),
+            column('version', Integer),
+            column('score', Float),
+            name = 'esgf_table'
+          ).data(nosums_list)
 
+    print('this is ok')
     return table
 
 
@@ -213,6 +238,7 @@ def match_query(session, query, latest=None, **kwargs):
     table. If `latest` is True the checksums will be matched, otherwise only
     the file name is used in order to spot outdated versions that have been
     removed from ESGF.
+    As we cannot retrieve checksums form ESGF if more than 10000 results are returned we only match the dataset_ids
 
     Args:
         latest (bool): Match the checksums (True) or filenames (False)
@@ -225,7 +251,7 @@ def match_query(session, query, latest=None, **kwargs):
 
     if latest is True:
         # Exact match on checksum
-        return (checksum_table
+        matches = (checksum_table
                 .outerjoin(Checksum,
                     or_(Checksum.md5 == checksum_table.c.checksum,
                         Checksum.sha256 == checksum_table.c.checksum))
@@ -234,7 +260,10 @@ def match_query(session, query, latest=None, **kwargs):
         # Match on file name
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         #return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
-        return checksum_table.join(Path, func.regexp_replace(Path.path, '^.*/', '') == checksum_table.c.title)
+        matches = checksum_table.join(Path, func.regexp_replace(Path.path, '^.*/', '') == checksum_table.c.title)
+    if checksum_table.c.checksum.contains("NA"):
+       matches = (checksum_table.join(C6Dataset, C6.Dataset.dataset_id == checksum_table.c.dataset_id)) 
+    return matches
 
 def find_local_path(session, subq):
     """Find the filesystem paths of ESGF matches

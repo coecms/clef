@@ -405,7 +405,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
                 replica=replica,
                 latest=latest,
                 project=project,
-                limit=20000,
+                limit=10000,
                 **constraints,
                 )
 
@@ -434,7 +434,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
             for row in selection.itertuples():
                 line = f"{' / '.join(row.Index[:])} versions: {', '.join(row.version)}"
                 if project == 'CORDEX':
-                    line += f" rcm versions: {', '.join(row.rcm_version_id)}"
+                    line += f" rcm versions: {', '.join(row.rcm_version)}"
                 print(line)
         else:
             results, paths = call_local_query(s, project, latest, **terms)
