@@ -10,7 +10,7 @@ list all the available attributes. This currently works only with the
 ``--local`` and ``--remote`` option, it doesn’t yet work for the
 standard search, which is basically a combination of the two.
 
-.. code:: ipython3
+.. code::
 
     !clef --local cmip5 -v pr -v tas -e piControl  -en r1i1p1 -t Amon --csv
 
@@ -25,7 +25,7 @@ standard search, which is basically a combination of the two.
     Saving to CMIP5_query.csv
 
 
-.. code:: ipython3
+.. code::
 
     !head -n 4 CMIP5_query.csv
 
@@ -44,7 +44,7 @@ following example demonstrate how ``--csv`` works also for remote CMIP6
 queries and with the flag ``--and`` which allows for more complex
 filtering of the data and that we haven’t looked at yet.
 
-.. code:: ipython3
+.. code::
 
     !clef --remote cmip6 -v pr -v mrso -e piControl  -mi r1i1p1f1 --frequency mon --and variable_id --csv
 
@@ -60,7 +60,7 @@ filtering of the data and that we haven’t looked at yet.
     TaiESM1 / r1i1p1f1 versions: v20200302, v20200211
     Saving to CMIP6_query.csv
 
-.. code:: ipython3
+.. code::
 
     !head -n 4 CMIP6_query.csv
 
@@ -82,7 +82,7 @@ following: \* total number of models, followed by their names \* total
 number of unique model-ensembles/members combinations \* number of
 models that have N ensembles/members, followed by their names
 
-.. code:: ipython3
+.. code::
 
     !clef --local cmip5 -v pr -e rcp85 -t Amon --stats
 
@@ -150,7 +150,7 @@ use them after having retrieve the tracking_id attribute in another way
 (for example with a simple nc_dump or via xarray if in python). Let’s
 start from the errata:
 
-.. code:: ipython3
+.. code::
 
     from clef.esdoc import *
     tracking_id = 'hdl:21.14100/a2c2f719-6790-484b-9f66-392e62cd0eb8'
@@ -176,7 +176,7 @@ then prints it in a human readable form, including the url for the
 original error report. Let’s now have a look at how to retrieve and
 print some documentation from ESDOC.
 
-.. code:: ipython3
+.. code::
 
     doc_url = get_doc(dtype='model', name='MIROC6', project='CMIP6')
 
@@ -203,7 +203,7 @@ retrieve the document, by default this is CMIP6. It will retrieve the
 document online and print out a summary. It will also return the url for
 the full document report, shown below.
 
-.. code:: ipython3
+.. code::
 
     print(doc_url)
 
@@ -218,7 +218,7 @@ CMIP5, the **get_wdcc()** function access these documents. In this case
 rather than the type of document you have to use the dataset_id to
 retrieve the information.
 
-.. code:: ipython3
+.. code::
 
     doc_url, response = get_wdcc('cmip5.output1.MIROC.MIROC5.historical.mon.atmos.Amon.r1i1p1.v20111028')
     print(doc_url)

@@ -1,7 +1,7 @@
 CORDEX
 ------
 
-.. code:: ipython3
+.. code::
 
     !clef cordex --help
 
@@ -78,7 +78,7 @@ its experiment design. These are the cordex ``domain``, ``rcm_name``,
 tables so you always have to use f\ ``--frequency`` to select different
 timesteps.
 
-.. code:: ipython3
+.. code::
 
     !clef cordex -v tas -e historical -dmod CSIRO-BOM-ACCESS1-3 -en r1i1p1 -f mon
 
@@ -98,7 +98,7 @@ timesteps.
 CMIP6
 -----
 
-.. code:: ipython3
+.. code::
 
     !clef cmip6 --help
 
@@ -181,7 +181,7 @@ approximation of the actual resolution and **grid**.
 Controlling the ouput: clef options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython3
+.. code::
 
     !clef --local cmip6 -e 1pctCO2 -t Amon -v tasmax -v tasmin -g gr
 
@@ -213,7 +213,7 @@ same, whichever way we perform the query. This way of searching can give
 you more results if a node is offline or if a version have been
 unpublished from the ESGF but is still available locally.
 
-.. code:: ipython3
+.. code::
 
     !clef --missing cmip6 -e 1pctCO2 -v clw -v clwvi -t Amon -g gr
 
@@ -234,7 +234,7 @@ the results matching the constraints that are available on the ESGF but
 not locally (we changed variables to make sure to get some missing data
 back).
 
-.. code:: ipython3
+.. code::
 
     !clef --remote cmip6 -e 1pctCO2 -v tasmin -t Amon -g gr
 
@@ -308,7 +308,7 @@ With anything else or if you don’t pass anything it will assume you
 don’t want to put in a request. It still saved the request in a file we
 can use later.
 
-.. code:: ipython3
+.. code::
 
     !head -n 4 CMIP6_*.txt
 
