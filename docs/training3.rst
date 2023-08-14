@@ -9,7 +9,7 @@ first to import some functions from the clef.code sub-module. In
 particular the **search( )** function and **connect( )** and **Session(
 )** that we’ll use to open a connection to the database.
 
-.. code:: ipython3
+.. code::
 
     from clef.code import *
     db = connect()
@@ -25,7 +25,7 @@ project=‘CMIP5’, latest=True, \**kwargs)
 
 Let’s start by defining some constraints.
 
-.. code:: ipython3
+.. code::
 
     constraints = {'variable': 'tas', 'model': 'MIROC5', 'cmor_table': 'day', 'experiment': 'rcp85'}
 
@@ -34,7 +34,7 @@ attributes stored by the database. You can use any of the *facets* used
 for ESGF but in future we will be adding other options based on extra
 fields which are stored as attributes.
 
-.. code:: ipython3
+.. code::
 
     results = search(s, project='CMIP5', **constraints)
     results
@@ -207,7 +207,7 @@ value that doesn’t exist for the chosen project, the function will print
 a list of valid values and then exit. Let’s rewrite the constraints
 dictionary to show an example.
 
-.. code:: ipython3
+.. code::
 
     constraints = {'v': 'tas', 'm': 'MIROC5', 'table': 'day', 'experiment': 'rcp85', 'activity': 'CMIP'}
     results = search(s, **constraints)
@@ -252,7 +252,7 @@ that can be used for each key. The full list of valid keys is available
 from from the github repository:
 https://github.com/coecms/clef/blob/master/clef/data/valid_keys.json
 
-.. code:: ipython3
+.. code::
 
     constraints = {'v': 'tas', 'm': 'MIROC5', 'table': 'day', 'experiment': 'rcp85', 'member': 'r1i1p1'}
     results = search(s, **constraints)
@@ -301,7 +301,7 @@ that we are passing list of values instead of strings:
 
 Let’s look at an example:
 
-.. code:: ipython3
+.. code::
 
     constraints = {'variable': ['tasmin','tasmax'], 'model': ['MIROC5','MIROC4h'],
                    'cmor_table': ['day'], 'experiment': ['rcp85'], 'ensemble': ['r1i1p1']}

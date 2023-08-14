@@ -13,7 +13,7 @@ Let’s look at an example, if I want to get all the rcps experiments and
 historical I might be tempted to pass them as constraints in the same
 query:
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5 -m CMCC-CM -e historical --experiment_family RCP -t Omon -v tos -en r1i1p1
 
@@ -28,7 +28,7 @@ We couldn’t find any matches because both the ``experiment`` and
 pass rcp45 as experiment as well as the family RCP we will only get the
 rcp45 results.
 
-.. code:: ipython3
+.. code::
 
     !clef cmip5 -m CMCC-CM -e rcp45 --experiment_family RCP -t Omon -v tos -en r1i1p1
 
@@ -43,7 +43,7 @@ rcp45 results.
 Finally, it is now possible to use ``experiment_family`` also in the
 local search:
 
-.. code:: ipython3
+.. code::
 
     !clef --local cmip5 -m CMCC-CM --experiment_family RCP -t Omon -v tos -en r1i1p1
 
@@ -71,7 +71,7 @@ information only for CMIP6, so this flag is only available with the
 **cmip6** sub-command. As for the other flags illustrated above, this
 option works when you select either ``--local`` or ``--remote`` queries.
 
-.. code:: ipython3
+.. code::
 
     !clef --remote cmip6 -v clt  -e historical -t day  -mi r1i1p1f1 --cite
 
@@ -89,7 +89,7 @@ option works when you select either ``--local`` or ``--remote`` queries.
 The citations are listed in a cmip_citations.txt file in the current
 directory.
 
-.. code:: ipython3
+.. code::
 
     ! head -n 4 cmip_citations.txt 
 
@@ -109,123 +109,3 @@ these fields are not available the citation might be incomplete, so
 always check the entire file before using it. In particular the part of
 the citation that includes the doi will be missing.
 
-Searching for other climate datasets: ds
-----------------------------------------
-
-Let’s get back to the command line now and have a look at the third
-command **ds**\  This command let you query a separate database that
-contains information on other climate datasets which are available on
-raijin.
-
-.. code:: ipython3
-
-    !clef ds --help
-
-
-.. parsed-literal::
-
-    Usage: clef ds [OPTIONS]
-    
-      Search local database for non-ESGF datasets
-    
-    Options:
-      -d, --dataset TEXT              Dataset name
-      -v, --version TEXT              Dataset version
-      -f, --format [netcdf|grib|HDF5|binary]
-                                      Dataset file format as defined in clef.db
-                                      Dataset table
-    
-      -sn, --standard-name [air_temperature|air_pressure|rainfall_rate]
-                                      Variable standard_name this is the most
-                                      reliable way to look for a variable across
-                                      datasets
-    
-      -cn, --cmor-name [ps|pres|psl|tas|ta|pr|tos]
-                                      Variable cmor_name useful to look for a
-                                      variable across datasets
-    
-      -va, --variable [T|U|V|Z]       Variable name as defined in files: tas, pr,
-                                      sic, T ...
-    
-      --frequency [yr|mon|day|6hr|3hr|1hr]
-                                      Time frequency on which variable is defined
-      --from-date TEXT                To define a time range of availability of a
-                                      variable, can be used on its own or together
-                                      with to-date. Format is YYYYMMDD
-    
-      --to-date TEXT                  To define a time range of availability of a
-                                      variable, can be used on its own or together
-                                      with from-date. Format is YYYYMMDD
-    
-      --help                          Show this message and exit.
-
-
-| clef ds
-| with no other argument will return a list of the local datasets
-  available in the database. NB this is not an exhaustive list of the
-  climate collections at NCI and not all the datasets already in the
-  database have been completed.
-
-.. code:: ipython3
-
-    !clef ds
-
-
-.. parsed-literal::
-
-    ERA5 v1.0: /g/data/ub4/era5/netcdf/<stream>/<varname>/<year>/
-    MACC v1.0: /g/data/ub4/macc/grib/<stream>/
-    YOTC v1.0: /g/data/rq7/yotc
-    ERAI v1.0: /g/data/ub4/erai/netcdf/<frequency>/<realm>/<stream>/<version>/<varname>/
-    OSTIA vNA: /g/data/ua8/ostia
-    TRMM_3B42 v7: /g/data/ua8/NASA_TRMM/TRMM_L3/TRMM_3B42/<YYYY>/
-    OISST v2.0: /g/data/ua8/NOAA_OISST/AVHRR/v2-0_modified/
-    MERRA2 v5.12.4: /g/data/rr7/MERRA2/raw/<streamv1>.<version>/<YYYY>/<MM>/
-    ERAI v1.0: /g/data/ub4/erai/netcdf/<frequency>/<realm>/<stream>/v01/<varname>/
-    MACC v1.0: /g/data/ub4/macc/netcdf/<frequency>/<realm>/<stream>/v01/<varname>/
-    YOTC v1.0: /g/data/rq7/yotc
-
-
-If you specify any of the variable options then the query will return a
-list of variables rather then datasets. Since variables can be named
-differently among datasets, using the *standard_name* or *cmor_name*
-options to identify them is the best option.
-
-.. code:: ipython3
-
-    !clef ds -f netcdf --standard-name air_temperature
-
-
-.. parsed-literal::
-
-    2T: /g/data/ub4/era5/netcdf/surface/2T/<year>/2T_era5_-90 90 -180 179.75_<YYYYMMDD>_<YYYYMMDD>.nc
-    T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc
-    2T: /g/data/ub4/era5/netcdf/surface/2T/<year>/2T_era5_-90 90 -180 179.75_<YYYYMMDD>_<YYYYMMDD>.nc
-    T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc
-    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
-    tas: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_sfc/1.0/tas/tas_6hr_ERAI_historical_oper_an_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
-    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_ml/1.0/ta/ta_6hr_ERAI_historical_oper_an_ml_<YYYYMMDD>_<YYYYMMDD>.nc
-    mn2t: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/mn2t/mn2t_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
-    mx2t: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/mx2t/mx2t_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
-    tas: /g/data/ub4/erai/netcdf/3hr/atmos/oper_fc_sfc/1.0/tas/tas_3hr_ERAI_historical_oper_fc_sfc_<YYYYMMDD>_<YYYYMMDD>.nc
-
-
-This returns all the variable available as netcdf files and with
-air_temperature as standard_name. NB for each variable a path structure
-is returned.
-
-.. code:: ipython3
-
-    !clef ds -f netcdf --cmor-name ta
-
-
-.. parsed-literal::
-
-    T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc
-    T: /g/data/ub4/era5/netcdf/pressure/T/<year>/T_era5_-57 20 78 -140_<YYYYMMDD>_<YYYYMMDD>.nc
-    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_pl/1.0/ta/ta_6hr_ERAI_historical_oper_an_pl_<YYYYMMDD>_<YYYYMMDD>.nc
-    ta: /g/data/ub4/erai/netcdf/6hr/atmos/oper_an_ml/1.0/ta/ta_6hr_ERAI_historical_oper_an_ml_<YYYYMMDD>_<YYYYMMDD>.nc
-
-
-This returns a subset of the previous query using the cmor_name to
-clearly identify one kind of air_temperature.

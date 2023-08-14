@@ -17,7 +17,7 @@ values to be present, only ``variable_id`` in this case. Finally we tell
 the function which attributes define a simulation, this would most often
 be ``model`` and ``member``.
 
-.. code:: ipython3
+.. code::
 
     constraints = {'variable_id': ['pr','mrso'], 'frequency': ['mon'], 'experiment_id': ['historical']}
     allvalues = ['variable_id']
@@ -32,7 +32,7 @@ names. You can see by printing the length of both lists and one of the
 first item of *selection* that the results have been grouped by
 models/ensembles and then filtered.
 
-.. code:: ipython3
+.. code::
 
     print(len(results),len(selection))
     selection.iloc[0,:]
@@ -69,7 +69,7 @@ AND filter on more than one attribute
 We can pass more than value for more than one attribute, let’s add
 *piControl* to the experiment list.
 
-.. code:: ipython3
+.. code::
 
     constraints = {'variable_id': ['pr','mrso'], 'frequency': ['mon'], 'experiment_id': ['historical', 'piControl']}
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
@@ -100,7 +100,7 @@ included experiment and the results for the two experiments are grouped
 together, to fix this we need to add ``experiment_id`` to the *fixed*
 list.
 
-.. code:: ipython3
+.. code::
 
     fixed = ['source_id', 'member_id','experiment_id']
     results, selection = matching(s, allvalues, fixed, project='CMIP6', **constraints)
@@ -127,7 +127,7 @@ If we wanted to find all models/members combinations which have both
 variables and both experiments, then we should have kept *fixed* as it
 was and add ``experiment_id`` to the *allvalues* list instead.
 
-.. code:: ipython3
+.. code::
 
     allvalues = ['variable_id', 'experiment_id']
     fixed=['source_id','member_id']
@@ -161,7 +161,7 @@ to perfom this query directly on the local database if you want you can
 perform the same query on the ESGF database, so you can see what has
 been published.
 
-.. code:: ipython3
+.. code::
 
     constraints = {'variable': ['tasmin','tasmax'], 'cmor_table': ['Amon'], 'experiment': ['historical','rcp26', 'rcp85']}
     allvalues = ['variable', 'experiment']
@@ -199,7 +199,7 @@ the flag can be used more than once. By default model/ensemble
 combinations define a simulation, and only model, ensemble and version
 are returned as final result.
 
-.. code:: ipython3
+.. code::
 
     !clef --local cmip5 -v tasmin -v tasmax -e rcp26 -e rcp85 -e historical -t Amon --and variable
 
@@ -223,7 +223,7 @@ are returned as final result.
 
 The same will work for ``--remote`` and *cmip6*
 
-.. code:: ipython3
+.. code::
 
     !clef --remote cmip6 -v pr -v mrso -e piControl  -mi r1i1p1f1 --frequency mon --and variable_id
 
