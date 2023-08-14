@@ -282,14 +282,16 @@ def and_filter(df, cols, fixed, **kwargs):
 
     # create a new column with pairs of values for the 'cols' attributes
     if len(cols) >= 1:
-        df['comb'] = list(zip(*[df[c] for c in cols]))
+        comb_val = list(zip(*[df[c] for c in cols]))
+        #df['comb'] = list(zip(*[df[c] for c in cols]))
+        df2 = df.assign(comb=comb_val)
     # list all possible combinations of values for 'cols' attributes
         comb = list(itertools.product(*[kwargs[c] for c in cols]))
     else:
         raise ClefException('List of attributes to apply filter to is empty')
 
     # reset index so index is available as column
-    df =df.reset_index()
+    df2 = df2.reset_index()
     # useful is a list of fields to retain in the table
     useful =  set(['version', 'source_id', 'model', 'path','dataset_id', 'domain',
         'cmor_table','table_id', 'ensemble', 'member_id', 'driving_experiment',
@@ -300,16 +302,16 @@ def and_filter(df, cols, fixed, **kwargs):
     agg_dict['index'] = lambda x: tuple(x)
     # group table data by the columns listed in 'fixed' i.e. model and ensemble
     # and aggregate rows with matching values creating a set for each including path and version
-    d = (df.groupby(fixed)
+    d = (df2.groupby(fixed)
        .agg(agg_dict))
     # create a filter to select the rows where the lenght of the simulation combinations 
     # is equal to the number of "cols" combinations and apply to table
     selection = d[d['comb'].map(len) == len(comb)]
     # select full rows from original dataframe using original index 
     if len(selection.index) > 0 :
-        fullrow = df[df.index.isin(selection['index'].sum())]
+        fullrow = df2[df2.index.isin(selection['index'].sum())]
     else:
-        fullrow = pd.DataFrame(columns=df.columns)
+        fullrow = pd.DataFrame(columns=df2.columns)
     return fullrow, selection
 
 
@@ -428,9 +430,10 @@ def ids_df(dids):
     else:
         print(f'Warning: project {project} not available')
         return results 
-    results = pd.DataFrame(columns=facets_list) 
-    for did in dids:
-        results = results.append({k:v for k,v in zip(facets_list,did.split("."))},
-                                 ignore_index=True)
+    res_list = []
+    for i, did in enumerate(dids):
+        df = pd.DataFrame([{k:v for k,v in zip(facets_list,did.split("."))}], index=[i], columns=facets_list)
+        res_list.append(df)
+    results = pd.concat(res_list, ignore_index=True)
     return results
 
