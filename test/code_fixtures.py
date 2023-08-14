@@ -198,7 +198,7 @@ def dids6():
 def results6():
     '''Corresponding list of results for dids6
     '''
-    return pandas.DataFrame([{'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NCC',
+    return pandas.DataFrame.from_dict([{'project': 'CMIP6', 'activity_id': 'CMIP', 'institution_id': 'NCC',
               'source_id': 'NorESM2-LM', 'experiment_id': 'historical',
               'member_id': 'r3i1p1f1', 'table_id': 'day',
               'variable_id': 'tas', 'grid_label': 'gn', 'version': 'v20190920'},
@@ -219,7 +219,7 @@ def dids5():
 def results5():
     '''Corresponding list of results for dids5
     '''
-    return pandas.DataFrame([{'project': 'cmip5', 'product': 'output1', 'institute': 'ICHEC',
+    return pandas.DataFrame.from_dict([{'project': 'cmip5', 'product': 'output1', 'institute': 'ICHEC',
               'model': 'EC-EARTH', 'experiment': 'historical', 'time_frequency': 'day',
               'realm': 'atmos', 'cmor_table': 'day', 'ensemble': 'r5i1p1',
               'version': 'v1'},

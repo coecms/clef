@@ -140,13 +140,12 @@ see what happens though if we do not pass any constraint.
 
     !clef cmip5
 
-
 .. parsed-literal::
 
     ERROR: Too many results (3781387), try limiting your search https://esgf.nci.org.au/search/esgf-nci?query=&type=File&distrib=True&replica=False&latest=True&project=CMIP5
 
 
-.. code::
+.. code:: 
 
     !clef cmip5 --variable tasmin --experiment historical --table day --ensemble r2i1p1s
 
@@ -158,6 +157,7 @@ see what happens though if we do not pass any constraint.
 
 Oops that wasn’t reasonable! I mispelled the ensemble “r2i1p1s” does not
 exists and the tool is telling me it cannot find any matches.
+
 
 .. code::
 
@@ -178,7 +178,7 @@ table. Eventually we are aiming to validate all the arguments we can,
 although for some it is no possible to pass all the possible values
 (ensemble for example).
 
-.. code::
+.. code:: 
 
     !clef cmip5 --variable tasmin --experiment historical --table day --ensemble r2i1p1
 
@@ -195,7 +195,7 @@ although for some it is no possible to pass all the possible values
     Everything available on ESGF is also available locally
 
 
-The tool first search on the ESGF for all the files that match the
+The tool first searches on the ESGF for all the files that match the
 constraints we passed. It then looks for these file locally and if it
 finds them it returns their path on raijin. For all the files it can’t
 find locally, the tool check an NCI table listing the downloads they are
@@ -203,7 +203,7 @@ working on. Finally it lists missing datasets which are in the download
 queue, followed by the datasets that are not available locally and no
 one has yet requested.
 
-The tool list the datasets paths and dataset_ids, we used to have a
+The tool lists the datasets paths and dataset_ids, we used to have a
 ``--format file`` option but this has been removed in most recent
 versions.
 

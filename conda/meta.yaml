@@ -1,4 +1,4 @@
-{% set version = "1.4.3" %}
+{% set version = "1.5.0" %}
 package:
     name: clef
     version: {{ version }}
@@ -9,7 +9,7 @@ build:
     number: 1
 
 source:
-    url: https://github.com/coecms/clef/archive/refs/tags/{{version}}.tar.gz
+    path: ../.
 
 build:
     noarch: python
@@ -37,17 +37,8 @@ requirements:
         - lxml
         - pandas
 
-test:
-    source_files:
-        - setup.cfg
-        - test
-    requires:
-        - pytest
-    imports:
-        - clef
-
 about:
     home: https://github.com/coecms/clef
     license: Apache 2.0
     license_file: LICENSE-2.0.txt
-    summary: clef
+    summary: 'CleF queries ESGF data at NCI' 

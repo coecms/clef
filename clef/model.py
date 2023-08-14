@@ -41,10 +41,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.indexable import index_property
 from sqlalchemy.orm import relationship, column_property
 from sqlalchemy import func as f
-
-
+# ready for when we can move to sqlalchemy 2.0
+#from sqlalchemy.orm import DeclarativeBase
+#class Base(DeclarativeBase):
+#    pass
 Base = declarative_base()
-
 
 class pg_json_property(index_property):
     # http://docs.sqlalchemy.org/en/latest/orm/extensions/indexable.html
