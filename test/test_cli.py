@@ -293,7 +293,7 @@ def test_cite(runner, prod_cli):
     facets = ['--model=NESM3', '--experiment=historical', '--variant_label=r2i1p1f1',
               '--table=day', '--variable=tas', '--grid_label=gn', '--cite']
     # check that write_cite is called when cite passed with --local and --remote for CMIP6 
-    c = 'Cao, Jian; Wang, Bin (2019). NUIST NESMv3 model output prepared for CMIP6 CMIP historical. Version v20190812. Earth System Grid Federation. https://doi.org/10.22033/ESGF/CMIP6.8769'
+    c = 'Cao, Jian; Wang, Bin (2019). NUIST NESMv3 model output prepared for CMIP6 CMIP historical. Earth System Grid Federation. doi:https://doi.org/10.22033/ESGF/CMIP6.8769 .'
     with mock.patch('clef.cli.write_cite') as write_cite:
         r = prod_cli(['--local', 'cmip6', *facets])
         write_cite.assert_called_with([c])

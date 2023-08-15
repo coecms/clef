@@ -371,7 +371,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
                 print(f"{row.Index[0]} / {row.Index[1]} versions: {', '.join([v[0] for v in row.version])}")
             ids = get_ids(results) 
         else:
-            q = find_checksum_id(' '.join(query),
+            q, nocksum = find_checksum_id(' '.join(query),
                 distrib=distrib,
                 replica=replica,
                 latest=latest,
