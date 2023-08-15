@@ -155,7 +155,8 @@ def test_matching(session):
     }
     # Errors should print a message and return 'None'
     r = matching(session, ['variable','experiment'],['model','ensemble'], **facets)
-    assert r is None
+    assert r[0] is None
+    assert r[1] is None
 
 
 def test_ids_df(dids6, results6, dids5, results5):

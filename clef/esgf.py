@@ -47,7 +47,7 @@ class ESGFException(ClefException):
     pass
 
 
-def esgf_query(query=None, fields=[], otype='File', limit=20000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
+def esgf_query(query=None, fields=[], otype='File', limit=10000, offset=0,  distrib=True, replica=False, latest=None,  **kwargs):
     """Search the ESGF
 
     Searches the ESGF using its `API
@@ -79,7 +79,7 @@ def esgf_query(query=None, fields=[], otype='File', limit=20000, offset=0,  dist
           'query': query,
           'fields': fields,
           'offset': offset,
-          #'limit': 20000,
+          'limit': limit,
           'distrib': distrib,
           'replica': replica,
           'latest': latest,
@@ -87,8 +87,8 @@ def esgf_query(query=None, fields=[], otype='File', limit=20000, offset=0,  dist
           'format': 'application/solr+json',
           }
     params.update(kwargs)
-    if otype == 'Dataset': params.pop('type')
-    print(f"Params: {params}")
+    if otype == 'Dataset':
+        params.pop('type')
 
     try:
         #r = requests.get('https://esgf-node.llnl.gov/esg-search/search',
@@ -189,6 +189,7 @@ def find_checksum_id(query, **kwargs):
                 records.append(doc)
             else:
                 nosums.append(doc)
+                print(doc)
 
     record_list = [ 
              (doc['checksum'][0],
@@ -215,7 +216,7 @@ def find_checksum_id(query, **kwargs):
             column('score', Float),
             name = 'esgf_table'
         ).data(record_list)
-    print(record_list)
+    nocksum = False
     if record_list == []:
         table = sqlalvalues(
             column('checksum', String),
@@ -226,9 +227,9 @@ def find_checksum_id(query, **kwargs):
             column('score', Float),
             name = 'esgf_table'
           ).data(nosums_list)
+        nocksum = True
 
-    print('this is ok')
-    return table
+    return table, nocksum
 
 
 def match_query(session, query, latest=None, **kwargs):
@@ -247,7 +248,7 @@ def match_query(session, query, latest=None, **kwargs):
     Returns:
         Joined result of :class:`clef.model.Path` and :func:`find_checksum_id`
     """
-    checksum_table = find_checksum_id(query, latest=latest, **kwargs)
+    checksum_table, nocksum = find_checksum_id(query, latest=latest, **kwargs)
 
     if latest is True:
         # Exact match on checksum
@@ -261,9 +262,12 @@ def match_query(session, query, latest=None, **kwargs):
         #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
         #return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
         matches = checksum_table.join(Path, func.regexp_replace(Path.path, '^.*/', '') == checksum_table.c.title)
-    if checksum_table.c.checksum.contains("NA"):
-       matches = (checksum_table.join(C6Dataset, C6.Dataset.dataset_id == checksum_table.c.dataset_id)) 
+    
+    if nocksum is True:
+        if project == 'CMIP6':
+            matches = (checksum_table.join(C6Dataset, C6.Dataset.dataset_id == checksum_table.c.dataset_id)) 
     return matches
+
 
 def find_local_path(session, subq):
     """Find the filesystem paths of ESGF matches

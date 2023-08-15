@@ -1,4 +1,4 @@
-ENV=module load conda;
+ENV=module load conda/analysis3-23.04;
 SHELL=/bin/bash
 
 .PHONY: check test package
