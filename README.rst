@@ -10,8 +10,8 @@ CleF - Climate Finder - Dataset search tool developed by the `CLEX <https://clim
   :target: https://circleci.com/gh/coecms/clef/tree/master
 .. image:: https://img.shields.io/conda/v/coecms/clef.svg
   :target: https://anaconda.org/coecms/clef
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7020691.svg
-   :target: https://doi.org/10.5281/zenodo.7020691
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8251030.svg
+   :target: https://doi.org/10.5281/zenodo.8251030
 
 .. content-marker-for-sphinx
 
@@ -31,7 +31,7 @@ is on external ESGF nodes but not yet available locally.
 Install
 -------
 
-Clef is pre-installed into a Conda environment at NCI. Load it with::
+CleF is pre-installed into a Conda environment at NCI. Load it with::
 
     module use /g/data3/hh5/public/modules
     module load conda/analysis3-unstable
