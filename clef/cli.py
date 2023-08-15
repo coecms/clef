@@ -379,6 +379,7 @@ def common_esgf_cli(ctx, project, query, latest, replica, distrib,
                 limit=10000,
                 **constraints,
                 )
+            val = [x for x in s.query(q)][0]
 
             ids=sorted(set(x.dataset_id for x in s.query(q)))
 # when stats or csvf are True first extract attributes from dataset_ids

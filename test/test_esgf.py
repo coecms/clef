@@ -131,14 +131,14 @@ def test_checksum_id_empty(session):
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=empty_query):
         with pytest.raises(ClefException):
-            table = find_checksum_id('')
+            table, nocksum = find_checksum_id('')
 
 def test_checksum_id_missing(session):
     """
     Create a values table with the returned result
     """
     with mock.patch('clef.esgf.esgf_query', side_effect=missing_query):
-        table = find_checksum_id('')
+        table, nocksum = find_checksum_id('')
         match = session.query(table).one()
         assert match.id == 'abcde'
         assert match.score == 1.0

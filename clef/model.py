@@ -83,7 +83,7 @@ cordex_metadata_dataset_link = Table('cordex_metadata_dataset_link', Base.metada
 
 
 class Path(Base):
-    """Path of a file on Raijin, with links to metadata
+    """Path of a file on Gadi, with links to metadata
     """
     __tablename__ = 'esgf_paths'
 

@@ -37,7 +37,7 @@ from sqlalchemy.sql import values as sqlalvalues
 from sqlalchemy import String, Float, Integer, or_, func
 
 #from .pgvalues import values
-from .model import Path, Checksum
+from .model import Path, Checksum, C6Dataset, C5Dataset, CordexDataset
 from .exception import ClefException
 
 
@@ -167,11 +167,8 @@ def find_checksum_id(query, **kwargs):
         raise ESGFException('No matches found on ESGF, check at %s'%link_to_esgf(query, **constraints))
 
     if response['response']['numFound'] > int(response['responseHeader']['params']['rows']):
-        print(f"Too many files ({response['response']['numFound']}), try limiting your search.\n")
-        print("Returning only dataset results, hence a full comparison with local collection is not possible")
-        response = esgf_query(query, 'id,dataset_id,title,version', otype='Dataset', **constraints)
-        #raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], 
-        #                    link_to_esgf(query, **constraints)))
+        raise ESGFException('Too many results (%d), try limiting your search %s'%(response['response']['numFound'], 
+                            link_to_esgf(query, **constraints)))
     # separate records that do not have checksum in response (nosums list) from others (records list)
     # we should call local_search for these i.e. a search not based on checksums but is not yet implemented
     nosums=[]
@@ -189,8 +186,7 @@ def find_checksum_id(query, **kwargs):
                 records.append(doc)
             else:
                 nosums.append(doc)
-                print(doc)
-
+     
     record_list = [ 
              (doc['checksum'][0],
               doc['id'].split('|')[0], # drop the server name
@@ -202,7 +198,7 @@ def find_checksum_id(query, **kwargs):
     nosums_list = [ 
              ('NA',
               doc['id'].split('|')[0], # drop the server name
-              doc['dataset_id'].split('|')[0], # Drop the server name
+              doc['id'].split('|')[0], # Drop the server name
               doc['title'],
               doc['version'],
               doc['score'])
@@ -221,7 +217,7 @@ def find_checksum_id(query, **kwargs):
         table = sqlalvalues(
             column('checksum', String),
             column('id', String),
-            #column('dataset_id', String),
+            column('dataset_id', String),
             column('title', String),
             column('version', Integer),
             column('score', Float),
@@ -259,13 +255,11 @@ def match_query(session, query, latest=None, **kwargs):
                 .outerjoin(Path))
     else:
         # Match on file name
-        #return values.outerjoin(Path, Path.path.like('%/'+values.c.title))
-        #return values.outerjoin(Path, func.regexp_replace(Path.path, '^.*/', '') == values.c.title)
         matches = checksum_table.join(Path, func.regexp_replace(Path.path, '^.*/', '') == checksum_table.c.title)
     
     if nocksum is True:
-        if project == 'CMIP6':
-            matches = (checksum_table.join(C6Dataset, C6.Dataset.dataset_id == checksum_table.c.dataset_id)) 
+        raise ESGFException(f'Some datasets have incomplete records try --local option') 
+         
     return matches
 
 
