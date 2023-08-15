@@ -139,8 +139,8 @@ this is easy to implement and run. To make **search()** works for a
 random number of inputs passed by the command line we set up a function
 **call_local_query()** that deals with this more efficiently. The
 arguments are very similar to **search()** with the important difference
-that we are passing list of values instead of strings:
->call_local_query(s, project, oformat, latest, \**kwargs)
+that we are passing list of values instead of strings::
+    call_local_query(s, project, oformat, latest, \**kwargs)
 
 Let’s look at an example:
 
