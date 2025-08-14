@@ -110,7 +110,9 @@ def read_queue(project):
     dids=set()
     # open csv file and read data in dictionary with dataset_id as key
     try:
-        with open("/g/data/hh5/clef/tables/" + project + "_clef_table.csv","r") as csvfile:
+        #with open("/g/data/hh5/clef/tables/" + project + "_clef_table.csv","r") as csvfile:
+        # removing hh5 dependency but these tables don't exist anywhere else!
+        with open("clef/tables/" + project + "_clef_table.csv","r") as csvfile:
             table_read = csv.reader(csvfile)
         # for each row save did-var (to distinguish CMIP5) and separate set of unique dids
             for row in table_read:

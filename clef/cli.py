@@ -91,7 +91,7 @@ def config_log():
     # the messagges will be appended to the same file
     # create a new log file every month
     month = datetime.now().strftime("%Y%m")
-    logname = '/g/data/hh5/tmp/clef/logs/clef_log_' + month + '.txt'
+    logname = 'clef_log_' + month + '.txt'
     flog = logging.FileHandler(logname)
     try:
         os.chmod(logname, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO);
